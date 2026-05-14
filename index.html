@@ -1,542 +1,1477 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Relatórios de Engenharia</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Dashboard de Medições - Modo Edição</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; font-family: 'Poppins', sans-serif; }
-        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #667eea; display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid white; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .container { max-width: 1400px; margin: 0 auto; padding: 30px; display: none; }
-        .modern-header { background: white; border-radius: 20px; padding: 15px 30px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .logo-area h1 { font-size: 1.5rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .logo-area p { font-size: 0.8rem; color: #888; }
-        .user-area { display: flex; align-items: center; gap: 20px; background: #f8f9fc; padding: 8px 20px; border-radius: 50px; }
-        .user-area span { font-weight: 500; color: #333; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .form-card, .report-card, .stats-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; }
-        .form-card:hover, .report-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        .card-title { font-size: 1.3rem; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eef2f7; display: flex; align-items: center; gap: 10px; }
-        .card-title i { color: #667eea; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; font-size: 0.85rem; }
-        .form-group label.required:after { content: " *"; color: #e74c3c; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #e1e5eb; border-radius: 12px; font-size: 14px; font-family: 'Poppins', sans-serif; transition: all 0.3s; background: #f8f9fc; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .btn { padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
-        .btn-secondary { background: #48bb78; color: white; }
-        .btn-secondary:hover { background: #38a169; transform: translateY(-2px); }
-        .btn-danger { background: #f56565; color: white; }
-        .btn-danger:hover { background: #e53e3e; }
-        .btn-warning { background: #ed8936; color: white; }
-        .btn-warning:hover { background: #dd6b20; }
-        .btn-outline { background: transparent; border: 1px solid #e1e5eb; color: #666; }
-        .btn-outline:hover { background: #f8f9fc; border-color: #667eea; color: #667eea; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-item { background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #eef2f7; }
-        .stat-item h4 { font-size: 0.75rem; color: #888; margin-bottom: 5px; }
-        .stat-item .value { font-size: 1.8rem; font-weight: 700; color: #667eea; }
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eef2f7; }
-        th { background: #f8f9fc; color: #555; font-weight: 600; }
-        tr:hover { background: #f8f9fc; }
-        .filters-bar { background: #f8f9fc; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .filter-group { display: flex; flex-direction: column; }
-        .filter-group label { font-size: 0.7rem; font-weight: 600; color: #888; margin-bottom: 5px; }
-        .filter-group select, .filter-group input { padding: 10px; border: 1px solid #e1e5eb; border-radius: 10px; font-size: 0.8rem; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; border-radius: 24px; width: 600px; max-width: 90%; max-height: 85vh; overflow-y: auto; animation: modalFadeIn 0.3s; }
-        .modal-large { width: 800px; }
-        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .modal-header { padding: 20px 25px; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 1.3rem; font-weight: 600; }
-        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
-        .modal-close:hover { color: #333; }
-        .modal-body { padding: 25px; }
-        .modal-footer { padding: 15px 25px; border-top: 1px solid #eef2f7; display: flex; justify-content: flex-end; gap: 10px; }
-        .login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-card { background: white; border-radius: 30px; width: 450px; max-width: 90%; padding: 45px 40px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.2); animation: fadeInUp 0.5s; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .login-card h2 { font-size: 2rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
-        .login-subtitle { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
-        .login-input { width: 100%; padding: 15px 20px; margin: 10px 0; border: 1px solid #e1e5eb; border-radius: 16px; font-size: 0.9rem; transition: all 0.3s; background: #f8f9fc; }
-        .login-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .login-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 16px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 20px; transition: transform 0.3s, box-shadow 0.3s; }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
-        .info-badge { background: #f0f4ff; padding: 15px; border-radius: 16px; margin-top: 25px; text-align: left; font-size: 0.75rem; color: #555; border-left: 4px solid #667eea; }
-        .info-badge p { margin: 5px 0; }
-        .checkbox-group { display: flex; align-items: center; gap: 8px; margin: 15px 0; justify-content: flex-start; }
-        .checkbox-group input { width: 16px; height: 16px; margin: 0; }
-        .checkbox-group label { color: #666; font-size: 0.8rem; margin: 0; }
-        .suggestions-list { position: absolute; background: white; border: 1px solid #e1e5eb; border-radius: 12px; max-height: 150px; overflow-y: auto; z-index: 100; width: calc(100% - 30px); margin-top: -10px; }
-        .suggestions-list div { padding: 10px 15px; cursor: pointer; }
-        .suggestions-list div:hover { background: #f0f4ff; }
-        .suggestions { position: relative; }
-        .user-table { width: 100%; border-collapse: collapse; }
-        .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
-        @media (max-width: 768px) { .main-layout { grid-template-columns: 1fr; } .modern-header { flex-direction: column; text-align: center; } .modal-large { width: 95%; } }
+        body { 
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif; 
+            background: radial-gradient(#08b9d5, #ffffff);
+            padding: 20px; 
+            min-height: 100vh;
+        }
+        
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            background: #ffffff; 
+            border-radius: 24px; 
+            padding: 24px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+        }
+        
+        .header {
+            background: radial-gradient(#08b9d5, #ffffff);
+            margin: -24px -24px 24px -24px;
+            padding: 20px 40px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-logo-left { flex-shrink: 0; }
+        .header-logo-left img { height: 210px; width: auto; display: block; background: transparent; }
+        
+        .header-content { flex: 1; text-align: center; }
+        .header-content h1 { color: white; font-size: 28px; margin-bottom: 8px; }
+        .header-content p { color: rgba(255,255,255,0.9); font-size: 21px; margin-bottom: 12px; }
+        .total-contrato { 
+            font-size: 20px; 
+            font-weight: bold; 
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 24px;
+            border-radius: 40px;
+            margin-top: 8px;
+        }
+        
+        .header-logo-right { flex-shrink: 0; }
+        .header-logo-right img { height: 70px; width: auto; display: block; background: transparent; }
+        
+        .btn-group { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-bottom: 20px;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn-save { background: #17a2b8; color: white; }
+        .btn-presentation { background: #e83e8c; color: white; }
+        .btn-clear { background: #6c757d; color: white; }
+        
+        .filtros { 
+            background: white; 
+            padding: 16px 20px; 
+            margin-bottom: 24px; 
+            border-radius: 16px; 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .filtro-group { display: flex; align-items: center; gap: 10px; }
+        .filtro-group label { font-weight: 600; color: #08b9d5; font-size: 13px; }
+        .filtro-group select, .filtro-group input { 
+            padding: 8px 14px; 
+            border-radius: 10px; 
+            border: 1px solid #ddd; 
+            background: #f8f9fa;
+            font-size: 13px;
+        }
+        .toggle-label { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            margin-left: auto;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #08b9d5;
+        }
+        
+        .kpi-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 16px; 
+            margin-bottom: 28px;
+        }
+        .kpi-card { 
+            padding: 18px 12px; 
+            border-radius: 20px; 
+            text-align: center; 
+            color: white; 
+            cursor: pointer; 
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .kpi-card:hover { transform: translateY(-5px) scale(1.02); }
+        .kpi-card h3 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .kpi-card p { font-size: 12px; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card small { font-size: 11px; opacity: 0.8; display: block; margin-top: 8px; }
+        .kpi-card .card-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.7; }
+        
+        .kpi-entregue { background: linear-gradient(135deg, #28a745, #1e7e34); }
+        .kpi-aprovado { background: linear-gradient(135deg, #17a2b8, #117a8b); }
+        .kpi-analise { background: linear-gradient(135deg, #ffc107, #e0a800); color: #333; }
+        .kpi-pagamento { background: linear-gradient(135deg, #fd7e14, #e8650a); }
+        .kpi-pago { background: linear-gradient(135deg, #6f42c1, #5a32a3); }
+        .kpi-nao-iniciado { background: linear-gradient(135deg, #6c757d, #545b62); }
+        
+        .empresas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .empresa-btn {
+            padding: 12px 8px;
+            border-radius: 16px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .empresa-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.05); }
+        .empresa-btn.selecionado { 
+            box-shadow: 0 0 0 3px white, 0 0 0 6px #0ec2e2;
+            transform: scale(1.02);
+        }
+        .empresa-btn h4 { font-size: 16px; margin-bottom: 4px; }
+        .empresa-btn .valor { font-size: 18px; font-weight: 700; margin: 4px 0; }
+        .empresa-btn .percentual { font-size: 11px; opacity: 0.9; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 20px; display: inline-block; }
+        
+        .empresa-lbr { background: linear-gradient(135deg, #1a5f7a, #0d3b4f); }
+        .empresa-projetto { background: linear-gradient(135deg, #d4a017, #b8860b); }
+        .empresa-ehp { background: linear-gradient(135deg, #2e7d64, #1b5e4a); }
+        .empresa-prisma { background: linear-gradient(135deg, #8b4513, #5a2d0c); }
+        
+        .progress-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .progress-title h2 {
+            font-size: 18px;
+            color: #08b9d5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .total-executado {
+            font-size: 32px;
+            font-weight: 800;
+            color: #08b9d5;
+        }
+        .total-contrato-valor {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 30px;
+            height: 24px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #08b9d5, #17a2b8);
+            width: 0%;
+            height: 100%;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 16px;
+        }
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 16px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #08b9d5;
+        }
+        
+        .graficos-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        .grafico-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .grafico-wrapper h3 {
+            color: #08b9d5;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .grafico { max-width: 100%; margin: 0 auto; }
+        canvas { max-height: 350px; width: 100%; }
+        
+        .tabela-wrapper { 
+            overflow-x: auto; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            border-radius: 20px; 
+            margin-top: 20px;
+            background: #08b9d5;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { 
+            background: #08b9d5; 
+            color: white; 
+            padding: 14px 8px; 
+            position: sticky; 
+            top: 0; 
+            font-weight: 600;
+            font-size: 12px;
+        }
+        td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #eee; background: white; }
+        td input, td select { 
+            width: 100%; 
+            padding: 6px 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            font-size: 11px;
+            background: #fff;
+        }
+        
+        .badge { 
+            display: inline-block; 
+            padding: 4px 12px; 
+            border-radius: 30px; 
+            font-size: 10px; 
+            font-weight: 600; 
+        }
+        .badge-entregue { background: #28a745; color: white; }
+        .badge-aprovado { background: #17a2b8; color: white; }
+        .badge-analise { background: #ffc107; color: #333; }
+        .badge-pagamento { background: #fd7e14; color: white; }
+        .badge-pago { background: #6f42c1; color: white; }
+        .badge-nao-iniciado { background: #6c757d; color: white; }
+        
+        .diferenca-acima { color: #dc3545; font-weight: bold; }
+        .diferenca-abaixo { color: #28a745; font-weight: bold; }
+        .diferenca-igual { color: #08b9d5; font-weight: bold; }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .info-box { 
+            background: #08b9d5; 
+            padding: 16px 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            color: white;
+        }
+        .info-box b { color: white; font-size: 14px; }
+        .info-box span { color: white; }
+        .valor-previsto-mensal {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .save-status { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #28a745; 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 40px; 
+            display: none; 
+            z-index: 1000;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .total-selecionado {
+            background: #17a2b8;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .empresas-grid { grid-template-columns: repeat(2, 1fr); }
+            .graficos-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 800px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .empresas-grid { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            body { padding: 12px; }
+            .container { padding: 16px; }
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+                gap: 15px;
+            }
+            .header-logo-left img { height: 80px; }
+            .header-logo-right img { height: 50px; }
+            .header-content h1 { font-size: 22px; }
+            .header-content p { font-size: 16px; }
+        }
+        @media print { .btn-group, .filtros, .graficos-row { display: none; } }
     </style>
 </head>
 <body>
-    <div class="loading" id="loading"><div class="spinner"></div></div>
-
-    <div class="container" id="mainContainer">
-        <div class="modern-header no-print">
-            <div class="logo-area"><h1>📊 Engenharia Relatórios</h1><p>Sistema de gestão de atividades</p></div>
-            <div class="user-area" id="userInfo"></div>
+<div class="container" id="relatorioPDF">
+    <div class="save-status" id="saveStatus">Salvando...</div>
+    
+    <div class="header">
+        <div class="header-logo-left">
+            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo Assessor Consórcio" onerror="this.style.display='none'">
         </div>
-
-        <div class="main-layout no-print">
-            <div class="form-card">
-                <div class="card-title"><i class="fas fa-plus-circle"></i><span>Registrar Atividade</span></div>
-                <form id="activityForm">
-                    <div class="form-row">
-                        <div class="form-group"><label>Mês do Relatório:</label><select id="mesRelatorio"><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
-                        <div class="form-group"><label>Ano do Relatório:</label><select id="anoRelatorio"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label class="required">Produto:</label><select id="produto" required><option value="">Selecione...</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
-                        <div class="form-group"><label>Processo/SEI:</label><input type="text" id="processo" placeholder="Número do processo"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label class="required">Projeto/Empreendimento:</label><input type="text" id="projeto" required></div>
-                        <div class="form-group suggestions"><label class="required">Tipo de Atividade:</label><input type="text" id="tipoAtividade" required autocomplete="off"><div id="suggestionsList" class="suggestions-list" style="display: none;"></div></div>
-                    </div>
-                    <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..."></textarea></div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Status:</label><select id="status"><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
-                        <div class="form-group"><label>Prioridade:</label><select id="prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div>
-                    </div>
-                    <div class="form-row"><div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao"></div><div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite"></div></div>
-                    <div class="form-group"><label>Área Demandante:</label><input type="text" id="areaDemandante" placeholder="Departamento/Solicitante"></div>
-                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..."></textarea></div>
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Atividade</button>
-                        <button type="button" class="btn btn-outline" onclick="limparFormulario()"><i class="fas fa-eraser"></i> Limpar</button>
-                        <!-- Botão Alterar Senha REMOVIDO daqui - agora só fica na área superior -->
-                    </div>
-                </form>
-            </div>
-
-            <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
+        <div class="header-content">
+            <h1>Dashboard de Medições</h1>
+            <p>Controle de Entregas, Aprovações e Pagamentos • 60 meses</p>
+            <div class="total-contrato">Contrato Total: R$ 89.863.121,73</div>
         </div>
-
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="9" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
+        <div class="header-logo-right">
+            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/monocromatica-dnit-padrao.png" alt="Logo DNIT" onerror="this.style.display='none'">
+        </div>
     </div>
+    
+    <div class="btn-group">
+        <button class="btn btn-save" onclick="salvarTodos()">💾 Salvar Alterações</button>
+        <button class="btn btn-presentation" onclick="gerarApresentacao()">📺 Modo Apresentação</button>
+    </div>
+    
+    <div class="filtros">
+        <div class="filtro-group"><label>📊 Medição:</label><select id="filtroMedicao" onchange="aplicarFiltros()"></select></div>
+        <div class="filtro-group"><label>📅 Mês/Ano:</label><select id="filtroPeriodo" onchange="aplicarFiltros()"></select></div>
+        <div class="filtro-group"><label>📆 Ano:</label><select id="filtroAno" onchange="aplicarFiltros()">
+            <option value="todos">Todos os Anos</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select></div>
+        <div class="filtro-group"><label>🏷️ Status:</label><select id="filtroStatus" onchange="aplicarFiltros()">
+            <option value="todos">Todos</option>
+            <option value="entregue">Entregue</option>
+            <option value="aprovado">Aprovado</option>
+            <option value="analise">Em Análise</option>
+            <option value="pagamento">Em Pagamento</option>
+            <option value="pago">Pago</option>
+            <option value="nao_iniciado">Não Iniciado</option>
+        </select></div>
+        <button class="btn btn-clear" onclick="limparFiltros()">🗑️ Limpar Filtros</button>
+        <label class="toggle-label">📋 Exibir não iniciados (marque para editar) <input type="checkbox" id="mostrarVazios" onchange="aplicarFiltros()"></label>
+    </div>
+    
+    <div class="empresas-grid">
+        <button class="empresa-btn empresa-lbr" data-empresa="LBR" data-percentual="35" onclick="toggleEmpresa(this)">
+            <h4>🏢 LBR</h4>
+            <div class="valor" id="valorLBR">R$ 0,00</div>
+            <span class="percentual">35% do Contrato</span>
+        </button>
+        <button class="empresa-btn empresa-projetto" data-empresa="Projetto" data-percentual="35" onclick="toggleEmpresa(this)">
+            <h4>📐 Projetto</h4>
+            <div class="valor" id="valorProjetto">R$ 0,00</div>
+            <span class="percentual">35% do Contrato</span>
+        </button>
+        <button class="empresa-btn empresa-ehp" data-empresa="EHP" data-percentual="15" onclick="toggleEmpresa(this)">
+            <h4>⚡ EHP</h4>
+            <div class="valor" id="valorEHP">R$ 0,00</div>
+            <span class="percentual">15% do Contrato</span>
+        </button>
+        <button class="empresa-btn empresa-prisma" data-empresa="Prisma" data-percentual="15" onclick="toggleEmpresa(this)">
+            <h4>🔮 Prisma</h4>
+            <div class="valor" id="valorPrisma">R$ 0,00</div>
+            <span class="percentual">15% do Contrato</span>
+        </button>
+    </div>
+    
+    <div class="total-selecionado" id="totalSelecionado">
+        💰 Total Selecionado: R$ 0,00 (0% do Contrato)
+    </div>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-entregue" onclick="filtrarStatus('entregue')">
+            <div class="card-icon">📦</div>
+            <h3 id="totalEntregue">0</h3>
+            <p>Entregues</p>
+            <small id="pEntregue">0%</small>
+        </div>
+        <div class="kpi-card kpi-aprovado" onclick="filtrarStatus('aprovado')">
+            <div class="card-icon">✅</div>
+            <h3 id="totalAprovado">0</h3>
+            <p>Aprovados</p>
+            <small id="pAprovado">0%</small>
+        </div>
+        <div class="kpi-card kpi-analise" onclick="filtrarStatus('analise')">
+            <div class="card-icon">⏳</div>
+            <h3 id="totalAnalise">0</h3>
+            <p>Em Análise</p>
+            <small id="pAnalise">0%</small>
+        </div>
+        <div class="kpi-card kpi-pagamento" onclick="filtrarStatus('pagamento')">
+            <div class="card-icon">💰</div>
+            <h3 id="totalPagamento">0</h3>
+            <p>Em Pagamento</p>
+            <small id="pPagamento">0%</small>
+        </div>
+        <div class="kpi-card kpi-pago" onclick="filtrarStatus('pago')">
+            <div class="card-icon">💵</div>
+            <h3 id="totalPago">0</h3>
+            <p>Pagos</p>
+            <small id="pPago">0%</small>
+        </div>
+        <div class="kpi-card kpi-nao-iniciado" onclick="filtrarStatus('nao_iniciado')">
+            <div class="card-icon">🚫</div>
+            <h3 id="totalNao">0</h3>
+            <p>Não Iniciados</p>
+            <small id="pNao">0%</small>
+        </div>
+    </div>
+    
+    <div class="progress-card">
+        <div class="progress-title">
+            <h2>📈 MEDIÇÃO ACUMULADA</h2>
+            <div>
+                <span class="total-executado" id="totalExecutadoValor">R$ 0,00</span>
+                <span class="total-contrato-valor"> / R$ 89.863.121,73</span>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;">0%</div>
+        </div>
+        <div class="progress-stats">
+            <div class="stat-item">
+                <div class="stat-label">Percentual Executado</div>
+                <div class="stat-value" id="percExecGrande">0%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total de Despesas</div>
+                <div class="stat-value" id="totalDespGrande">R$ 0,00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Saldo Restante</div>
+                <div class="stat-value" id="saldoRestante">R$ 0,00</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="graficos-row">
+        <div class="grafico-wrapper">
+            <h3>🥧 Distribuição por Status</h3>
+            <div class="grafico">
+                <canvas id="graficoStatus"></canvas>
+            </div>
+        </div>
+        <div class="grafico-wrapper">
+            <h3>📈 Comparativo Acumulado Realizado vs Previsto</h3>
+            <div class="grafico">
+                <canvas id="graficoAcumulado"></canvas>
+            </div>
+            <p style="text-align:center; font-size:11px; color:#666; margin-top:10px;">📊 Valores acumulados mês a mês</p>
+        </div>
+    </div>
+    
+    <div class="tabela-wrapper">
+        <table id="tabela">
+            <thead>
+                <tr>
+                    <th>Med</th><th>Mes/Ano</th><th>Data Entrega</th>
+                    <th>PI Liquido</th><th>PI Acumulado</th>
+                    <th>Reajustamento</th><th>Ajuste</th>
+                    <th>Realizado</th><th>Diferença</th>
+                    <th>Total Liquido</th><th>Total Acumulado</th>
+                    <th>Despesas</th><th>Status</th><th>Observação</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaBody"></tbody>
+        </table>
+    </div>
+    
+    <div class="info-grid">
+        <div class="info-box">
+            <b>📋 LEGENDA</b><br><br>
+            <span class="badge badge-entregue">Entregue</span> Documentação enviada<br>
+            <span class="badge badge-aprovado">Aprovado</span> Fiscalização aprovou<br>
+            <span class="badge badge-analise">Análise</span> Em verificação<br>
+            <span class="badge badge-pagamento">Pagamento</span> Processo financeiro<br>
+            <span class="badge badge-pago">Pago</span> Valor creditado<br>
+            <span class="badge badge-nao-iniciado">Não Iniciado</span> Medição não realizada
+        </div>
+        <div class="info-box">
+            <b>ℹ️ INFORMAÇÕES</b><br><br>
+            <span>Período: 60 meses (Set/2025 a Ago/2030)</span><br>
+            <span style="font-weight:bold;">💰 Valor Previsto por Mês: R$ 1.497.718,70</span><br>
+            <span>🔍 Clique nos cards para filtrar por status</span><br>
+            <span>📅 Use o filtro de ano para visualizar períodos específicos</span><br>
+            <span>💾 As alterações são salvas automaticamente no navegador</span>
+            <div class="valor-previsto-mensal">
+                📊 Diferença = Realizado - Previsto<br>
+                <span style="color:#ffcccc;">🔴 Acima do previsto</span> (gasto maior que o planejado) | 
+                <span style="color:#90EE90;">🟢 Abaixo do previsto</span> (economia) |
+                <span style="color:#fff;">🔵 Igual ao previsto</span>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        const STORAGE_KEY = 'engenharia_relatorios';
+<script>
+var totalContrato = 89863121.73;
+var valorPrevistoMensal = totalContrato / 60;
+var dados = [];
+var chart = null;
+var chartAcumulado = null;
+
+var empresasSelecionadas = {};
+
+var percentuaisEmpresas = {
+    LBR: 0.35,
+    Projetto: 0.35,
+    EHP: 0.15,
+    Prisma: 0.15
+};
+
+function calcularFatorEmpresas() {
+    var totalPercentual = 0;
+    for (var emp in empresasSelecionadas) {
+        totalPercentual += percentuaisEmpresas[emp];
+    }
+    return totalPercentual;
+}
+
+function getFilteredDataByEmpresa(dadosOriginais) {
+    var fator = calcularFatorEmpresas();
+    if (fator === 0) return dadosOriginais;
+    
+    return dadosOriginais.map(function(item) {
+        var novoItem = JSON.parse(JSON.stringify(item));
+        novoItem.pi = item.pi * fator;
+        novoItem.piAcum = item.piAcum * fator;
+        novoItem.reaj = item.reaj * fator;
+        novoItem.reajAcum = item.reajAcum * fator;
+        novoItem.ajuste = item.ajuste * fator;
+        novoItem.realizado = item.realizado * fator;
+        novoItem.totalLiq = item.totalLiq * fator;
+        novoItem.totalAcum = item.totalAcum * fator;
+        novoItem.despesa = item.despesa * fator;
+        return novoItem;
+    });
+}
+
+function toggleEmpresa(botao) {
+    var empresa = botao.getAttribute('data-empresa');
+    if (empresasSelecionadas[empresa]) {
+        delete empresasSelecionadas[empresa];
+        botao.classList.remove('selecionado');
+    } else {
+        empresasSelecionadas[empresa] = true;
+        botao.classList.add('selecionado');
+    }
+    atualizarTotalSelecionado();
+    aplicarFiltros();
+}
+
+function atualizarTotalSelecionado() {
+    var valorExecutadoOriginal = 0;
+    for (var i = 0; i < dados.length; i++) {
+        if (dados[i].totalAcum > valorExecutadoOriginal) {
+            valorExecutadoOriginal = dados[i].totalAcum;
+        }
+    }
+    
+    var totalPercentual = 0;
+    for (var emp in empresasSelecionadas) {
+        totalPercentual += percentuaisEmpresas[emp];
+    }
+    
+    var totalSelecionado = valorExecutadoOriginal * totalPercentual;
+    var percentualContrato = (totalPercentual * 100);
+    
+    var elTotalSelecionado = document.getElementById('totalSelecionado');
+    if (elTotalSelecionado) {
+        elTotalSelecionado.innerHTML = '💰 Total Selecionado: ' + formatar(totalSelecionado) + ' (' + percentualContrato + '% do Contrato)';
+    }
+    
+    for (var empresa in percentuaisEmpresas) {
+        var valor = valorExecutadoOriginal * percentuaisEmpresas[empresa];
+        var el = document.getElementById('valor' + empresa);
+        if (el) {
+            if (empresasSelecionadas[empresa]) {
+                el.innerHTML = formatar(valor);
+            } else {
+                el.innerHTML = '🔒 ' + formatar(valor);
+            }
+        }
+    }
+}
+
+var statusOptions = [
+    {v:"entregue", l:"Entregue"},
+    {v:"aprovado", l:"Aprovado"},
+    {v:"analise", l:"Em Análise"},
+    {v:"pagamento", l:"Em Pagamento"},
+    {v:"pago", l:"Pago"},
+    {v:"nao_iniciado", l:"Não Iniciado"}
+];
+
+function mostrarStatus(mensagem, sucesso) {
+    var statusDiv = document.getElementById('saveStatus');
+    statusDiv.textContent = (sucesso ? '✅ ' : '❌ ') + mensagem;
+    statusDiv.style.backgroundColor = sucesso ? '#28a745' : '#dc3545';
+    statusDiv.style.display = 'block';
+    setTimeout(function() { statusDiv.style.display = 'none'; }, 2000);
+}
+
+function extrairAno(mesAno) {
+    var partes = mesAno.split('/');
+    return partes[1];
+}
+
+function formatar(v) {
+    if (v && v !== 0 && !isNaN(v)) {
+        return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    }
+    return 'R$ 0,00';
+}
+
+function formatarDiferenca(diferenca) {
+    if (diferenca === 0 || isNaN(diferenca)) {
+        return '<span class="diferenca-igual">R$ 0,00 (0%)</span>';
+    }
+    var perc = (Math.abs(diferenca) / valorPrevistoMensal) * 100;
+    var sinal = diferenca > 0 ? '+' : '-';
+    var classe = diferenca > 0 ? 'diferenca-acima' : 'diferenca-abaixo';
+    var valorAbs = Math.abs(diferenca).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    return '<span class="' + classe + '">' + sinal + ' ' + valorAbs + ' (' + perc.toFixed(1) + '%)</span>';
+}
+
+function gerarDadosIniciais() {
+    var meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    var dadosTemp = [];
+    var ano = 2025;
+    var idx = 8;
+    
+    var valoresExatos = {
+        1: { pi: 1488413.42, reaj: 0, status: "pago", data: "30/09/2025", realizado: 1620000 },
+        2: { pi: 1713422.18, reaj: 61854.50, status: "pago", data: "31/10/2025", realizado: 1850000 },
+        3: { pi: 1590829.15, reaj: 57428.89, status: "pagamento", data: "30/11/2025", realizado: 1350000 },
+        4: { pi: 1524232.69, reaj: 55024.77, status: "aprovado", data: "31/12/2025", realizado: 1450000 },
+        5: { pi: 1437596.56, reaj: 51897.21, status: "analise", data: "31/01/2026", realizado: 1580000 },
+        6: { pi: 0, reaj: 0, status: "nao_iniciado", data: "-", realizado: 1700000 },
+        7: { pi: 0, reaj: 0, status: "nao_iniciado", data: "-", realizado: 1200000 },
+        8: { pi: 0, reaj: 0, status: "nao_iniciado", data: "-", realizado: 1650000 },
+        9: { pi: 0, reaj: 0, status: "nao_iniciado", data: "-", realizado: 1300000 },
+        10: { pi: 0, reaj: 0, status: "nao_iniciado", data: "-", realizado: 1800000 }
+    };
+    
+    var piAcum = 0;
+    var reajAcum = 0;
+    
+    for (var c = 1; c <= 60; c++) {
+        var mesAno = meses[idx] + "/" + ano;
+        var pi = 0, reaj = 0, status = "nao_iniciado", obs = "", dataEntrega = "-", ajuste = 0, realizado = 0;
         
-        function hideLoadingAndShow() { 
-            document.getElementById('loading').style.display = 'none'; 
-            document.getElementById('mainContainer').style.display = 'block'; 
+        if (valoresExatos[c]) {
+            pi = valoresExatos[c].pi;
+            reaj = valoresExatos[c].reaj;
+            status = valoresExatos[c].status;
+            dataEntrega = valoresExatos[c].data;
+            realizado = valoresExatos[c].realizado;
+        } else {
+            if (c % 2 === 0) {
+                realizado = valorPrevistoMensal * (1 + (Math.random() * 0.15 + 0.05));
+            } else {
+                realizado = valorPrevistoMensal * (1 - (Math.random() * 0.12 + 0.03));
+            }
+            if (realizado > valorPrevistoMensal * 1.05) status = "pago";
+            else if (realizado < valorPrevistoMensal * 0.95) status = "analise";
+            else status = "aprovado";
         }
         
-        function togglePassword(inputId, checkboxId) { 
-            const input = document.getElementById(inputId); 
-            const checkbox = document.getElementById(checkboxId); 
-            if (checkbox.checked) { input.type = 'text'; } 
-            else { input.type = 'password'; } 
+        piAcum += pi;
+        reajAcum += reaj;
+        
+        dadosTemp.push({
+            med: String(c),
+            mes: mesAno,
+            data: dataEntrega,
+            pi: pi,
+            piAcum: piAcum,
+            reaj: reaj,
+            reajAcum: reajAcum,
+            ajuste: ajuste,
+            status: status,
+            obs: obs,
+            despesa: 0,
+            realizado: realizado,
+            totalLiq: pi + reaj + ajuste,
+            totalAcum: piAcum + reajAcum
+        });
+        
+        idx++;
+        if (idx >= 12) { idx = 0; ano++; }
+    }
+    
+    return dadosTemp;
+}
+
+function carregarDados() {
+    var salvos = localStorage.getItem('medições_dados_edicao');
+    if (salvos) {
+        try {
+            dados = JSON.parse(salvos);
+            for (var i = 0; i < dados.length; i++) {
+                if (!dados[i].realizado || dados[i].realizado === 0) {
+                    dados[i].realizado = valorPrevistoMensal;
+                }
+                if (typeof dados[i].despesa === 'undefined') dados[i].despesa = 0;
+                if (typeof dados[i].ajuste === 'undefined') dados[i].ajuste = 0;
+                if (typeof dados[i].obs === 'undefined') dados[i].obs = '';
+            }
+            mostrarStatus('Dados carregados!', true);
+        } catch(e) {
+            dados = gerarDadosIniciais();
         }
+    } else {
+        dados = gerarDadosIniciais();
+        mostrarStatus('Dados iniciais carregados!', true);
+    }
+    initSelects();
+    atualizarTotalSelecionado();
+    aplicarFiltros();
+}
 
-        (function() {
-            let atividades = []; 
-            let usuarios = {}; 
-            let usuarioAtual = null;
+function salvarTodos() {
+    var piAcum = 0;
+    var reajAcum = 0;
+    
+    for (var i = 0; i < dados.length; i++) {
+        var med = dados[i].med;
+        var dataInput = document.getElementById('data_' + med);
+        var piInput = document.getElementById('pi_' + med);
+        var reajInput = document.getElementById('reaj_' + med);
+        var ajusteInput = document.getElementById('ajuste_' + med);
+        var despInput = document.getElementById('desp_' + med);
+        var statusSelect = document.getElementById('status_' + med);
+        var obsInput = document.getElementById('obs_' + med);
+        var realizadoInput = document.getElementById('realizado_' + med);
+        
+        if (piInput) {
+            var piValor = piInput.value.replace(/\./g,'').replace(',','.');
+            var reajValor = reajInput.value.replace(/\./g,'').replace(',','.');
+            var ajusteValor = ajusteInput.value.replace(/\./g,'').replace(',','.');
+            var despValor = despInput.value.replace(/\./g,'').replace(',','.');
+            var realizadoValor = realizadoInput ? realizadoInput.value.replace(/\./g,'').replace(',','.') : 0;
             
-            const EMPRESA_PREFIXO = 'cac';
-            const SENHA_GESTOR_PADRAO = 'consorcio-dnit';
-            const LOGIN_GESTOR = 'arnaldo_cunha';
-            
-            function gerarUsername(nomeCompleto) {
-                const partes = nomeCompleto.trim().split(' ');
-                const primeiroNome = partes[0];
-                const ultimoNome = partes[partes.length - 1];
-                let username = `${primeiroNome.toLowerCase()}_${ultimoNome.toLowerCase()}`;
-                username = username.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                username = username.replace(/[^a-z_]/g, '');
-                return username;
-            }
+            dados[i].data = dataInput.value;
+            dados[i].pi = parseFloat(piValor) || 0;
+            dados[i].reaj = parseFloat(reajValor) || 0;
+            dados[i].ajuste = parseFloat(ajusteValor) || 0;
+            dados[i].despesa = parseFloat(despValor) || 0;
+            dados[i].status = statusSelect.value;
+            dados[i].obs = obsInput.value;
+            var realizado = parseFloat(realizadoValor) || 0;
+            dados[i].realizado = (realizado === 0) ? valorPrevistoMensal : realizado;
+            dados[i].totalLiq = dados[i].pi + dados[i].reaj + dados[i].ajuste;
+        }
+        
+        piAcum += dados[i].pi;
+        reajAcum += dados[i].reaj;
+        dados[i].piAcum = piAcum;
+        dados[i].reajAcum = reajAcum;
+        dados[i].totalAcum = piAcum + reajAcum;
+    }
+    
+    localStorage.setItem('medições_dados_edicao', JSON.stringify(dados));
+    mostrarStatus('Dados salvos!', true);
+    aplicarFiltros();
+}
 
-            function gerarSenhaInicial(cpf) { 
-                const cpfLimpo = cpf.replace(/\D/g, ''); 
-                const primeiros3 = cpfLimpo.substring(0, 3); 
-                const ultimos2 = cpfLimpo.substring(cpfLimpo.length - 2); 
-                return `${EMPRESA_PREFIXO}${primeiros3}${ultimos2}`; 
+function atualizarCardsEmpresas(totalAcumulado) {
+    for (var emp in percentuaisEmpresas) {
+        var valor = totalAcumulado * percentuaisEmpresas[emp];
+        var el = document.getElementById('valor' + emp);
+        if (el) {
+            if (empresasSelecionadas[emp]) {
+                el.innerHTML = formatar(valor);
+            } else {
+                el.innerHTML = '🔒 ' + formatar(valor);
             }
-            
-            function salvarDados() { 
-                const dados = { atividades, usuarios };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); 
-                console.log('💾 Dados salvos:', { atividades: atividades.length, usuarios: Object.keys(usuarios).length });
-            }
+        }
+    }
+}
 
-            function carregarDados() {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    try {
-                        const dados = JSON.parse(saved);
-                        atividades = dados.atividades || [];
-                        usuarios = dados.usuarios || {};
-                        console.log('📂 Dados carregados do localStorage');
-                        return true;
-                    } catch(e) {
-                        console.error('Erro ao carregar:', e);
-                        return false;
+function atualizarCards(filtrados) {
+    var stats = {entregue:0, aprovado:0, analise:0, pagamento:0, pago:0, nao_iniciado:0};
+    var desp = 0;
+    var totalAcumGeral = 0;
+    
+    for (var i = 0; i < filtrados.length; i++) {
+        stats[filtrados[i].status]++;
+        desp += filtrados[i].despesa || 0;
+        if (filtrados[i].totalAcum > totalAcumGeral) {
+            totalAcumGeral = filtrados[i].totalAcum;
+        }
+    }
+    var total = filtrados.length;
+    
+    var elTotalEntregue = document.getElementById('totalEntregue');
+    var elTotalAprovado = document.getElementById('totalAprovado');
+    var elTotalAnalise = document.getElementById('totalAnalise');
+    var elTotalPagamento = document.getElementById('totalPagamento');
+    var elTotalPago = document.getElementById('totalPago');
+    var elTotalNao = document.getElementById('totalNao');
+    var elTotalDespGrande = document.getElementById('totalDespGrande');
+    var elTotalExecutadoValor = document.getElementById('totalExecutadoValor');
+    var elPercExecGrande = document.getElementById('percExecGrande');
+    var elProgressBarFill = document.getElementById('progressBarFill');
+    var elSaldoRestante = document.getElementById('saldoRestante');
+    
+    if (elTotalEntregue) elTotalEntregue.textContent = stats.entregue;
+    if (elTotalAprovado) elTotalAprovado.textContent = stats.aprovado;
+    if (elTotalAnalise) elTotalAnalise.textContent = stats.analise;
+    if (elTotalPagamento) elTotalPagamento.textContent = stats.pagamento;
+    if (elTotalPago) elTotalPago.textContent = stats.pago;
+    if (elTotalNao) elTotalNao.textContent = stats.nao_iniciado;
+    if (elTotalDespGrande) elTotalDespGrande.innerHTML = formatar(desp);
+    if (elTotalExecutadoValor) elTotalExecutadoValor.innerHTML = formatar(totalAcumGeral);
+    
+    var perc = totalAcumGeral > 0 ? (totalAcumGeral / totalContrato * 100) : 0;
+    if (elPercExecGrande) elPercExecGrande.textContent = perc.toFixed(2) + '%';
+    if (elProgressBarFill) {
+        elProgressBarFill.style.width = perc + '%';
+        elProgressBarFill.innerHTML = perc.toFixed(1) + '%';
+    }
+    
+    var saldoRestante = totalContrato - totalAcumGeral;
+    if (elSaldoRestante) elSaldoRestante.innerHTML = formatar(saldoRestante);
+    
+    var pct = function(val, tot) { return tot ? ((val/tot)*100).toFixed(1) + '%' : '0%'; };
+    var pctValues = [stats.entregue, stats.aprovado, stats.analise, stats.pagamento, stats.pago, stats.nao_iniciado];
+    var pctElements = ['pEntregue', 'pAprovado', 'pAnalise', 'pPagamento', 'pPago', 'pNao'];
+    for (var j = 0; j < pctElements.length; j++) {
+        var el = document.getElementById(pctElements[j]);
+        if (el) el.textContent = pct(pctValues[j], total);
+    }
+    
+    var totalAcumuladoOriginal = 0;
+    for (var i = 0; i < dados.length; i++) {
+        if (dados[i].totalAcum > totalAcumuladoOriginal) {
+            totalAcumuladoOriginal = dados[i].totalAcum;
+        }
+    }
+    atualizarCardsEmpresas(totalAcumuladoOriginal);
+    
+    if (chart) chart.destroy();
+    var ctx = document.getElementById('graficoStatus').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Entregue', 'Aprovado', 'Análise', 'Pagamento', 'Pago', 'Não Iniciado'],
+            datasets: [{
+                data: [stats.entregue, stats.aprovado, stats.analise, stats.pagamento, stats.pago, stats.nao_iniciado],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#fd7e14', '#6f42c1', '#6c757d']
+            }]
+        },
+        options: {responsive: true, maintainAspectRatio: true, plugins: {legend: {position: 'bottom'}}}
+    });
+    
+    atualizarGraficoAcumulado(filtrados);
+}
+
+function atualizarGraficoAcumulado(filtrados) {
+    var mesesOrdenados = [...new Set(filtrados.map(d => d.mes))].sort(function(a, b) {
+        var aAno = parseInt(a.split('/')[1]);
+        var bAno = parseInt(b.split('/')[1]);
+        if (aAno !== bAno) return aAno - bAno;
+        var meses = {jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12};
+        var aMes = meses[a.split('/')[0]];
+        var bMes = meses[b.split('/')[0]];
+        return aMes - bMes;
+    });
+    
+    var labels = mesesOrdenados;
+    var realizadosAcum = [];
+    var previstosAcum = [];
+    var somaRealizado = 0;
+    var somaPrevisto = 0;
+    
+    for (var i = 0; i < mesesOrdenados.length; i++) {
+        var mes = mesesOrdenados[i];
+        var realizadoMes = 0;
+        var previstoMes = 0;
+        
+        for (var j = 0; j < filtrados.length; j++) {
+            if (filtrados[j].mes === mes) {
+                var valorRealizado = (filtrados[j].realizado && filtrados[j].realizado !== 0) ? filtrados[j].realizado : valorPrevistoMensal;
+                realizadoMes += valorRealizado;
+                previstoMes += valorPrevistoMensal;
+            }
+        }
+        somaRealizado += realizadoMes;
+        somaPrevisto += previstoMes;
+        realizadosAcum.push(somaRealizado);
+        previstosAcum.push(somaPrevisto);
+    }
+    
+    var maxValor = Math.max(...realizadosAcum, ...previstosAcum, totalContrato * 0.1);
+    var maxValorArredondado = Math.ceil(maxValor / 1000000) * 1000000;
+    
+    var ctx = document.getElementById('graficoAcumulado').getContext('2d');
+    if (chartAcumulado) chartAcumulado.destroy();
+    
+    chartAcumulado = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Realizado Acumulado (R$)',
+                    data: realizadosAcum,
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#17a2b8',
+                    pointBorderColor: 'white'
+                },
+                {
+                    label: 'Previsto Acumulado (R$)',
+                    data: previstosAcum,
+                    borderColor: '#6c757d',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#6c757d',
+                    pointBorderColor: 'white'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { 
+                    position: 'top', 
+                    labels: { 
+                        font: { size: 11 },
+                        usePointStyle: true,
+                        boxWidth: 10
+                    } 
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var value = context.raw;
+                            var datasetLabel = context.dataset.label;
+                            return datasetLabel + ': ' + value.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                        }
                     }
                 }
-                return false;
-            }
-
-            function criarDadosIniciais() {
-                console.log('🆕 Criando dados iniciais...');
-                atividades = []; 
-                usuarios = {};
-                
-                usuarios[LOGIN_GESTOR] = { 
-                    nome: 'Arnaldo Cunha', 
-                    tipo: 'chefe', 
-                    senha: SENHA_GESTOR_PADRAO, 
-                    primeiroAcesso: true 
-                };
-
-                const engenheirosData = [
-                    { nome: "Francisco Aguinaldo de Sousa", cpf: "81829782899" },
-                    { nome: "Carlos Alberto Custódio Erbella", cpf: "73748913749" },
-                    { nome: "Danylo de Andrade Lima", cpf: "27347282839" },
-                    { nome: "Ana Stherfane França de Sousa", cpf: "12345678901" },
-                    { nome: "Gabriel Bezerra Girão de Castro", cpf: "23456789012" },
-                    { nome: "Iago de Oliveira Bezerra", cpf: "34567890123" },
-                    { nome: "Igor Maia de Almeida", cpf: "45678901234" }
-                ];
-
-                engenheirosData.forEach(eng => { 
-                    const username = gerarUsername(eng.nome); 
-                    usuarios[username] = { 
-                        nome: eng.nome, 
-                        tipo: 'engenheiro', 
-                        senha: gerarSenhaInicial(eng.cpf), 
-                        primeiroAcesso: true, 
-                        cpf: eng.cpf 
-                    }; 
-                });
-
-                salvarDados(); 
-                console.log('✅ Sistema inicializado');
-            }
-
-            function verificarPrimeiroAcesso(username) { 
-                return usuarios[username] && usuarios[username].primeiroAcesso === true; 
-            }
-
-            // ========== PAINEL ADMIN ==========
-            window.abrirPainelAdmin = function() {
-                if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar esta área!'); return; }
-                const modalDiv = document.createElement('div'); modalDiv.className = 'modal';
-                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário</th><th>Nome</th><th>CPF</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• No primeiro acesso, crie uma senha pessoal.</p></div></div></div>`;
-                document.body.appendChild(modalDiv); carregarListaEngenheiros();
-            };
-
-            function carregarListaEngenheiros() { 
-                const tbody = document.getElementById('listaEngenheiros'); 
-                if (!tbody) return; 
-                tbody.innerHTML = ''; 
-                Object.keys(usuarios).forEach(login => { 
-                    const user = usuarios[login]; 
-                    if (user.tipo === 'engenheiro') { 
-                        const row = tbody.insertRow(); 
-                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td>${user.cpf || '-'}<\/td><td><button class="btn btn-warning" style="padding:5px 10px; font-size:12px;" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-outline" style="padding:5px 10px; font-size:12px;" onclick="resetarSenha('${login}')"><i class="fas fa-key"></i> Resetar</button> <button class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
-                    } 
-                }); 
-            }
-
-            window.adicionarEngenheiro = function() { 
-                const nome = document.getElementById('novoNome').value.trim(); 
-                const cpf = document.getElementById('novoCpf').value.trim(); 
-                if (!nome) { alert('Informe o nome!'); return; } 
-                if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF válido com 11 dígitos!'); return; } 
-                const username = gerarUsername(nome); 
-                if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; } 
-                usuarios[username] = { nome, tipo: 'engenheiro', senha: gerarSenhaInicial(cpf), primeiroAcesso: true, cpf }; 
-                salvarDados(); 
-                alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${gerarSenhaInicial(cpf)}`); 
-                document.getElementById('novoNome').value = ''; 
-                document.getElementById('novoCpf').value = ''; 
-                carregarListaEngenheiros(); 
-                if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
-                gerarRelatorioAtual(); 
-            };
-
-            window.editarEngenheiro = function(login) { 
-                const user = usuarios[login]; 
-                if (!user) return; 
-                const modalDiv = document.createElement('div'); 
-                modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Engenheiro</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-group"><label>Nome Completo:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error" style="color:red;"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
-                document.body.appendChild(modalDiv); 
-            };
-
-            window.salvarEdicaoEngenheiro = function(login) { 
-                const novoNome = document.getElementById('editNomeEng').value.trim(); 
-                const novoCpf = document.getElementById('editCpfEng').value.trim(); 
-                const errorDiv = document.getElementById('editEngError'); 
-                
-                if (!novoNome) { errorDiv.innerText = 'Nome não pode ficar vazio!'; return; } 
-                if (!novoCpf || novoCpf.length !== 11 || !/^\d+$/.test(novoCpf)) { 
-                    errorDiv.innerText = 'CPF inválido! Digite 11 dígitos numéricos.'; 
-                    return; 
-                } 
-                
-                const novoUsername = gerarUsername(novoNome); 
-                if (novoUsername !== login && usuarios[novoUsername]) { 
-                    errorDiv.innerText = `Usuário ${novoUsername} já existe!`; 
-                    return; 
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Período (Mês/Ano)', color: '#08b9d5', font: { weight: 'bold', size: 12 } },
+                    ticks: { maxRotation: 45, minRotation: 45, font: { size: 9 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: maxValorArredondado,
+                    title: { display: true, text: 'Valor Acumulado (R$)', color: '#08b9d5', font: { weight: 'bold', size: 12 } },
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + (value/1000000).toFixed(1) + 'M';
+                        }
+                    }
                 }
-                
-                const novaSenha = gerarSenhaInicial(novoCpf);
-                
-                if (novoUsername !== login) { 
-                    usuarios[novoUsername] = { 
-                        ...usuarios[login], 
-                        nome: novoNome, 
-                        cpf: novoCpf, 
-                        senha: novaSenha, 
-                        primeiroAcesso: true 
-                    }; 
-                    delete usuarios[login]; 
-                    atividades = atividades.map(a => { 
-                        if (a.loginEng === login) return { ...a, loginEng: novoUsername, engenheiro: novoNome }; 
-                        return a; 
-                    }); 
-                } else { 
-                    usuarios[login].nome = novoNome; 
-                    usuarios[login].cpf = novoCpf; 
-                    usuarios[login].senha = novaSenha; 
-                    usuarios[login].primeiroAcesso = true; 
-                    atividades = atividades.map(a => { 
-                        if (a.loginEng === login) return { ...a, engenheiro: novoNome }; 
-                        return a; 
-                    }); 
-                } 
-                
-                salvarDados(); 
-                alert(`✅ Atualizado!\nNova senha padrão: ${novaSenha}\nO usuário deverá trocar a senha no próximo acesso.`); 
-                document.querySelector('.modal').remove(); 
-                carregarListaEngenheiros(); 
-                if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
-                gerarRelatorioAtual(); 
-            };
-
-            window.resetarSenha = function(login) { 
-                if (confirm(`Resetar senha de ${usuarios[login].nome} para a senha padrão baseada no CPF?`)) { 
-                    const cpf = usuarios[login].cpf; 
-                    if (cpf) { 
-                        const novaSenha = gerarSenhaInicial(cpf);
-                        usuarios[login].senha = novaSenha; 
-                        usuarios[login].primeiroAcesso = true; 
-                        salvarDados(); 
-                        alert(`✅ Senha resetada!\nNova senha: ${novaSenha}\nO usuário deverá trocar a senha no próximo acesso.`); 
-                        carregarListaEngenheiros(); 
-                    } else alert('CPF não encontrado!'); 
-                } 
-            };
-
-            window.removerEngenheiro = function(login) { 
-                if (confirm(`Remover ${usuarios[login].nome}? Todas as atividades serão removidas.`)) { 
-                    atividades = atividades.filter(a => a.loginEng !== login); 
-                    delete usuarios[login]; 
-                    salvarDados(); 
-                    alert('Removido!'); 
-                    carregarListaEngenheiros(); 
-                    if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
-                    gerarRelatorioAtual(); 
-                } 
-            };
-
-            // ---------- Login ----------
-            function mostrarLogin() { 
-                hideLoadingAndShow(); 
-                const loginDiv = document.createElement('div'); 
-                loginDiv.className = 'login-modal'; 
-                loginDiv.id = 'loginScreen'; 
-                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p></div></div>`; 
-                document.body.appendChild(loginDiv); 
             }
+        }
+    });
+}
 
-            window.efetuarLogin = function() { 
-                const login = document.getElementById('userLogin').value.toLowerCase(); 
-                const senha = document.getElementById('userSenha').value; 
-                if (usuarios[login] && usuarios[login].senha === senha) { 
-                    document.getElementById('loginScreen').remove(); 
-                    if (verificarPrimeiroAcesso(login)) { 
-                        mostrarModalTrocaSenha(login, true); 
-                        return; 
-                    } 
-                    usuarioAtual = { login: login, ...usuarios[login] }; 
-                    carregarInterface(); 
-                } else { 
-                    document.getElementById('loginMsg').innerText = 'Usuário ou senha inválidos'; 
-                } 
-            };
+function atualizarDiferenca(med) {
+    var realizadoInput = document.getElementById('realizado_' + med);
+    var diferencaSpan = document.getElementById('diferenca_' + med);
+    
+    if (realizadoInput && diferencaSpan) {
+        var realizado = parseFloat(realizadoInput.value.replace(/\./g,'').replace(',','.')) || 0;
+        if (realizado === 0) {
+            realizado = valorPrevistoMensal;
+            realizadoInput.value = realizado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+        var diferenca = realizado - valorPrevistoMensal;
+        diferencaSpan.innerHTML = formatarDiferenca(diferenca);
+    }
+}
 
-            function mostrarModalTrocaSenha(username, isPrimeiroAcesso = false) { 
-                const modalDiv = document.createElement('div'); 
-                modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label for="showSenhaAtual">Mostrar senha</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6 caracteres):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label for="showNovaSenha">Mostrar senha</label></div></div><div class="form-group"><label>Confirmar nova senha:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label for="showConfirmaSenha">Mostrar senha</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir senha pessoal' : 'Alterar senha'}</button></div></div>`; 
-                document.body.appendChild(modalDiv); 
+function atualizarTotaisLinha(med) {
+    var piInput = document.getElementById('pi_' + med);
+    var reajInput = document.getElementById('reaj_' + med);
+    var ajusteInput = document.getElementById('ajuste_' + med);
+    var totalLiqSpan = document.getElementById('totalLiq_' + med);
+    var totalAcumSpan = document.getElementById('totalAcum_' + med);
+    
+    if (piInput && reajInput && ajusteInput && totalLiqSpan && totalAcumSpan) {
+        var pi = parseFloat(piInput.value.replace(/\./g,'').replace(',','.')) || 0;
+        var reaj = parseFloat(reajInput.value.replace(/\./g,'').replace(',','.')) || 0;
+        var ajuste = parseFloat(ajusteInput.value.replace(/\./g,'').replace(',','.')) || 0;
+        totalLiqSpan.innerHTML = formatar(pi + reaj + ajuste);
+        
+        var piAcum = 0;
+        var reajAcum = 0;
+        for (var i = 0; i < dados.length; i++) {
+            if (dados[i].med === med) break;
+            piAcum += dados[i].pi;
+            reajAcum += dados[i].reaj;
+        }
+        piAcum += pi;
+        reajAcum += reaj;
+        totalAcumSpan.innerHTML = formatar(piAcum + reajAcum);
+    }
+}
+
+function renderizarTabela(filtrados) {
+    var tbody = document.getElementById('tabelaBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="14">Nenhum dado encontrado<\/td><\/tr>';
+        atualizarCards([]);
+        return;
+    }
+    
+    for (var i = 0; i < filtrados.length; i++) {
+        var d = filtrados[i];
+        var row = tbody.insertRow();
+        
+        row.insertCell(0).innerHTML = d.med;
+        row.insertCell(1).innerHTML = d.mes;
+        
+        var cellData = row.insertCell(2);
+        var dataInput = document.createElement('input');
+        dataInput.type = 'text';
+        dataInput.value = d.data || '-';
+        dataInput.style.width = '100px';
+        dataInput.id = 'data_' + d.med;
+        cellData.appendChild(dataInput);
+        
+        var cellPi = row.insertCell(3);
+        var piInput = document.createElement('input');
+        piInput.value = d.pi.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        piInput.style.width = '120px';
+        piInput.id = 'pi_' + d.med;
+        piInput.onchange = (function(med) { return function() { atualizarTotaisLinha(med); }; })(d.med);
+        cellPi.appendChild(piInput);
+        
+        row.insertCell(4).innerHTML = formatar(d.piAcum);
+        
+        var cellReaj = row.insertCell(5);
+        var reajInput = document.createElement('input');
+        reajInput.value = d.reaj.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        reajInput.style.width = '120px';
+        reajInput.id = 'reaj_' + d.med;
+        reajInput.onchange = (function(med) { return function() { atualizarTotaisLinha(med); }; })(d.med);
+        cellReaj.appendChild(reajInput);
+        
+        var cellAjuste = row.insertCell(6);
+        var ajusteInput = document.createElement('input');
+        ajusteInput.value = (d.ajuste || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        ajusteInput.style.width = '120px';
+        ajusteInput.id = 'ajuste_' + d.med;
+        ajusteInput.onchange = (function(med) { return function() { atualizarTotaisLinha(med); }; })(d.med);
+        cellAjuste.appendChild(ajusteInput);
+        
+        var cellRealizado = row.insertCell(7);
+        var realizadoInput = document.createElement('input');
+        var valorRealizado = (d.realizado && d.realizado !== 0) ? d.realizado : valorPrevistoMensal;
+        realizadoInput.value = valorRealizado.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        realizadoInput.style.width = '120px';
+        realizadoInput.id = 'realizado_' + d.med;
+        realizadoInput.onchange = (function(med) { return function() { atualizarDiferenca(med); }; })(d.med);
+        cellRealizado.appendChild(realizadoInput);
+        
+        var cellDiferenca = row.insertCell(8);
+        var diferencaSpan = document.createElement('span');
+        diferencaSpan.id = 'diferenca_' + d.med;
+        var valorRealizadoCalc = (d.realizado && d.realizado !== 0) ? d.realizado : valorPrevistoMensal;
+        var diferenca = valorRealizadoCalc - valorPrevistoMensal;
+        diferencaSpan.innerHTML = formatarDiferenca(diferenca);
+        cellDiferenca.appendChild(diferencaSpan);
+        
+        var cellTotalLiq = row.insertCell(9);
+        var totalLiqSpan = document.createElement('span');
+        totalLiqSpan.id = 'totalLiq_' + d.med;
+        totalLiqSpan.innerHTML = formatar(d.totalLiq);
+        totalLiqSpan.style.fontWeight = 'bold';
+        totalLiqSpan.style.color = '#08b9d5';
+        cellTotalLiq.appendChild(totalLiqSpan);
+        
+        var cellTotalAcum = row.insertCell(10);
+        var totalAcumSpan = document.createElement('span');
+        totalAcumSpan.id = 'totalAcum_' + d.med;
+        totalAcumSpan.innerHTML = formatar(d.totalAcum);
+        totalAcumSpan.style.fontWeight = 'bold';
+        totalAcumSpan.style.color = '#08b9d5';
+        cellTotalAcum.appendChild(totalAcumSpan);
+        
+        var cellDesp = row.insertCell(11);
+        var despInput = document.createElement('input');
+        despInput.value = (d.despesa || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        despInput.style.width = '120px';
+        despInput.id = 'desp_' + d.med;
+        cellDesp.appendChild(despInput);
+        
+        var cellStatus = row.insertCell(12);
+        var statusSelect = document.createElement('select');
+        statusSelect.id = 'status_' + d.med;
+        for (var s = 0; s < statusOptions.length; s++) {
+            var option = document.createElement('option');
+            option.value = statusOptions[s].v;
+            option.text = statusOptions[s].l;
+            if (d.status === statusOptions[s].v) option.selected = true;
+            statusSelect.appendChild(option);
+        }
+        cellStatus.appendChild(statusSelect);
+        
+        var cellObs = row.insertCell(13);
+        var obsInput = document.createElement('input');
+        obsInput.type = 'text';
+        obsInput.value = d.obs || '';
+        obsInput.style.width = '150px';
+        obsInput.id = 'obs_' + d.med;
+        cellObs.appendChild(obsInput);
+    }
+    atualizarCards(filtrados);
+}
+
+function limparFiltros() {
+    var elFiltroMedicao = document.getElementById('filtroMedicao');
+    var elFiltroPeriodo = document.getElementById('filtroPeriodo');
+    var elFiltroAno = document.getElementById('filtroAno');
+    var elFiltroStatus = document.getElementById('filtroStatus');
+    var elMostrarVazios = document.getElementById('mostrarVazios');
+    
+    if (elFiltroMedicao) elFiltroMedicao.value = 'todos';
+    if (elFiltroPeriodo) elFiltroPeriodo.value = 'todos';
+    if (elFiltroAno) elFiltroAno.value = 'todos';
+    if (elFiltroStatus) elFiltroStatus.value = 'todos';
+    if (elMostrarVazios) elMostrarVazios.checked = false;
+    aplicarFiltros();
+    mostrarStatus('Filtros limpos!', true);
+}
+
+function aplicarFiltros() {
+    var med = document.getElementById('filtroMedicao') ? document.getElementById('filtroMedicao').value : 'todos';
+    var per = document.getElementById('filtroPeriodo') ? document.getElementById('filtroPeriodo').value : 'todos';
+    var ano = document.getElementById('filtroAno') ? document.getElementById('filtroAno').value : 'todos';
+    var st = document.getElementById('filtroStatus') ? document.getElementById('filtroStatus').value : 'todos';
+    var mostrar = document.getElementById('mostrarVazios') ? document.getElementById('mostrarVazios').checked : false;
+    var filtrados = dados.slice();
+    
+    if (!mostrar) filtrados = filtrados.filter(function(d) { return d.pi > 0; });
+    if (med && med !== 'todos') filtrados = filtrados.filter(function(d) { return d.med === med; });
+    if (per && per !== 'todos') filtrados = filtrados.filter(function(d) { return d.mes === per; });
+    if (ano && ano !== 'todos') filtrados = filtrados.filter(function(d) { return extrairAno(d.mes) === ano; });
+    if (st !== 'todos') {
+        var stNorm = (st === 'não_iniciado') ? 'nao_iniciado' : st;
+        filtrados = filtrados.filter(function(d) { return d.status === stNorm; });
+    }
+    
+    var fator = calcularFatorEmpresas();
+    if (fator > 0) {
+        filtrados = getFilteredDataByEmpresa(filtrados);
+    }
+    
+    renderizarTabela(filtrados);
+}
+
+function filtrarStatus(st) {
+    var elFiltroStatus = document.getElementById('filtroStatus');
+    if (elFiltroStatus) elFiltroStatus.value = st;
+    aplicarFiltros();
+}
+
+function initSelects() {
+    var selMed = document.getElementById('filtroMedicao');
+    if (selMed) {
+        selMed.innerHTML = '<option value="todos">Todas</option>';
+        for (var i = 0; i < dados.length; i++) {
+            selMed.innerHTML += '<option value="' + dados[i].med + '">Med ' + dados[i].med + '</option>';
+        }
+    }
+    
+    var selPeriodo = document.getElementById('filtroPeriodo');
+    if (selPeriodo) {
+        selPeriodo.innerHTML = '<option value="todos">Todos os meses</option>';
+        var mesesUnicos = [];
+        for (var i = 0; i < dados.length; i++) {
+            if (mesesUnicos.indexOf(dados[i].mes) === -1) {
+                mesesUnicos.push(dados[i].mes);
             }
+        }
+        mesesUnicos.sort(function(a, b) {
+            var aAno = parseInt(a.split('/')[1]);
+            var bAno = parseInt(b.split('/')[1]);
+            if (aAno !== bAno) return aAno - bAno;
+            var meses = {jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12};
+            var aMes = meses[a.split('/')[0]];
+            var bMes = meses[b.split('/')[0]];
+            return aMes - bMes;
+        });
+        for (var i = 0; i < mesesUnicos.length; i++) {
+            selPeriodo.innerHTML += '<option value="' + mesesUnicos[i] + '">' + mesesUnicos[i] + '</option>';
+        }
+    }
+}
 
-            window.executarTrocaSenha = function(username, isPrimeiroAcesso) { 
-                const novaSenha = document.getElementById('novaSenha').value; 
-                const confirmaSenha = document.getElementById('confirmaSenha').value; 
-                const errorDiv = document.getElementById('pwdError'); 
-                if (!isPrimeiroAcesso) { 
-                    const senhaAtual = document.getElementById('senhaAtual').value; 
-                    if (usuarios[username].senha !== senhaAtual) { 
-                        errorDiv.innerText = 'Senha atual incorreta'; 
-                        return; 
-                    } 
-                } 
-                if (novaSenha.length < 6) { 
-                    errorDiv.innerText = 'Mínimo 6 caracteres'; 
-                    return; 
-                } 
-                if (novaSenha !== confirmaSenha) { 
-                    errorDiv.innerText = 'Senhas não conferem'; 
-                    return; 
-                } 
-                usuarios[username].senha = novaSenha; 
-                usuarios[username].primeiroAcesso = false; 
-                salvarDados(); 
-                alert('Senha alterada com sucesso!'); 
-                document.querySelector('.modal').remove(); 
-                if (isPrimeiroAcesso) { 
-                    usuarioAtual = { login: username, ...usuarios[username] }; 
-                    carregarInterface(); 
-                } 
-            };
+// ==================== MODO APRESENTAÇÃO CORRIGIDO ====================
+function gerarApresentacao() {
+    // Primeiro salva todos os dados atuais
+    salvarTodos();
+    
+    // Recarrega os dados atualizados do localStorage para garantir consistência
+    var dadosAtualizados = localStorage.getItem('medições_dados_edicao');
+    var dadosParaApresentacao = [];
+    
+    if (dadosAtualizados) {
+        try {
+            dadosParaApresentacao = JSON.parse(dadosAtualizados);
+            // Filtra apenas medições com pi > 0 (mesmo critério do modo edição)
+            dadosParaApresentacao = dadosParaApresentacao.filter(function(d) { return d.pi > 0; });
+        } catch(e) {
+            dadosParaApresentacao = dados.filter(function(d) { return d.pi > 0; });
+        }
+    } else {
+        dadosParaApresentacao = dados.filter(function(d) { return d.pi > 0; });
+    }
+    
+    var empresasSel = JSON.parse(JSON.stringify(empresasSelecionadas));
+    
+    // Calcula o total acumulado a partir dos dados filtrados (última medição)
+    var totalAcumuladoOriginal = dadosParaApresentacao.length > 0 ? dadosParaApresentacao[dadosParaApresentacao.length-1].totalAcum : 0;
+    
+    var html = gerarHTMLApresentacao(dadosParaApresentacao, empresasSel, totalAcumuladoOriginal);
+    
+    var blob = new Blob([html], {type: 'text/html'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dashboard_apresentacao.html';
+    a.click();
+    URL.revokeObjectURL(blob);
+    mostrarStatus('Apresentação gerada!', true);
+}
 
-            window.mostrarAlterarSenha = function() { if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false); };
+function gerarHTMLApresentacao(dadosApresentacao, empresasSel, totalAcumuladoOriginal) {
+    var dadosStr = JSON.stringify(dadosApresentacao);
+    var empresasSelStr = JSON.stringify(empresasSel);
+    var percTotal = (totalAcumuladoOriginal / totalContrato * 100).toFixed(2);
+    var valorPrevistoStr = valorPrevistoMensal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    var totalAcumuladoFormatado = formatar(totalAcumuladoOriginal);
+    
+    // Calcular despesas totais
+    var totalDespesas = 0;
+    for (var i = 0; i < dadosApresentacao.length; i++) {
+        totalDespesas += dadosApresentacao[i].despesa || 0;
+    }
+    var totalDespesasFormatado = formatar(totalDespesas);
+    
+    // Calcular saldo restante
+    var saldoRestante = totalContrato - totalAcumuladoOriginal;
+    var saldoRestanteFormatado = formatar(saldoRestante);
+    
+    // Estatísticas por status
+    var statsIniciais = {entregue:0, aprovado:0, analise:0, pagamento:0, pago:0, nao_iniciado:0};
+    for (var i = 0; i < dadosApresentacao.length; i++) {
+        statsIniciais[dadosApresentacao[i].status]++;
+    }
+    
+    // Preparar dados do gráfico acumulado
+    var mesesMap = {};
+    for (var i = 0; i < dadosApresentacao.length; i++) {
+        var mes = dadosApresentacao[i].mes;
+        var realizado = dadosApresentacao[i].realizado || valorPrevistoMensal;
+        if (!mesesMap[mes]) mesesMap[mes] = { realizado: 0, previsto: 0 };
+        mesesMap[mes].realizado += realizado;
+        mesesMap[mes].previsto += valorPrevistoMensal;
+    }
+    
+    var mesesOrdenados = Object.keys(mesesMap).sort(function(a, b) {
+        var aAno = parseInt(a.split('/')[1]);
+        var bAno = parseInt(b.split('/')[1]);
+        if (aAno !== bAno) return aAno - bAno;
+        var meses = {jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12};
+        return meses[a.split('/')[0]] - meses[b.split('/')[0]];
+    });
+    
+    var realizadosAcum = [];
+    var previstosAcum = [];
+    var somaR = 0, somaP = 0;
+    for (var i = 0; i < mesesOrdenados.length; i++) {
+        somaR += mesesMap[mesesOrdenados[i]].realizado;
+        somaP += mesesMap[mesesOrdenados[i]].previsto;
+        realizadosAcum.push(somaR);
+        previstosAcum.push(somaP);
+    }
+    
+    var mesesUnicos = [], anosUnicos = [];
+    for (var i = 0; i < dadosApresentacao.length; i++) {
+        if (mesesUnicos.indexOf(dadosApresentacao[i].mes) === -1) mesesUnicos.push(dadosApresentacao[i].mes);
+        var ano = dadosApresentacao[i].mes.split('/')[1];
+        if (anosUnicos.indexOf(ano) === -1) anosUnicos.push(ano);
+    }
+    mesesUnicos.sort();
+    anosUnicos.sort();
+    
+    var optionsMeses = '<option value="todos">Todos os meses</option>';
+    for (var i = 0; i < mesesUnicos.length; i++) optionsMeses += '<option value="' + mesesUnicos[i] + '">' + mesesUnicos[i] + '</option>';
+    
+    var optionsAnos = '<option value="todos">Todos os Anos</option>';
+    for (var i = 0; i < anosUnicos.length; i++) optionsAnos += '<option value="' + anosUnicos[i] + '">' + anosUnicos[i] + '</option>';
+    
+    // HTML do modo apresentação
+    return '<!DOCTYPE html>\n<html lang="pt-BR">\n<head>\n<meta charset="UTF-8">\n<title>Dashboard - Apresentação</title>\n' +
+'<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"><\/script>\n' +
+'<style>\n' +
+'*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Segoe UI",Arial,sans-serif;background:radial-gradient(#08b9d5,#fff);padding:20px}.container{max-width:1600px;margin:0 auto;background:#fff;border-radius:24px;padding:24px}.header{background:radial-gradient(#08b9d5,#fff);margin:-24px -24px 24px -24px;padding:20px 40px;border-radius:24px;display:flex;align-items:center;justify-content:space-between;gap:30px;color:#fff}.header-logo-left img{height:210px}.header-content{flex:1;text-align:center}.total-contrato{font-size:18px;font-weight:bold;background:rgba(255,255,255,0.2);padding:8px 24px;border-radius:40px;display:inline-block}.header-logo-right img{height:70px}\n' +
+'.empresas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}.empresa-card{padding:12px 8px;border-radius:16px;text-align:center;color:#fff;cursor:pointer;transition:0.25s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15)}.empresa-card:hover{transform:translateY(-3px);filter:brightness(1.05)}.empresa-card.selecionado{box-shadow:0 0 0 3px #fff,0 0 0 6px #0ec2e2;transform:scale(1.02)}.empresa-card h4{font-size:18px;margin-bottom:4px}.empresa-card .valor{font-size:20px;font-weight:700;margin:4px 0}.empresa-card .percentual{font-size:11px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:20px;display:inline-block}\n' +
+'.empresa-lbr{background:linear-gradient(135deg,#1a5f7a,#0d3b4f)}.empresa-projetto{background:linear-gradient(135deg,#d4a017,#b8860b)}.empresa-ehp{background:linear-gradient(135deg,#2e7d64,#1b5e4a)}.empresa-prisma{background:linear-gradient(135deg,#8b4513,#5a2d0c)}\n' +
+'.total-selecionado{background:#17a2b8;color:#fff;padding:12px 20px;border-radius:16px;text-align:center;margin-bottom:20px;font-weight:bold}\n' +
+'.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:28px}.kpi-card{padding:18px 12px;border-radius:20px;text-align:center;color:#fff;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.1)}.kpi-card h3{font-size:32px;font-weight:700}.kpi-card p{font-size:15px;text-transform:uppercase;font-weight:600}.kpi-entregue{background:linear-gradient(135deg,#28a745,#1e7e34)}.kpi-aprovado{background:linear-gradient(135deg,#17a2b8,#117a8b)}.kpi-analise{background:linear-gradient(135deg,#ffc107,#e0a800);color:#333}.kpi-pagamento{background:linear-gradient(135deg,#fd7e14,#e8650a)}.kpi-pago{background:linear-gradient(135deg,#6f42c1,#5a32a3)}.kpi-nao-iniciado{background:linear-gradient(135deg,#6c757d,#545b62)}\n' +
+'.filtros{background:#fff;padding:16px 20px;margin-bottom:24px;border-radius:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center}.filtro-group{display:flex;align-items:center;gap:10px}.filtro-group label{font-weight:600;color:#08b9d5}.filtro-group select{padding:8px 14px;border-radius:10px;border:1px solid #ddd;background:#f8f9fa}.btn-clear{background:#6c757d;color:#fff;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:600}\n' +
+'.progress-card{background:#fff;border-radius:20px;padding:24px;margin-bottom:28px;border:1px solid #ddd}.progress-title{display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}.total-executado{font-size:36px;font-weight:800;color:#08b9d5}.progress-bar-container{background:#e9ecef;border-radius:30px;height:24px;margin:16px 0;overflow:hidden}.progress-bar-fill{background:linear-gradient(90deg,#08b9d5,#17a2b8);height:100%;border-radius:30px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;color:#fff;font-size:12px;font-weight:bold}.progress-stats{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}.stat-item{flex:1;text-align:center;padding:12px;background:#f8f9fa;border-radius:16px}.stat-label{font-size:14px;color:#6c757d;text-transform:uppercase}.stat-value{font-size:24px;font-weight:700;color:#08b9d5}\n' +
+'.graficos-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}.grafico-wrapper{background:#fff;border-radius:20px;padding:20px;border:1px solid #eee;text-align:center}.grafico-wrapper h3{color:#08b9d5;margin-bottom:15px}canvas{max-height:350px;width:100%}\n' +
+'.tabela-wrapper{overflow-x:auto;border-radius:20px;background:#08b9d5;margin-top:20px}table{width:100%;border-collapse:collapse;font-size:13px !important}th{background:#08b9d5;color:#fff;padding:12px 8px;position:sticky;top:0;font-size:13px !important;font-weight:700}td{padding:10px 8px;text-align:center;border-bottom:1px solid #eee;background:#fff;font-size:12px !important}\n' +
+'.badge{display:inline-block;padding:4px 12px;border-radius:30px;font-size:11px !important;font-weight:600}.badge-entregue{background:#28a745;color:#fff}.badge-aprovado{background:#17a2b8;color:#fff}.badge-analise{background:#ffc107;color:#333}.badge-pagamento{background:#fd7e14;color:#fff}.badge-pago{background:#6f42c1;color:#fff}.badge-nao-iniciado{background:#6c757d;color:#fff}\n' +
+'.diferenca-acima{color:#dc3545;font-weight:bold}.diferenca-abaixo{color:#28a745;font-weight:bold}.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:24px}.info-box{background:#08b9d5;padding:16px;border-radius:16px;color:#fff;font-size:16px}\n' +
+'@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.empresas-grid{grid-template-columns:repeat(2,1fr)}.graficos-row{grid-template-columns:1fr}}@media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.empresas-grid{grid-template-columns:1fr}.header{flex-direction:column;text-align:center}}\n' +
+'</style>\n</head>\n<body>\n<div class="container">\n' +
+'<div class="header"><div class="header-logo-left"><img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" onerror="this.style.display=\'none\'"></div><div class="header-content"><h1>Dashboard de Medições</h1><div class="total-contrato">Contrato Total: R$ 89.863.121,73</div></div><div class="header-logo-right"><img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/monocromatica-dnit-padrao.png" onerror="this.style.display=\'none\'"></div></div>\n' +
+'<div class="empresas-grid" id="empresasGrid"></div>\n' +
+'<div class="total-selecionado" id="totalSelecionado">💰 Total Selecionado: R$ 0,00 (0% do Contrato)</div>\n' +
+'<div class="kpi-grid" id="kpiGrid"></div>\n' +
+'<div class="filtros"><div class="filtro-group"><label>📅 Mês/Ano:</label><select id="filtroPeriodo" onchange="aplicarFiltros()">' + optionsMeses + '</select></div><div class="filtro-group"><label>📆 Ano:</label><select id="filtroAno" onchange="aplicarFiltros()">' + optionsAnos + '</select></div><div class="filtro-group"><label>🏷️ Status:</label><select id="filtroStatus" onchange="aplicarFiltros()"><option value="todos">Todos</option><option value="entregue">Entregue</option><option value="aprovado">Aprovado</option><option value="analise">Em Análise</option><option value="pagamento">Em Pagamento</option><option value="pago">Pago</option><option value="nao_iniciado">Não Iniciado</option></select></div><button class="btn-clear" onclick="limparFiltros()">🗑️ Limpar Filtros</button></div>\n' +
+'<div class="progress-card"><div class="progress-title"><h2>📈 MEDIÇÃO ACUMULADA</h2><div><span class="total-executado" id="totalExecutadoValor">' + totalAcumuladoFormatado + '</span><span> / R$ 89.863.121,73</span></div></div><div class="progress-bar-container"><div class="progress-bar-fill" id="progressBarFill" style="width:' + percTotal + '%;">' + percTotal + '%</div></div><div class="progress-stats"><div class="stat-item"><div class="stat-label">Percentual Executado</div><div class="stat-value" id="percExecGrande">' + percTotal + '%</div></div><div class="stat-item"><div class="stat-label">Total de Despesas</div><div class="stat-value" id="totalDespGrande">' + totalDespesasFormatado + '</div></div><div class="stat-item"><div class="stat-label">Saldo Restante</div><div class="stat-value" id="saldoRestante">' + saldoRestanteFormatado + '</div></div></div></div>\n' +
+'<div class="graficos-row"><div class="grafico-wrapper"><h3>🥧 Distribuição por Status</h3><canvas id="graficoStatus"></canvas></div><div class="grafico-wrapper"><h3>📈 Acumulado Realizado vs Previsto</h3><canvas id="graficoAcumulado"></canvas></div></div>\n' +
+'<div class="tabela-wrapper"><table id="tabela"><thead><tr><th>Med</th><th>Mês/Ano</th><th>Data</th><th>PI</th><th>PI Acum</th><th>Reaj</th><th>Ajuste</th><th>Realizado</th><th>Diferença</th><th>Total Liq</th><th>Total Acum</th><th>Desp</th><th>Status</th><th>Obs</th></tr></thead><tbody id="tabelaBody"></tbody></table></div>\n' +
+'<div class="info-grid"><div class="info-box"><b>📋 LEGENDA</b><br><span class="badge badge-entregue">Entregue</span> Documentação<br><span class="badge badge-aprovado">Aprovado</span> Fiscalização<br><span class="badge badge-analise">Análise</span> Verificação<br><span class="badge badge-pagamento">Pagamento</span> Financeiro<br><span class="badge badge-pago">Pago</span> Creditado<br><span class="badge badge-nao-iniciado">Não Iniciado</span> Medição não realizada</div><div class="info-box"><b>ℹ️ INFORMAÇÕES</b><br>Período: 60 meses<br>💰 Valor Previsto por Mês: ' + valorPrevistoStr + '<br>📺 Modo visualização<br>📊 Exibindo apenas medições com dados</div></div>\n' +
+'</div>\n<script>\n' +
+'var dadosOriginais = ' + dadosStr + ';\n' +
+'var totalContrato = ' + totalContrato + ';\n' +
+'var valorPrevisto = ' + valorPrevistoMensal + ';\n' +
+'var totalAcumuladoOriginal = ' + totalAcumuladoOriginal + ';\n' +
+'var totalDespesasOriginal = ' + totalDespesas + ';\n' +
+'var empresasSelecionadas = ' + empresasSelStr + ';\n' +
+'var percentuais = {LBR:0.35,Projetto:0.35,EHP:0.15,Prisma:0.15};\n' +
+'var chartStatus = null; var chartAcum = null;\n' +
+'var mesesLabels = ' + JSON.stringify(mesesOrdenados) + ';\n' +
+'var realizadosAcumData = ' + JSON.stringify(realizadosAcum) + ';\n' +
+'var previstosAcumData = ' + JSON.stringify(previstosAcum) + ';\n' +
+'var statsIniciais = ' + JSON.stringify(statsIniciais) + ';\n' +
+'var statusTexto = {entregue:"Entregue",aprovado:"Aprovado",analise:"Em Análise",pagamento:"Em Pagamento",pago:"Pago",nao_iniciado:"Nao Iniciado"};\n' +
+'var statusCor = {entregue:"badge-entregue",aprovado:"badge-aprovado",analise:"badge-analise",pagamento:"badge-pagamento",pago:"badge-pago",nao_iniciado:"badge-nao-iniciado"};\n' +
+'function formatar(v){if(v&&v!==0&&!isNaN(v)) return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); return "R$ 0,00";}\n' +
+'function formatarDif(d){if(d===0) return "R$ 0,00"; var p=(Math.abs(d)/valorPrevisto)*100; var s=d>0?"+":"-"; var c=d>0?"diferenca-acima":"diferenca-abaixo"; return "<span class=\'"+c+"\'>"+s+" "+formatar(Math.abs(d))+" ("+p.toFixed(1)+"%)</span>";}\n' +
+'function extrairAno(mes){return mes.split("/")[1];}\n' +
+'function calcularFator(){var t=0;for(var e in empresasSelecionadas)if(empresasSelecionadas[e])t+=percentuais[e];return t===0?1:t;}\n' +
+'function aplicarFator(dados, fator){return dados.map(function(item){var novo=JSON.parse(JSON.stringify(item));novo.pi*=fator;novo.piAcum*=fator;novo.reaj*=fator;novo.reajAcum*=fator;novo.ajuste*=fator;novo.realizado*=fator;novo.totalLiq*=fator;novo.totalAcum*=fator;novo.despesa*=fator;return novo;});}\n' +
+'function toggleEmpresa(emp,el){if(empresasSelecionadas[emp])delete empresasSelecionadas[emp];else empresasSelecionadas[emp]=true;el.classList.toggle("selecionado");atualizarTotal();aplicarFiltros();}\n' +
+'function atualizarTotal(){var p=0;for(var e in empresasSelecionadas)if(empresasSelecionadas[e])p+=percentuais[e];document.getElementById("totalSelecionado").innerHTML="💰 Total Selecionado: "+formatar(totalAcumuladoOriginal*p)+" ("+(p*100).toFixed(1)+"% do Contrato)";for(var e in percentuais){var el=document.getElementById("valor"+e);if(el)el.innerHTML=empresasSelecionadas[e]?formatar(totalAcumuladoOriginal*percentuais[e]):"🔒 "+formatar(totalAcumuladoOriginal*percentuais[e]);}}\n' +
+'function renderizarEmpresas(){var empresas=[{nome:"LBR",p:35,cor:"empresa-lbr"},{nome:"Projetto",p:35,cor:"empresa-projetto"},{nome:"EHP",p:15,cor:"empresa-ehp"},{nome:"Prisma",p:15,cor:"empresa-prisma"}];var c=document.getElementById("empresasGrid");c.innerHTML="";for(var i=0;i<empresas.length;i++){var e=empresas[i];var d=document.createElement("div");d.className="empresa-card "+e.cor+(empresasSelecionadas[e.nome]?" selecionado":"");d.onclick=(function(n){return function(){toggleEmpresa(n,this);};})(e.nome);d.innerHTML="<h4>🏢 "+e.nome+"</h4><div class=\\"valor\\" id=\\"valor"+e.nome+"\\">"+(empresasSelecionadas[e.nome]?formatar(totalAcumuladoOriginal*e.p/100):"🔒 "+formatar(totalAcumuladoOriginal*e.p/100))+"</div><span class=\\"percentual\\">"+e.p+"% do Contrato</span>";c.appendChild(d);}}\n' +
+'function renderizarKPIs(dadosFiltrados){var st={entregue:0,aprovado:0,analise:0,pagamento:0,pago:0,nao_iniciado:0};for(var i=0;i<dadosFiltrados.length;i++)st[dadosFiltrados[i].status]++;var total=dadosFiltrados.length;var pct=function(v){return total?((v/total)*100).toFixed(1)+"%":"0%";};document.getElementById("totalEntregue").textContent=st.entregue;document.getElementById("totalAprovado").textContent=st.aprovado;document.getElementById("totalAnalise").textContent=st.analise;document.getElementById("totalPagamento").textContent=st.pagamento;document.getElementById("totalPago").textContent=st.pago;document.getElementById("totalNao").textContent=st.nao_iniciado;document.getElementById("pEntregue").textContent=pct(st.entregue);document.getElementById("pAprovado").textContent=pct(st.aprovado);document.getElementById("pAnalise").textContent=pct(st.analise);document.getElementById("pPagamento").textContent=pct(st.pagamento);document.getElementById("pPago").textContent=pct(st.pago);document.getElementById("pNao").textContent=pct(st.nao_iniciado);}\n' +
+'function criarGraficoStatus(dadosFiltrados){var st={entregue:0,aprovado:0,analise:0,pagamento:0,pago:0,nao_iniciado:0};for(var i=0;i<dadosFiltrados.length;i++)st[dadosFiltrados[i].status]++;var ctx=document.getElementById("graficoStatus").getContext("2d");if(chartStatus)chartStatus.destroy();chartStatus=new Chart(ctx,{type:"doughnut",data:{labels:["Entregue","Aprovado","Análise","Pagamento","Pago","Não Iniciado"],datasets:[{data:[st.entregue,st.aprovado,st.analise,st.pagamento,st.pago,st.nao_iniciado],backgroundColor:["#28a745","#17a2b8","#ffc107","#fd7e14","#6f42c1","#6c757d"]}]},options:{responsive:true,plugins:{legend:{position:"bottom"}}}});}\n' +
+'function criarGraficoAcumulado(){var ctx=document.getElementById("graficoAcumulado").getContext("2d");if(chartAcum)chartAcum.destroy();if(mesesLabels.length>0)chartAcum=new Chart(ctx,{type:"line",data:{labels:mesesLabels,datasets:[{label:"Realizado Acumulado (R$)",data:realizadosAcumData,borderColor:"#17a2b8",backgroundColor:"rgba(23,162,184,0.1)",borderWidth:3,fill:true,pointRadius:5,pointBackgroundColor:"#17a2b8"},{label:"Previsto Acumulado (R$)",data:previstosAcumData,borderColor:"#6c757d",borderWidth:2,borderDash:[5,5],pointRadius:4,pointBackgroundColor:"#6c757d"}]},options:{responsive:true,scales:{y:{beginAtZero:true,ticks:{callback:function(v){return"R$ "+(v/1000000).toFixed(1)+"M";}}}}}});}\n' +
+'function renderizarTabela(){var mes=document.getElementById("filtroPeriodo").value,ano=document.getElementById("filtroAno").value,st=document.getElementById("filtroStatus").value;var fator=calcularFator();var filtrados=dadosOriginais.slice();if(mes&&mes!=="todos")filtrados=filtrados.filter(function(d){return d.mes===mes;});if(ano&&ano!=="todos")filtrados=filtrados.filter(function(d){return extrairAno(d.mes)===ano;});if(st&&st!=="todos")filtrados=filtrados.filter(function(d){return d.status===st;});filtrados=aplicarFator(filtrados,fator);var tbody=document.getElementById("tabelaBody");tbody.innerHTML="";if(filtrados.length===0){tbody.innerHTML="<tr><td colspan=14>Nenhum dado encontrado<\/td><\/tr>";return;}for(var i=0;i<filtrados.length;i++){var d=filtrados[i];var realizado=(d.realizado&&d.realizado!==0)?d.realizado:valorPrevisto*fator;var dif=realizado-(valorPrevisto*fator);var row=tbody.insertRow();row.insertCell(0).innerHTML=d.med;row.insertCell(1).innerHTML=d.mes;row.insertCell(2).innerHTML=d.data||"-";row.insertCell(3).innerHTML=formatar(d.pi);row.insertCell(4).innerHTML=formatar(d.piAcum);row.insertCell(5).innerHTML=formatar(d.reaj);row.insertCell(6).innerHTML=formatar(d.ajuste||0);row.insertCell(7).innerHTML=formatar(realizado);row.insertCell(8).innerHTML=formatarDif(dif);row.insertCell(9).innerHTML=formatar(d.totalLiq);row.insertCell(10).innerHTML=formatar(d.totalAcum);row.insertCell(11).innerHTML=formatar(d.despesa||0);row.insertCell(12).innerHTML="<span class=\\"badge "+statusCor[d.status]+"\\">"+statusTexto[d.status]+"</span>";row.insertCell(13).innerHTML=d.obs||"";}renderizarKPIs(filtrados);criarGraficoStatus(filtrados);criarGraficoAcumulado();}\n' +
+'function aplicarFiltros(){renderizarTabela();}\n' +
+'function limparFiltros(){document.getElementById("filtroPeriodo").value="todos";document.getElementById("filtroAno").value="todos";document.getElementById("filtroStatus").value="todos";aplicarFiltros();}\n' +
+'function filtrarStatus(s){document.getElementById("filtroStatus").value=s;aplicarFiltros();}\n' +
+'function initKPIs(){var total=dadosOriginais.length;var html = "<div class=\\"kpi-card kpi-entregue\\" onclick=\\"filtrarStatus(\'entregue\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">📦</div><h3 id=\\"totalEntregue\\">"+statsIniciais.entregue+"</h3><p>Entregues</p><small id=\\"pEntregue\\">"+((statsIniciais.entregue/total)*100).toFixed(1)+"%</small></div>" + "<div class=\\"kpi-card kpi-aprovado\\" onclick=\\"filtrarStatus(\'aprovado\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">✅</div><h3 id=\\"totalAprovado\\">"+statsIniciais.aprovado+"</h3><p>Aprovados</p><small id=\\"pAprovado\\">"+((statsIniciais.aprovado/total)*100).toFixed(1)+"%</small></div>" + "<div class=\\"kpi-card kpi-analise\\" onclick=\\"filtrarStatus(\'analise\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">⏳</div><h3 id=\\"totalAnalise\\">"+statsIniciais.analise+"</h3><p>Em Análise</p><small id=\\"pAnalise\\">"+((statsIniciais.analise/total)*100).toFixed(1)+"%</small></div>" + "<div class=\\"kpi-card kpi-pagamento\\" onclick=\\"filtrarStatus(\'pagamento\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">💰</div><h3 id=\\"totalPagamento\\">"+statsIniciais.pagamento+"</h3><p>Em Pagamento</p><small id=\\"pPagamento\\">"+((statsIniciais.pagamento/total)*100).toFixed(1)+"%</small></div>" + "<div class=\\"kpi-card kpi-pago\\" onclick=\\"filtrarStatus(\'pago\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">💵</div><h3 id=\\"totalPago\\">"+statsIniciais.pago+"</h3><p>Pagos</p><small id=\\"pPago\\">"+((statsIniciais.pago/total)*100).toFixed(1)+"%</small></div>" + "<div class=\\"kpi-card kpi-nao-iniciado\\" onclick=\\"filtrarStatus(\'nao_iniciado\')\\" style=\\"cursor:pointer\\"><div class=\\"card-icon\\">🚫</div><h3 id=\\"totalNao\\">"+statsIniciais.nao_iniciado+"</h3><p>Não Iniciados</p><small id=\\"pNao\\">"+((statsIniciais.nao_iniciado/total)*100).toFixed(1)+"%</small></div>";document.getElementById("kpiGrid").innerHTML=html;}\n' +
+'// Atualizar valores fixos no progress card\n' +
+'document.getElementById("totalExecutadoValor").innerHTML = formatar(totalAcumuladoOriginal);\n' +
+'document.getElementById("totalDespGrande").innerHTML = formatar(totalDespesasOriginal);\n' +
+'document.getElementById("saldoRestante").innerHTML = formatar(totalContrato - totalAcumuladoOriginal);\n' +
+'initKPIs();renderizarEmpresas();atualizarTotal();aplicarFiltros();\n' +
+'<\/script>\n</body>\n</html>';
+}
 
-            // ---------- Funções do Sistema ----------
-            window.editarAtividade = function(id) { if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode editar!'); return; } const atividade = atividades.find(a => a.id === id); if (!atividade) return; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Atividade</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>Mês:</label><select id="editMes">${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div><div class="form-group"><label>Ano:</label><select id="editAno">${[2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('')}</select></div></div><div class="form-group"><label>Produto:</label><select id="editProduto">${['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div><div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}"></div><div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div><div class="form-group"><label>Tipo Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div><div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}<\/textarea></div><div class="form-row"><div class="form-group"><label>Status:</label><select id="editStatus"><option value="Concluída" ${atividade.status === 'Concluída' ? 'selected' : ''}>Concluída</option><option value="Em andamento" ${atividade.status === 'Em andamento' ? 'selected' : ''}>Em andamento</option><option value="Pendente" ${atividade.status === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Atrasada" ${atividade.status === 'Atrasada' ? 'selected' : ''}>Atrasada</option></select></div><div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}<\/textarea></div></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button></div></div>`; document.body.appendChild(modalDiv); };
-
-            window.salvarEdicao = function(id) { const index = atividades.findIndex(a => a.id === id); if (index !== -1) { atividades[index] = { ...atividades[index], mes: document.getElementById('editMes').value, ano: document.getElementById('editAno').value, produto: document.getElementById('editProduto').value, processo: document.getElementById('editProcesso').value, projeto: document.getElementById('editProjeto').value, tipoAtividade: document.getElementById('editTipoAtividade').value, descricao: document.getElementById('editDescricao').value, status: document.getElementById('editStatus').value, observacoes: document.getElementById('editObservacoes').value }; salvarDados(); alert('✅ Atividade atualizada!'); document.querySelector('.modal').remove(); gerarRelatorioAtual(); } };
-
-            function criarFiltros() { const container = document.getElementById('filtersContainer'); if (!container || usuarioAtual.tipo !== 'chefe') { if (container) container.innerHTML = ''; return; } let engenheirosOptions = '<option value="todos">Todos</option>'; Object.keys(usuarios).forEach(login => { if (usuarios[login].tipo === 'engenheiro') { engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`; } }); container.innerHTML = `<div class="filters-bar"><div class="filters-grid"><div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div><div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div><div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div><div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div><div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div><div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div></div><div class="btn-group" style="justify-content:flex-end"><button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button><button class="btn btn-outline" onclick="limparFiltros()">Limpar</button></div></div>`; }
-
-            window.aplicarFiltros = function() { gerarRelatorioAtual(); };
-            window.limparFiltros = function() { if (document.getElementById('filtroEngenheiro')) document.getElementById('filtroEngenheiro').value = 'todos'; if (document.getElementById('filtroProduto')) document.getElementById('filtroProduto').value = 'todos'; if (document.getElementById('filtroMes')) document.getElementById('filtroMes').value = 'todos'; if (document.getElementById('filtroAno')) document.getElementById('filtroAno').value = 'todos'; if (document.getElementById('filtroStatus')) document.getElementById('filtroStatus').value = 'todos'; if (document.getElementById('filtroOrdenacao')) document.getElementById('filtroOrdenacao').value = 'recente'; gerarRelatorioAtual(); };
-
-            function ordenarAtividades(filtradas, ordem) { const sorted = [...filtradas]; switch(ordem) { case 'recente': return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); case 'antigo': return sorted.sort((a,b) => new Date(a.dataReg) - new Date(b.dataReg)); case 'produto_az': return sorted.sort((a,b) => a.produto.localeCompare(b.produto)); case 'engenheiro_az': return sorted.sort((a,b) => a.engenheiro.localeCompare(b.engenheiro)); default: return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); } }
-
-            window.logout = function() { usuarioAtual = null; location.reload(); };
-            window.gerarPDF = function() { window.print(); };
-
-            function carregarInterface() { 
-                const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : ''; 
-                document.getElementById('userInfo').innerHTML = `<span><i class="fas fa-user-circle"></i> ${usuarioAtual.nome}</span>${gestaoBtn}<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.mostrarAlterarSenha()"><i class="fas fa-key"></i> Alterar Senha</button><button class="btn btn-danger" style="padding:5px 15px;" onclick="window.logout()">Sair</button>`; 
-                if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
-                else document.getElementById('filtersContainer').innerHTML = ''; 
-                document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes); 
-                document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); }); 
-                gerarRelatorioAtual(); 
-            }
-
-            function mostrarSugestoes() { 
-                const input = document.getElementById('tipoAtividade'); 
-                const valor = input.value.toLowerCase(); 
-                const tipos = [...new Set(atividades.map(a => a.tipoAtividade).filter(t => t))]; 
-                const filtradas = tipos.filter(t => t.toLowerCase().includes(valor)); 
-                const div = document.getElementById('suggestionsList'); 
-                if (filtradas.length > 0 && valor) { 
-                    div.style.display = 'block'; 
-                    div.innerHTML = filtradas.map(t => `<div onclick="selecionarSugestao('${t.replace(/'/g, "\\'")}')">${t}</div>`).join(''); 
-                } else { 
-                    div.style.display = 'none'; 
-                } 
-            }
-
-            window.selecionarSugestao = function(valor) { document.getElementById('tipoAtividade').value = valor; document.getElementById('suggestionsList').style.display = 'none'; };
-            document.addEventListener('click', function(e) { if (!e.target.closest('.suggestions')) { const div = document.getElementById('suggestionsList'); if (div) div.style.display = 'none'; } });
-
-            function salvarAtividade() { 
-                const produto = document.getElementById('produto').value; 
-                const projeto = document.getElementById('projeto').value; 
-                const tipo = document.getElementById('tipoAtividade').value; 
-                const desc = document.getElementById('descricao').value; 
-                if (!produto) { alert('Selecione um produto!'); return; } 
-                if (!projeto) { alert('Preencha o Projeto!'); return; } 
-                if (!tipo) { alert('Preencha o Tipo!'); return; } 
-                if (!desc) { alert('Preencha a Descrição!'); return; } 
-                const atividade = { id: Date.now(), engenheiro: usuarioAtual.nome, loginEng: usuarioAtual.login, dataReg: new Date().toISOString(), mes: document.getElementById('mesRelatorio').value, ano: document.getElementById('anoRelatorio').value, produto, projeto, processo: document.getElementById('processo').value || '', tipoAtividade: tipo, descricao: desc, status: document.getElementById('status').value, prioridade: document.getElementById('prioridade').value, dataSolicitacao: document.getElementById('dataSolicitacao').value || '', dataLimite: document.getElementById('dataLimite').value || '', areaDemandante: document.getElementById('areaDemandante').value || '', observacoes: document.getElementById('observacoes').value || '' }; 
-                atividades.push(atividade); 
-                salvarDados(); 
-                alert(`✅ Atividade salva!`); 
-                limparFormulario(); 
-                gerarRelatorioAtual(); 
-                if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
-            }
-
-            function limparFormulario() { document.getElementById('activityForm').reset(); const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']; document.getElementById('mesRelatorio').value = meses[new Date().getMonth()]; document.getElementById('anoRelatorio').value = '2026'; }
-
-            function gerarRelatorioAtual() { 
-                let filtradas = [...atividades]; 
-                if (usuarioAtual && usuarioAtual.tipo === 'chefe') { 
-                    const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos'; 
-                    if (engenheiroFiltro !== 'todos') filtradas = filtradas.filter(a => a.loginEng === engenheiroFiltro); 
-                    const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos'; 
-                    if (produtoFiltro !== 'todos') filtradas = filtradas.filter(a => a.produto === produtoFiltro); 
-                    const mesFiltro = document.getElementById('filtroMes')?.value || 'todos'; 
-                    if (mesFiltro !== 'todos') filtradas = filtradas.filter(a => a.mes === mesFiltro); 
-                    const anoFiltro = document.getElementById('filtroAno')?.value || 'todos'; 
-                    if (anoFiltro !== 'todos') filtradas = filtradas.filter(a => a.ano === anoFiltro); 
-                    const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos'; 
-                    if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro); 
-                    const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente'; 
-                    filtradas = ordenarAtividades(filtradas, ordem); 
-                } else if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') { 
-                    filtradas = filtradas.filter(a => a.loginEng === usuarioAtual.login); 
-                    filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); 
-                } 
-                const stats = { total: filtradas.length, concluidas: filtradas.filter(a => a.status === 'Concluída').length, andamento: filtradas.filter(a => a.status === 'Em andamento').length, pendentes: filtradas.filter(a => a.status === 'Pendente').length, atrasadas: filtradas.filter(a => a.status === 'Atrasada').length, engenheiros: new Set(filtradas.map(a => a.engenheiro)).size, produtos: new Set(filtradas.map(a => a.produto)).size }; 
-                document.getElementById('statsContainer').innerHTML = `<div class="stat-item"><h4>Total</h4><div class="value">${stats.total}</div></div><div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div><div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div><div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div><div class="stat-item"><h4>⚠️ Atrasadas</h4><div class="value">${stats.atrasadas}</div></div><div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${stats.engenheiros}</div></div><div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`; 
-                const tbody = document.getElementById('relatorioBody'); 
-                tbody.innerHTML = ''; 
-                if (filtradas.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
-                    return; 
-                } 
-                filtradas.forEach(act => { 
-                    const row = tbody.insertRow(); 
-                    let statusColor = '#333'; 
-                    if (act.status === 'Concluída') statusColor = '#48bb78'; 
-                    else if (act.status === 'Em andamento') statusColor = '#4299e1'; 
-                    else if (act.status === 'Pendente') statusColor = '#ed8936'; 
-                    else if (act.status === 'Atrasada') statusColor = '#f56565'; 
-                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:4px 8px;font-size:11px;" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
-                }); 
-            }
-
-            const dadosExistentes = carregarDados();
-            if (!dadosExistentes || Object.keys(usuarios).length === 0) {
-                criarDadosIniciais();
-            }
-            
-            mostrarLogin();
-        })();
-    </script>
+carregarDados();
+</script>
 </body>
 </html>
