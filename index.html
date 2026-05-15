@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Relatórios de Engenharia</title>
+    <title>Sistema de Relatórios - Engenharia</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; font-family: 'Poppins', sans-serif; }
+        body, html { height: 100%; font-family: 'Poppins', sans-serif; background: #f0f2f5; }
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #667eea; display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid white; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -58,7 +58,7 @@
         .filter-group select, .filter-group input { padding: 10px; border: 1px solid #e1e5eb; border-radius: 10px; font-size: 0.8rem; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; border-radius: 24px; width: 600px; max-width: 90%; max-height: 85vh; overflow-y: auto; animation: modalFadeIn 0.3s; }
-        .modal-large { width: 800px; }
+        .modal-large { width: 850px; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .modal-header { padding: 20px 25px; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { font-size: 1.3rem; font-weight: 600; }
@@ -86,7 +86,24 @@
         .suggestions { position: relative; }
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
-        @media (max-width: 768px) { .main-layout { grid-template-columns: 1fr; } .modern-header { flex-direction: column; text-align: center; } .modal-large { width: 95%; } }
+        .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
+        
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .no-print, .modern-header, .main-layout, .user-area, .btn, .btn-group, .stats-card, .header-buttons, .filters-bar .btn-group, .modal, .login-modal { display: none !important; }
+            .report-card, .report-section, .container { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+            table { font-size: 10px !important; width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #ccc !important; padding: 6px !important; }
+            .print-header { display: block !important; }
+            .page-break { page-break-before: always; }
+            .filters-bar { margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 8px; }
+        }
+        
+        @media (max-width: 768px) { 
+            .main-layout { grid-template-columns: 1fr; } 
+            .modern-header { flex-direction: column; text-align: center; } 
+            .modal-large { width: 95%; } 
+        }
     </style>
 </head>
 <body>
@@ -94,7 +111,7 @@
 
     <div class="container" id="mainContainer">
         <div class="modern-header no-print">
-            <div class="logo-area"><h1>📊 Engenharia Relatórios</h1><p>Sistema de gestão de atividades</p></div>
+            <div class="logo-area"><h1>📊 Registro de Atividades</h1><p>Sistema de gestão de atividades</p></div>
             <div class="user-area" id="userInfo"></div>
         </div>
 
@@ -108,7 +125,10 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label class="required">Produto:</label><select id="produto" required><option value="">Selecione...</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
-                        <div class="form-group"><label>Processo/SEI:</label><input type="text" id="processo" placeholder="Número do processo"></div>
+                        <div class="form-group">
+                            <label>Processo/SEI:</label>
+                            <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21">
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label class="required">Projeto/Empreendimento:</label><input type="text" id="projeto" required></div>
@@ -120,24 +140,48 @@
                         <div class="form-group"><label>Prioridade:</label><select id="prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div>
                     </div>
                     <div class="form-row"><div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao"></div><div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite"></div></div>
-                    <div class="form-group"><label>Área Demandante:</label><input type="text" id="areaDemandante" placeholder="Departamento/Solicitante"></div>
-                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..."></textarea></div>
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Atividade</button>
-                        <button type="button" class="btn btn-outline" onclick="limparFormulario()"><i class="fas fa-eraser"></i> Limpar</button>
-                        <!-- Botão Alterar Senha REMOVIDO daqui - agora só fica na área superior -->
+                    
+                    <div class="form-group">
+                        <label>Área Demandante:</label>
+                        <select id="areaDemandante">
+                            <option value="">Selecione uma área...</option>
+                            <option value="SRE – Superintendência">SRE – Superintendência</option>
+                            <option value="NAA – Núcleo de Apoio Administrativo">NAA – Núcleo de Apoio Administrativo</option>
+                            <option value="COENGE – Coordenação de Engenharia">COENGE – Coordenação de Engenharia</option>
+                            <option value="NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia">NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia</option>
+                            <option value="NUCOM – Núcleo de Comunicação Social">NUCOM – Núcleo de Comunicação Social</option>
+                            <option value="CAF – Coordenação de Administração e Finanças">CAF – Coordenação de Administração e Finanças</option>
+                            <option value="SECONF – Serviço de Contabilidade e Finanças">SECONF – Serviço de Contabilidade e Finanças</option>
+                            <option value="SELOG – Serviço de Recursos de Logística e Informática">SELOG – Serviço de Recursos de Logística e Informática</option>
+                            <option value="SEPLAN – Serviço de Planejamento e Projetos">SEPLAN – Serviço de Planejamento e Projetos</option>
+                            <option value="SMT – Serviço de Manutenção Terrestre">SMT – Serviço de Manutenção Terrestre</option>
+                            <option value="SOT – Serviço de Operações Terrestres">SOT – Serviço de Operações Terrestres</option>
+                            <option value="SCT – Serviço de Construção Terrestre">SCT – Serviço de Construção Terrestre</option>
+                            <option value="SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente">SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente</option>
+                            <option value="UFFOR – Unidade Ferroviária">UFFOR – Unidade Ferroviária</option>
+                            <option value="SELIC – Serviço de Cadastro e Licitação">SELIC – Serviço de Cadastro e Licitação</option>
+                            <option value="UL – Fortaleza">UL – Fortaleza</option>
+                            <option value="UL – Russas">UL – Russas</option>
+                            <option value="UL – Sobral">UL – Sobral</option>
+                            <option value="UL – Icó">UL – Icó</option>
+                            <option value="UL – Boa Viagem">UL – Boa Viagem</option>
+                            <option value="ASSESSOR CE (Demanda Interna)">ASSESSOR CE (Demanda Interna)</option>
+                        </select>
                     </div>
+                    
+                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..."></textarea></div>
+                    <div class="btn-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Atividade</button><button type="button" class="btn btn-outline" onclick="limparFormulario()"><i class="fas fa-eraser"></i> Limpar</button></div>
                 </form>
             </div>
 
             <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
         </div>
 
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="9" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
+        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="10" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'engenharia_relatorios';
+        const STORAGE_KEY = 'engenharia_relatorios_v2';
         
         function hideLoadingAndShow() { 
             document.getElementById('loading').style.display = 'none'; 
@@ -149,6 +193,35 @@
             const checkbox = document.getElementById(checkboxId); 
             if (checkbox.checked) { input.type = 'text'; } 
             else { input.type = 'password'; } 
+        }
+
+        function aplicarMascaraProcesso(input) {
+            let valor = input.value.replace(/\D/g, '');
+            
+            if (valor.length > 5) {
+                valor = valor.substring(0, 5) + '.' + valor.substring(5);
+            }
+            if (valor.length > 12) {
+                valor = valor.substring(0, 12) + '/' + valor.substring(12);
+            }
+            if (valor.length > 17) {
+                valor = valor.substring(0, 17) + '-' + valor.substring(17);
+            }
+            if (valor.length > 20) {
+                valor = valor.substring(0, 20);
+            }
+            
+            input.value = valor;
+        }
+
+        function validarProcesso(processo) {
+            if (!processo) return true;
+            const regex = /^\d{5}\.\d{6}\/\d{4}-\d{2}$/;
+            if (!regex.test(processo)) {
+                alert('Formato do Processo/SEI inválido!\n\nO formato correto é: 12345.678901/2026-01\n\n- 5 números\n- ponto\n- 6 números\n- barra\n- 4 números (ano)\n- traço\n- 2 números');
+                return false;
+            }
+            return true;
         }
 
         (function() {
@@ -180,7 +253,7 @@
             function salvarDados() { 
                 const dados = { atividades, usuarios };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); 
-                console.log('💾 Dados salvos:', { atividades: atividades.length, usuarios: Object.keys(usuarios).length });
+                console.log('💾 Dados salvos:', atividades.length, 'atividades,', Object.keys(usuarios).length, 'usuários');
             }
 
             function carregarDados() {
@@ -190,7 +263,7 @@
                         const dados = JSON.parse(saved);
                         atividades = dados.atividades || [];
                         usuarios = dados.usuarios || {};
-                        console.log('📂 Dados carregados do localStorage');
+                        console.log('📂 Dados carregados:', atividades.length, 'atividades,', Object.keys(usuarios).length, 'usuários');
                         return true;
                     } catch(e) {
                         console.error('Erro ao carregar:', e);
@@ -199,6 +272,14 @@
                 }
                 return false;
             }
+
+            window.resetarDados = function() {
+                if (confirm('ATENÇÃO: Isso irá resetar TODOS os dados do sistema (atividades e usuários). Continuar?')) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    alert('Dados resetados! A página será recarregada.');
+                    location.reload();
+                }
+            };
 
             function criarDadosIniciais() {
                 console.log('🆕 Criando dados iniciais...');
@@ -234,7 +315,7 @@
                 });
 
                 salvarDados(); 
-                console.log('✅ Sistema inicializado');
+                console.log('✅ Sistema inicializado com', Object.keys(usuarios).length, 'usuários');
             }
 
             function verificarPrimeiroAcesso(username) { 
@@ -244,9 +325,14 @@
             // ========== PAINEL ADMIN ==========
             window.abrirPainelAdmin = function() {
                 if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar esta área!'); return; }
-                const modalDiv = document.createElement('div'); modalDiv.className = 'modal';
-                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário</th><th>Nome</th><th>CPF</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• No primeiro acesso, crie uma senha pessoal.</p></div></div></div>`;
-                document.body.appendChild(modalDiv); carregarListaEngenheiros();
+                
+                carregarDados();
+                
+                const modalDiv = document.createElement('div'); 
+                modalDiv.className = 'modal';
+                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><button class="btn btn-outline btn-small" style="margin-left: auto; margin-right: 10px;" onclick="window.resetarDados()"><i class="fas fa-database"></i> Resetar Dados</button></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário</th><th>Nome</th><th>CPF</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p></div></div></div>`;
+                document.body.appendChild(modalDiv); 
+                carregarListaEngenheiros();
             };
 
             function carregarListaEngenheiros() { 
@@ -257,7 +343,7 @@
                     const user = usuarios[login]; 
                     if (user.tipo === 'engenheiro') { 
                         const row = tbody.insertRow(); 
-                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td>${user.cpf || '-'}<\/td><td><button class="btn btn-warning" style="padding:5px 10px; font-size:12px;" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-outline" style="padding:5px 10px; font-size:12px;" onclick="resetarSenha('${login}')"><i class="fas fa-key"></i> Resetar</button> <button class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
+                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td>${user.cpf || '-'}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-outline btn-small" onclick="resetarSenha('${login}')"><i class="fas fa-key"></i> Resetar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
                     } 
                 }); 
             }
@@ -371,7 +457,7 @@
                 const loginDiv = document.createElement('div'); 
                 loginDiv.className = 'login-modal'; 
                 loginDiv.id = 'loginScreen'; 
-                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• No primeiro acesso, crie uma senha pessoal.</p></div></div>`; 
+                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p></div></div>`; 
                 document.body.appendChild(loginDiv); 
             }
 
@@ -431,19 +517,159 @@
             window.mostrarAlterarSenha = function() { if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false); };
 
             // ---------- Funções do Sistema ----------
-            window.editarAtividade = function(id) { if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode editar!'); return; } const atividade = atividades.find(a => a.id === id); if (!atividade) return; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Atividade</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>Mês:</label><select id="editMes">${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div><div class="form-group"><label>Ano:</label><select id="editAno">${[2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('')}</select></div></div><div class="form-group"><label>Produto:</label><select id="editProduto">${['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div><div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}"></div><div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div><div class="form-group"><label>Tipo Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div><div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}<\/textarea></div><div class="form-row"><div class="form-group"><label>Status:</label><select id="editStatus"><option value="Concluída" ${atividade.status === 'Concluída' ? 'selected' : ''}>Concluída</option><option value="Em andamento" ${atividade.status === 'Em andamento' ? 'selected' : ''}>Em andamento</option><option value="Pendente" ${atividade.status === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Atrasada" ${atividade.status === 'Atrasada' ? 'selected' : ''}>Atrasada</option></select></div><div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}<\/textarea></div></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button></div></div>`; document.body.appendChild(modalDiv); };
+            window.editarAtividade = function(id) { if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode editar!'); return; } const atividade = atividades.find(a => a.id === id); if (!atividade) return; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Atividade</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>Mês:</label><select id="editMes">${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div><div class="form-group"><label>Ano:</label><select id="editAno">${[2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('')}</select></div></div><div class="form-group"><label>Produto:</label><select id="editProduto">${['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div><div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}"></div><div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div><div class="form-group"><label>Tipo Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div><div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}<\/textarea></div><div class="form-row"><div class="form-group"><label>Status:</label><select id="editStatus"><option value="Concluída" ${atividade.status === 'Concluída' ? 'selected' : ''}>Concluída</option><option value="Em andamento" ${atividade.status === 'Em andamento' ? 'selected' : ''}>Em andamento</option><option value="Pendente" ${atividade.status === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Atrasada" ${atividade.status === 'Atrasada' ? 'selected' : ''}>Atrasada</option></select></div><div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante">${['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'].map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('')}</select></div><div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}<\/textarea></div></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button></div></div>`; document.body.appendChild(modalDiv); };
 
-            window.salvarEdicao = function(id) { const index = atividades.findIndex(a => a.id === id); if (index !== -1) { atividades[index] = { ...atividades[index], mes: document.getElementById('editMes').value, ano: document.getElementById('editAno').value, produto: document.getElementById('editProduto').value, processo: document.getElementById('editProcesso').value, projeto: document.getElementById('editProjeto').value, tipoAtividade: document.getElementById('editTipoAtividade').value, descricao: document.getElementById('editDescricao').value, status: document.getElementById('editStatus').value, observacoes: document.getElementById('editObservacoes').value }; salvarDados(); alert('✅ Atividade atualizada!'); document.querySelector('.modal').remove(); gerarRelatorioAtual(); } };
+            window.salvarEdicao = function(id) { const index = atividades.findIndex(a => a.id === id); if (index !== -1) { atividades[index] = { ...atividades[index], mes: document.getElementById('editMes').value, ano: document.getElementById('editAno').value, produto: document.getElementById('editProduto').value, processo: document.getElementById('editProcesso').value, projeto: document.getElementById('editProjeto').value, tipoAtividade: document.getElementById('editTipoAtividade').value, descricao: document.getElementById('editDescricao').value, status: document.getElementById('editStatus').value, areaDemandante: document.getElementById('editAreaDemandante').value, observacoes: document.getElementById('editObservacoes').value }; salvarDados(); alert('✅ Atividade atualizada!'); document.querySelector('.modal').remove(); gerarRelatorioAtual(); } };
 
-            function criarFiltros() { const container = document.getElementById('filtersContainer'); if (!container || usuarioAtual.tipo !== 'chefe') { if (container) container.innerHTML = ''; return; } let engenheirosOptions = '<option value="todos">Todos</option>'; Object.keys(usuarios).forEach(login => { if (usuarios[login].tipo === 'engenheiro') { engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`; } }); container.innerHTML = `<div class="filters-bar"><div class="filters-grid"><div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div><div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div><div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div><div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div><div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div><div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div></div><div class="btn-group" style="justify-content:flex-end"><button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button><button class="btn btn-outline" onclick="limparFiltros()">Limpar</button></div></div>`; }
+            function criarFiltros() { 
+                const container = document.getElementById('filtersContainer'); 
+                if (!container || usuarioAtual.tipo !== 'chefe') { 
+                    if (container) container.innerHTML = ''; 
+                    return; 
+                } 
+                let engenheirosOptions = '<option value="todos">Todos</option>'; 
+                Object.keys(usuarios).forEach(login => { 
+                    if (usuarios[login].tipo === 'engenheiro') { 
+                        engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`; 
+                    } 
+                }); 
+                
+                const areasDemandantes = [
+                    'SRE – Superintendência', 'NAA – Núcleo de Apoio Administrativo', 'COENGE – Coordenação de Engenharia',
+                    'NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia', 'NUCOM – Núcleo de Comunicação Social',
+                    'CAF – Coordenação de Administração e Finanças', 'SECONF – Serviço de Contabilidade e Finanças',
+                    'SELOG – Serviço de Recursos de Logística e Informática', 'SEPLAN – Serviço de Planejamento e Projetos',
+                    'SMT – Serviço de Manutenção Terrestre', 'SOT – Serviço de Operações Terrestres', 'SCT – Serviço de Construção Terrestre',
+                    'SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente', 'UFFOR – Unidade Ferroviária',
+                    'SELIC – Serviço de Cadastro e Licitação', 'UL – Fortaleza', 'UL – Russas', 'UL – Sobral', 'UL – Icó', 'UL – Boa Viagem',
+                    'ASSESSOR CE (Demanda Interna)'
+                ];
+                
+                let areasOptions = '<option value="todos">Todas</option>';
+                areasDemandantes.forEach(area => {
+                    areasOptions += `<option value="${area}">${area}</option>`;
+                });
+                
+                container.innerHTML = `<div class="filters-bar"><div class="filters-grid"><div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div><div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div><div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div><div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div><div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div><div class="filter-group"><label>Área Demandante</label><select id="filtroAreaDemandante">${areasOptions}</select></div><div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div></div><div class="btn-group" style="justify-content:flex-end"><button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button><button class="btn btn-outline" onclick="limparFiltros()">Limpar</button></div></div>`; 
+            }
 
             window.aplicarFiltros = function() { gerarRelatorioAtual(); };
-            window.limparFiltros = function() { if (document.getElementById('filtroEngenheiro')) document.getElementById('filtroEngenheiro').value = 'todos'; if (document.getElementById('filtroProduto')) document.getElementById('filtroProduto').value = 'todos'; if (document.getElementById('filtroMes')) document.getElementById('filtroMes').value = 'todos'; if (document.getElementById('filtroAno')) document.getElementById('filtroAno').value = 'todos'; if (document.getElementById('filtroStatus')) document.getElementById('filtroStatus').value = 'todos'; if (document.getElementById('filtroOrdenacao')) document.getElementById('filtroOrdenacao').value = 'recente'; gerarRelatorioAtual(); };
+            
+            window.limparFiltros = function() { 
+                if (document.getElementById('filtroEngenheiro')) document.getElementById('filtroEngenheiro').value = 'todos'; 
+                if (document.getElementById('filtroProduto')) document.getElementById('filtroProduto').value = 'todos'; 
+                if (document.getElementById('filtroMes')) document.getElementById('filtroMes').value = 'todos'; 
+                if (document.getElementById('filtroAno')) document.getElementById('filtroAno').value = 'todos'; 
+                if (document.getElementById('filtroStatus')) document.getElementById('filtroStatus').value = 'todos';
+                if (document.getElementById('filtroAreaDemandante')) document.getElementById('filtroAreaDemandante').value = 'todos';
+                if (document.getElementById('filtroOrdenacao')) document.getElementById('filtroOrdenacao').value = 'recente'; 
+                gerarRelatorioAtual(); 
+            };
 
             function ordenarAtividades(filtradas, ordem) { const sorted = [...filtradas]; switch(ordem) { case 'recente': return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); case 'antigo': return sorted.sort((a,b) => new Date(a.dataReg) - new Date(b.dataReg)); case 'produto_az': return sorted.sort((a,b) => a.produto.localeCompare(b.produto)); case 'engenheiro_az': return sorted.sort((a,b) => a.engenheiro.localeCompare(b.engenheiro)); default: return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); } }
 
             window.logout = function() { usuarioAtual = null; location.reload(); };
-            window.gerarPDF = function() { window.print(); };
+            
+            window.gerarPDF = function() { 
+                if (atividades.length === 0) {
+                    alert('Nenhuma atividade registrada para gerar o relatório!');
+                    return;
+                }
+                
+                const tituloOriginal = document.title;
+                document.title = 'Relatório de Atividades - Engenharia';
+                
+                const printContainer = document.createElement('div');
+                printContainer.style.position = 'fixed';
+                printContainer.style.top = '0';
+                printContainer.style.left = '0';
+                printContainer.style.width = '100%';
+                printContainer.style.backgroundColor = 'white';
+                printContainer.style.zIndex = '99999';
+                printContainer.style.padding = '20px';
+                
+                printContainer.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="color: #333;">📊 Relatório de Atividades</h2>
+                        <p style="color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        <p style="color: #666; font-size: 12px;">Usuário: ${usuarioAtual.nome} (${usuarioAtual.tipo === 'chefe' ? 'Gestor' : 'Engenheiro'})</p>
+                        <hr style="margin: 10px 0;">
+                    </div>
+                `;
+                
+                if (usuarioAtual.tipo === 'chefe') {
+                    const filtrosDiv = document.createElement('div');
+                    filtrosDiv.style.marginBottom = '15px';
+                    filtrosDiv.style.padding = '10px';
+                    filtrosDiv.style.background = '#f5f5f5';
+                    filtrosDiv.style.borderRadius = '8px';
+                    filtrosDiv.style.fontSize = '12px';
+                    
+                    let filtrosTexto = '<strong>Filtros aplicados:</strong> ';
+                    const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value;
+                    if (engenheiroFiltro && engenheiroFiltro !== 'todos') {
+                        filtrosTexto += `Engenheiro: ${usuarios[engenheiroFiltro]?.nome} | `;
+                    }
+                    const produtoFiltro = document.getElementById('filtroProduto')?.value;
+                    if (produtoFiltro && produtoFiltro !== 'todos') {
+                        filtrosTexto += `Produto: ${produtoFiltro} | `;
+                    }
+                    const mesFiltro = document.getElementById('filtroMes')?.value;
+                    if (mesFiltro && mesFiltro !== 'todos') {
+                        filtrosTexto += `Mês: ${mesFiltro} | `;
+                    }
+                    const anoFiltro = document.getElementById('filtroAno')?.value;
+                    if (anoFiltro && anoFiltro !== 'todos') {
+                        filtrosTexto += `Ano: ${anoFiltro} | `;
+                    }
+                    const statusFiltro = document.getElementById('filtroStatus')?.value;
+                    if (statusFiltro && statusFiltro !== 'todos') {
+                        filtrosTexto += `Status: ${statusFiltro} | `;
+                    }
+                    const areaFiltro = document.getElementById('filtroAreaDemandante')?.value;
+                    if (areaFiltro && areaFiltro !== 'todos') {
+                        filtrosTexto += `Área: ${areaFiltro}`;
+                    }
+                    if (filtrosTexto === '<strong>Filtros aplicados:</strong> ') {
+                        filtrosTexto = '<strong>Filtros aplicados:</strong> Nenhum filtro selecionado';
+                    }
+                    filtrosDiv.innerHTML = filtrosTexto;
+                    printContainer.appendChild(filtrosDiv);
+                }
+                
+                const tabelaOriginal = document.querySelector('#relatorioTable');
+                if (tabelaOriginal) {
+                    const tabelaClone = tabelaOriginal.cloneNode(true);
+                    const cabecalho = tabelaClone.querySelector('thead tr');
+                    if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList?.contains('no-print')) {
+                        cabecalho.removeChild(cabecalho.lastChild);
+                    }
+                    const linhas = tabelaClone.querySelectorAll('tbody tr');
+                    linhas.forEach(linha => {
+                        if (linha.lastChild && linha.lastChild.classList?.contains('no-print')) {
+                            linha.removeChild(linha.lastChild);
+                        }
+                    });
+                    printContainer.appendChild(tabelaClone);
+                }
+                
+                printContainer.innerHTML += `
+                    <div style="text-align: center; margin-top: 20px; font-size: 10px; color: #999;">
+                        <hr style="margin: 10px 0;">
+                        <p>Sistema de Relatórios de Engenharia - Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+                `;
+                
+                document.body.appendChild(printContainer);
+                window.print();
+                
+                setTimeout(() => {
+                    if (printContainer && printContainer.parentNode) {
+                        printContainer.parentNode.removeChild(printContainer);
+                    }
+                    document.title = tituloOriginal;
+                }, 500);
+            };
 
             function carregarInterface() { 
                 const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : ''; 
@@ -453,6 +679,16 @@
                 document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes); 
                 document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); }); 
                 gerarRelatorioAtual(); 
+                
+                const campoProcesso = document.getElementById('processo');
+                campoProcesso.addEventListener('input', function() {
+                    aplicarMascaraProcesso(this);
+                });
+                campoProcesso.addEventListener('blur', function() {
+                    if (this.value) {
+                        validarProcesso(this.value);
+                    }
+                });
             }
 
             function mostrarSugestoes() { 
@@ -477,11 +713,37 @@
                 const projeto = document.getElementById('projeto').value; 
                 const tipo = document.getElementById('tipoAtividade').value; 
                 const desc = document.getElementById('descricao').value; 
+                const areaDemandante = document.getElementById('areaDemandante').value;
+                const processo = document.getElementById('processo').value;
+                
+                if (processo && !validarProcesso(processo)) {
+                    return;
+                }
+                
                 if (!produto) { alert('Selecione um produto!'); return; } 
-                if (!projeto) { alert('Preencha o Projeto!'); return; } 
-                if (!tipo) { alert('Preencha o Tipo!'); return; } 
-                if (!desc) { alert('Preencha a Descrição!'); return; } 
-                const atividade = { id: Date.now(), engenheiro: usuarioAtual.nome, loginEng: usuarioAtual.login, dataReg: new Date().toISOString(), mes: document.getElementById('mesRelatorio').value, ano: document.getElementById('anoRelatorio').value, produto, projeto, processo: document.getElementById('processo').value || '', tipoAtividade: tipo, descricao: desc, status: document.getElementById('status').value, prioridade: document.getElementById('prioridade').value, dataSolicitacao: document.getElementById('dataSolicitacao').value || '', dataLimite: document.getElementById('dataLimite').value || '', areaDemandante: document.getElementById('areaDemandante').value || '', observacoes: document.getElementById('observacoes').value || '' }; 
+                if (!projeto) { alert('Preencha o Projeto/Empreendimento!'); return; } 
+                if (!tipo) { alert('Preencha o Tipo de Atividade!'); return; } 
+                if (!desc) { alert('Preencha a Atividade/Descrição!'); return; } 
+                
+                const atividade = { 
+                    id: Date.now(), 
+                    engenheiro: usuarioAtual.nome, 
+                    loginEng: usuarioAtual.login, 
+                    dataReg: new Date().toISOString(), 
+                    mes: document.getElementById('mesRelatorio').value, 
+                    ano: document.getElementById('anoRelatorio').value, 
+                    produto, 
+                    projeto, 
+                    processo: processo || '', 
+                    tipoAtividade: tipo, 
+                    descricao: desc, 
+                    status: document.getElementById('status').value, 
+                    prioridade: document.getElementById('prioridade').value, 
+                    dataSolicitacao: document.getElementById('dataSolicitacao').value || '', 
+                    dataLimite: document.getElementById('dataLimite').value || '', 
+                    areaDemandante: areaDemandante || '', 
+                    observacoes: document.getElementById('observacoes').value || '' 
+                }; 
                 atividades.push(atividade); 
                 salvarDados(); 
                 alert(`✅ Atividade salva!`); 
@@ -490,7 +752,12 @@
                 if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
             }
 
-            function limparFormulario() { document.getElementById('activityForm').reset(); const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']; document.getElementById('mesRelatorio').value = meses[new Date().getMonth()]; document.getElementById('anoRelatorio').value = '2026'; }
+            function limparFormulario() { 
+                document.getElementById('activityForm').reset(); 
+                const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']; 
+                document.getElementById('mesRelatorio').value = meses[new Date().getMonth()]; 
+                document.getElementById('anoRelatorio').value = '2026'; 
+            }
 
             function gerarRelatorioAtual() { 
                 let filtradas = [...atividades]; 
@@ -504,7 +771,9 @@
                     const anoFiltro = document.getElementById('filtroAno')?.value || 'todos'; 
                     if (anoFiltro !== 'todos') filtradas = filtradas.filter(a => a.ano === anoFiltro); 
                     const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos'; 
-                    if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro); 
+                    if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
+                    const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
+                    if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
                     const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente'; 
                     filtradas = ordenarAtividades(filtradas, ordem); 
                 } else if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') { 
@@ -516,7 +785,7 @@
                 const tbody = document.getElementById('relatorioBody'); 
                 tbody.innerHTML = ''; 
                 if (filtradas.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
                     return; 
                 } 
                 filtradas.forEach(act => { 
@@ -526,7 +795,7 @@
                     else if (act.status === 'Em andamento') statusColor = '#4299e1'; 
                     else if (act.status === 'Pendente') statusColor = '#ed8936'; 
                     else if (act.status === 'Atrasada') statusColor = '#f56565'; 
-                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:4px 8px;font-size:11px;" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
+                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.areaDemandante || '-'}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
                 }); 
             }
 
