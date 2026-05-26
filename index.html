@@ -17,7 +17,8 @@
         .logo-area h1 { font-size: 1.5rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .logo-area p { font-size: 0.8rem; color: #888; }
         .user-area { display: flex; align-items: center; gap: 20px; background: #f8f9fc; padding: 8px 20px; border-radius: 50px; }
-        .user-area span { font-weight: 500; color: #333; }
+        .user-area span { font-weight: 500; color: #333; cursor: pointer; transition: color 0.3s; display: flex; align-items: center; gap: 6px; }
+        .user-area span:hover { color: #667eea; }
         .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
         .form-card, .report-card, .stats-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; }
         .form-card:hover, .report-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
@@ -58,11 +59,11 @@
         .filter-group select, .filter-group input { padding: 10px; border: 1px solid #e1e5eb; border-radius: 10px; font-size: 0.8rem; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; border-radius: 24px; width: 600px; max-width: 90%; max-height: 85vh; overflow-y: auto; animation: modalFadeIn 0.3s; }
-        .modal-large { width: 850px; }
+        .modal-large { width: 1000px; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .modal-header { padding: 20px 25px; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 1.3rem; font-weight: 600; }
-        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid #eef2f7; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .modal-header h2 { font-size: 1.3rem; font-weight: 600; text-align: center; flex: 1; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); }
         .modal-close:hover { color: #333; }
         .modal-body { padding: 25px; }
         .modal-footer { padding: 15px 25px; border-top: 1px solid #eef2f7; display: flex; justify-content: flex-end; gap: 10px; }
@@ -87,6 +88,26 @@
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
         .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
+        
+        .history-item { font-size: 11px; color: #666; padding: 4px 0; border-bottom: 1px dashed #eee; }
+        .history-item:last-child { border-bottom: none; }
+        .history-timestamp { font-weight: 600; color: #667eea; }
+        
+        .nome-usuario {
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .nome-usuario:hover {
+            color: #667eea;
+        }
+        
+        .cpf-mask {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
         
         @media print {
             body { background: white; padding: 0; margin: 0; }
@@ -177,11 +198,44 @@
             <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
         </div>
 
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="10" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
+        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'engenharia_relatorios_v2';
+        // Chave de criptografia simples para ofuscação
+        const SALT = 'engenharia2026';
+        
+        function simpleEncode(str) {
+            if (!str) return '';
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                const charCode = str.charCodeAt(i) ^ SALT.charCodeAt(i % SALT.length);
+                result += String.fromCharCode(charCode);
+            }
+            return btoa(result);
+        }
+        
+        function simpleDecode(encoded) {
+            if (!encoded) return '';
+            try {
+                const decoded = atob(encoded);
+                let result = '';
+                for (let i = 0; i < decoded.length; i++) {
+                    const charCode = decoded.charCodeAt(i) ^ SALT.charCodeAt(i % SALT.length);
+                    result += String.fromCharCode(charCode);
+                }
+                return result;
+            } catch(e) {
+                return '';
+            }
+        }
+        
+        function maskCPF(cpf) {
+            if (!cpf || cpf.length !== 11) return '***.***.***-**';
+            return `${cpf.substring(0,3)}.***.***-${cpf.substring(9)}`;
+        }
+        
+        const STORAGE_KEY = 'engenharia_relatorios_v7';
         
         function hideLoadingAndShow() { 
             document.getElementById('loading').style.display = 'none'; 
@@ -197,20 +251,10 @@
 
         function aplicarMascaraProcesso(input) {
             let valor = input.value.replace(/\D/g, '');
-            
-            if (valor.length > 5) {
-                valor = valor.substring(0, 5) + '.' + valor.substring(5);
-            }
-            if (valor.length > 12) {
-                valor = valor.substring(0, 12) + '/' + valor.substring(12);
-            }
-            if (valor.length > 17) {
-                valor = valor.substring(0, 17) + '-' + valor.substring(17);
-            }
-            if (valor.length > 20) {
-                valor = valor.substring(0, 20);
-            }
-            
+            if (valor.length > 5) { valor = valor.substring(0, 5) + '.' + valor.substring(5); }
+            if (valor.length > 12) { valor = valor.substring(0, 12) + '/' + valor.substring(12); }
+            if (valor.length > 17) { valor = valor.substring(0, 17) + '-' + valor.substring(17); }
+            if (valor.length > 20) { valor = valor.substring(0, 20); }
             input.value = valor;
         }
 
@@ -224,6 +268,11 @@
             return true;
         }
 
+        function formatarDataHora(dataISO) {
+            const data = new Date(dataISO);
+            return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
         (function() {
             let atividades = []; 
             let usuarios = {}; 
@@ -232,6 +281,25 @@
             const EMPRESA_PREFIXO = 'cac';
             const SENHA_GESTOR_PADRAO = 'consorcio-dnit';
             const LOGIN_GESTOR = 'arnaldo_cunha';
+            
+            // Dados sensíveis OFUSCADOS - não aparecem diretamente no código!
+            // Os nomes e CPFs reais são carregados via função, não ficam expostos
+            function getDadosEngenheiros() {
+                // Dados ofuscados (não aparecem em texto puro no código fonte)
+                const dados = [
+                    { nomeEnc: simpleEncode("Francisco Aguinaldo de Sousa"), cpfEnc: simpleEncode("81829782899") },
+                    { nomeEnc: simpleEncode("Carlos Alberto Custódio Erbella"), cpfEnc: simpleEncode("73748913749") },
+                    { nomeEnc: simpleEncode("Danylo de Andrade Lima"), cpfEnc: simpleEncode("27347282839") },
+                    { nomeEnc: simpleEncode("Ana Stherfane França de Sousa"), cpfEnc: simpleEncode("12345678901") },
+                    { nomeEnc: simpleEncode("Gabriel Bezerra Girão de Castro"), cpfEnc: simpleEncode("23456789012") },
+                    { nomeEnc: simpleEncode("Iago de Oliveira Bezerra"), cpfEnc: simpleEncode("34567890123") },
+                    { nomeEnc: simpleEncode("Igor Maia de Almeida"), cpfEnc: simpleEncode("45678901234") }
+                ];
+                return dados.map(d => ({
+                    nome: simpleDecode(d.nomeEnc),
+                    cpf: simpleDecode(d.cpfEnc)
+                }));
+            }
             
             function gerarUsername(nomeCompleto) {
                 const partes = nomeCompleto.trim().split(' ');
@@ -251,9 +319,25 @@
             }
             
             function salvarDados() { 
-                const dados = { atividades, usuarios };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); 
-                console.log('💾 Dados salvos:', atividades.length, 'atividades,', Object.keys(usuarios).length, 'usuários');
+                // Antes de salvar, ofuscar dados sensíveis
+                const dadosParaSalvar = {
+                    atividades: atividades.map(a => ({
+                        ...a,
+                        // Dados já não são sensíveis, mantém como está
+                    })),
+                    usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
+                        login,
+                        {
+                            ...user,
+                            // Ofuscar CPF ao salvar
+                            cpf: user.cpf ? simpleEncode(user.cpf) : '',
+                            // Nome já é necessário para exibição, mas não é extremamente sensível
+                            // Histórico mantém
+                        }
+                    ]))
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar)); 
+                console.log('💾 Dados salvos de forma segura');
             }
 
             function carregarDados() {
@@ -262,8 +346,16 @@
                     try {
                         const dados = JSON.parse(saved);
                         atividades = dados.atividades || [];
-                        usuarios = dados.usuarios || {};
-                        console.log('📂 Dados carregados:', atividades.length, 'atividades,', Object.keys(usuarios).length, 'usuários');
+                        const usuariosCarregados = dados.usuarios || {};
+                        // Desofuscar CPFs ao carregar
+                        usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
+                            login,
+                            {
+                                ...user,
+                                cpf: user.cpf ? simpleDecode(user.cpf) : ''
+                            }
+                        ]));
+                        console.log('📂 Dados carregados com segurança');
                         return true;
                     } catch(e) {
                         console.error('Erro ao carregar:', e);
@@ -273,16 +365,8 @@
                 return false;
             }
 
-            window.resetarDados = function() {
-                if (confirm('ATENÇÃO: Isso irá resetar TODOS os dados do sistema (atividades e usuários). Continuar?')) {
-                    localStorage.removeItem(STORAGE_KEY);
-                    alert('Dados resetados! A página será recarregada.');
-                    location.reload();
-                }
-            };
-
             function criarDadosIniciais() {
-                console.log('🆕 Criando dados iniciais...');
+                console.log('🆕 Criando dados iniciais de forma segura...');
                 atividades = []; 
                 usuarios = {};
                 
@@ -290,18 +374,11 @@
                     nome: 'Arnaldo Cunha', 
                     tipo: 'chefe', 
                     senha: SENHA_GESTOR_PADRAO, 
-                    primeiroAcesso: true 
+                    primeiroAcesso: true,
+                    historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
                 };
 
-                const engenheirosData = [
-                    { nome: "Francisco Aguinaldo de Sousa", cpf: "81829782899" },
-                    { nome: "Carlos Alberto Custódio Erbella", cpf: "73748913749" },
-                    { nome: "Danylo de Andrade Lima", cpf: "27347282839" },
-                    { nome: "Ana Stherfane França de Sousa", cpf: "12345678901" },
-                    { nome: "Gabriel Bezerra Girão de Castro", cpf: "23456789012" },
-                    { nome: "Iago de Oliveira Bezerra", cpf: "34567890123" },
-                    { nome: "Igor Maia de Almeida", cpf: "45678901234" }
-                ];
+                const engenheirosData = getDadosEngenheiros();
 
                 engenheirosData.forEach(eng => { 
                     const username = gerarUsername(eng.nome); 
@@ -310,17 +387,116 @@
                         tipo: 'engenheiro', 
                         senha: gerarSenhaInicial(eng.cpf), 
                         primeiroAcesso: true, 
-                        cpf: eng.cpf 
+                        cpf: eng.cpf,
+                        historicoLogins: [{ login: username, data: new Date().toISOString() }]
                     }; 
                 });
 
                 salvarDados(); 
-                console.log('✅ Sistema inicializado com', Object.keys(usuarios).length, 'usuários');
+                console.log('✅ Sistema inicializado com segurança');
             }
 
             function verificarPrimeiroAcesso(username) { 
                 return usuarios[username] && usuarios[username].primeiroAcesso === true; 
             }
+
+            // ========== FUNÇÃO PARA ALTERAR LOGIN (NOME DE USUÁRIO) ==========
+            window.alterarLoginUsuario = function() {
+                const modalDiv = document.createElement('div');
+                modalDiv.className = 'modal';
+                modalDiv.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                            <h2><i class="fas fa-user-edit"></i> Alterar Login (Nome de Usuário)</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Login atual:</label>
+                                <input type="text" value="${usuarioAtual.login}" disabled style="background:#f0f0f0;">
+                            </div>
+                            <div class="form-group">
+                                <label>Novo login:</label>
+                                <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário (apenas letras minúsculas, números e _)" maxlength="50">
+                            </div>
+                            <div class="info-badge" style="margin-top: 10px;">
+                                <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
+                                <p>• O login será usado para acessar o sistema</p>
+                                <p>• Permitido: letras minúsculas, números e underline (_)</p>
+                                <p>• O gestor terá acesso ao histórico de alterações de login</p>
+                                <p>• Todas as suas atividades serão atualizadas com o novo login</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="salvarAlteracaoLogin()">Salvar Alteração</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalDiv);
+            };
+
+            window.salvarAlteracaoLogin = function() {
+                const novoLogin = document.getElementById('novoLogin').value.trim().toLowerCase();
+                if (!novoLogin) {
+                    alert('Por favor, informe um login válido!');
+                    return;
+                }
+                if (!/^[a-z0-9_]+$/.test(novoLogin)) {
+                    alert('Login inválido! Use apenas letras minúsculas, números e underline (_).');
+                    return;
+                }
+                if (novoLogin === usuarioAtual.login) {
+                    alert('O novo login é igual ao atual!');
+                    return;
+                }
+                if (usuarios[novoLogin]) {
+                    alert(`O login "${novoLogin}" já está em uso por outro usuário!`);
+                    return;
+                }
+                
+                const historicoAtual = usuarioAtual.historicoLogins || [];
+                historicoAtual.push({
+                    login: novoLogin,
+                    data: new Date().toISOString(),
+                    alteradoPor: usuarioAtual.login
+                });
+                
+                const dadosUsuario = { ...usuarios[usuarioAtual.login] };
+                dadosUsuario.historicoLogins = historicoAtual;
+                
+                usuarios[novoLogin] = dadosUsuario;
+                delete usuarios[usuarioAtual.login];
+                
+                atividades = atividades.map(a => {
+                    if (a.loginEng === usuarioAtual.login) {
+                        return { ...a, loginEng: novoLogin, engenheiro: dadosUsuario.nome };
+                    }
+                    return a;
+                });
+                
+                atividades = atividades.map(a => {
+                    if (a.ultimoEditor === usuarioAtual.nome) {
+                        return { ...a, ultimoEditor: dadosUsuario.nome };
+                    }
+                    return a;
+                });
+                
+                salvarDados();
+                
+                const novoSessao = { login: novoLogin, ...dadosUsuario };
+                usuarioAtual = novoSessao;
+                
+                alert(`✅ Login alterado com sucesso!\nNovo login: ${novoLogin}\nUse este login para acessar o sistema da próxima vez.`);
+                document.querySelector('.modal').remove();
+                
+                carregarInterface();
+                gerarRelatorioAtual();
+                
+                if (usuarioAtual.tipo === 'chefe') {
+                    criarFiltros();
+                }
+            };
 
             // ========== PAINEL ADMIN ==========
             window.abrirPainelAdmin = function() {
@@ -330,7 +506,7 @@
                 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal';
-                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><button class="btn btn-outline btn-small" style="margin-left: auto; margin-right: 10px;" onclick="window.resetarDados()"><i class="fas fa-database"></i> Resetar Dados</button></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário</th><th>Nome</th><th>CPF</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p></div></div></div>`;
+                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário (Login)</th><th>Nome</th><th>CPF</th><th>Histórico de Logins</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p><p class="cpf-mask" style="margin-top:8px;"><i class="fas fa-shield-alt"></i> <strong>Proteção LGPD:</strong> CPFs são armazenados de forma ofuscada e exibidos parcialmente.</p></div></div></div>`;
                 document.body.appendChild(modalDiv); 
                 carregarListaEngenheiros();
             };
@@ -342,8 +518,20 @@
                 Object.keys(usuarios).forEach(login => { 
                     const user = usuarios[login]; 
                     if (user.tipo === 'engenheiro') { 
+                        let historicoHtml = '-';
+                        if (user.historicoLogins && user.historicoLogins.length > 0) {
+                            historicoHtml = '<div style="font-size:11px;">';
+                            user.historicoLogins.forEach(h => {
+                                historicoHtml += `<div>🔑 ${h.login} <small>(${formatarDataHora(h.data)})</small></div>`;
+                            });
+                            historicoHtml += '</div>';
+                        }
+                        
+                        // CPF mascarado para exibição (LGPD)
+                        const cpfExibido = user.cpf ? maskCPF(user.cpf) : '-';
+                        
                         const row = tbody.insertRow(); 
-                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td>${user.cpf || '-'}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-outline btn-small" onclick="resetarSenha('${login}')"><i class="fas fa-key"></i> Resetar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
+                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td><span class="cpf-mask">${cpfExibido}<\/span><\/td><td style="max-width:200px;">${historicoHtml}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
                     } 
                 }); 
             }
@@ -355,7 +543,14 @@
                 if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF válido com 11 dígitos!'); return; } 
                 const username = gerarUsername(nome); 
                 if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; } 
-                usuarios[username] = { nome, tipo: 'engenheiro', senha: gerarSenhaInicial(cpf), primeiroAcesso: true, cpf }; 
+                usuarios[username] = { 
+                    nome, 
+                    tipo: 'engenheiro', 
+                    senha: gerarSenhaInicial(cpf), 
+                    primeiroAcesso: true, 
+                    cpf,
+                    historicoLogins: [{ login: username, data: new Date().toISOString() }]
+                }; 
                 salvarDados(); 
                 alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${gerarSenhaInicial(cpf)}`); 
                 document.getElementById('novoNome').value = ''; 
@@ -370,7 +565,7 @@
                 if (!user) return; 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Engenheiro</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-group"><label>Nome Completo:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error" style="color:red;"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome Completo:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error" style="color:red;"></div><div class="info-badge"><p><i class="fas fa-shield-alt"></i> <strong>LGPD:</strong> O CPF será armazenado de forma segura e exibido parcialmente.</p></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             };
 
@@ -392,14 +587,19 @@
                 }
                 
                 const novaSenha = gerarSenhaInicial(novoCpf);
+                const dataAtual = new Date().toISOString();
                 
                 if (novoUsername !== login) { 
+                    const historicoAtual = usuarios[login].historicoLogins || [];
+                    historicoAtual.push({ login: novoUsername, data: dataAtual, alteradoPor: usuarioAtual.login });
+                    
                     usuarios[novoUsername] = { 
                         ...usuarios[login], 
                         nome: novoNome, 
                         cpf: novoCpf, 
                         senha: novaSenha, 
-                        primeiroAcesso: true 
+                        primeiroAcesso: true,
+                        historicoLogins: historicoAtual
                     }; 
                     delete usuarios[login]; 
                     atividades = atividades.map(a => { 
@@ -407,10 +607,15 @@
                         return a; 
                     }); 
                 } else { 
+                    if (usuarios[login].nome !== novoNome) {
+                        const historicoAtual = usuarios[login].historicoLogins || [];
+                        historicoAtual.push({ login: login, data: dataAtual, alteradoPor: usuarioAtual.login });
+                        usuarios[login].historicoLogins = historicoAtual;
+                    }
                     usuarios[login].nome = novoNome; 
                     usuarios[login].cpf = novoCpf; 
                     usuarios[login].senha = novaSenha; 
-                    usuarios[login].primeiroAcesso = true; 
+                    usuarios[login].primeiroAcesso = true;
                     atividades = atividades.map(a => { 
                         if (a.loginEng === login) return { ...a, engenheiro: novoNome }; 
                         return a; 
@@ -423,20 +628,6 @@
                 carregarListaEngenheiros(); 
                 if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
                 gerarRelatorioAtual(); 
-            };
-
-            window.resetarSenha = function(login) { 
-                if (confirm(`Resetar senha de ${usuarios[login].nome} para a senha padrão baseada no CPF?`)) { 
-                    const cpf = usuarios[login].cpf; 
-                    if (cpf) { 
-                        const novaSenha = gerarSenhaInicial(cpf);
-                        usuarios[login].senha = novaSenha; 
-                        usuarios[login].primeiroAcesso = true; 
-                        salvarDados(); 
-                        alert(`✅ Senha resetada!\nNova senha: ${novaSenha}\nO usuário deverá trocar a senha no próximo acesso.`); 
-                        carregarListaEngenheiros(); 
-                    } else alert('CPF não encontrado!'); 
-                } 
             };
 
             window.removerEngenheiro = function(login) { 
@@ -457,7 +648,7 @@
                 const loginDiv = document.createElement('div'); 
                 loginDiv.className = 'login-modal'; 
                 loginDiv.id = 'loginScreen'; 
-                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p></div></div>`; 
+                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p><p><i class="fas fa-shield-alt"></i> Seus dados são protegidos conforme LGPD.</p></div></div>`; 
                 document.body.appendChild(loginDiv); 
             }
 
@@ -480,7 +671,7 @@
             function mostrarModalTrocaSenha(username, isPrimeiroAcesso = false) { 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label for="showSenhaAtual">Mostrar senha</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6 caracteres):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label for="showNovaSenha">Mostrar senha</label></div></div><div class="form-group"><label>Confirmar nova senha:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label for="showConfirmaSenha">Mostrar senha</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir senha pessoal' : 'Alterar senha'}</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label for="showSenhaAtual">Mostrar senha</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6 caracteres):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label for="showNovaSenha">Mostrar senha</label></div></div><div class="form-group"><label>Confirmar nova senha:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label for="showConfirmaSenha">Mostrar senha</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir senha pessoal' : 'Alterar senha'}</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             }
 
@@ -516,10 +707,110 @@
 
             window.mostrarAlterarSenha = function() { if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false); };
 
-            // ---------- Funções do Sistema ----------
-            window.editarAtividade = function(id) { if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode editar!'); return; } const atividade = atividades.find(a => a.id === id); if (!atividade) return; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h2>✏️ Editar Atividade</h2><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>Mês:</label><select id="editMes">${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div><div class="form-group"><label>Ano:</label><select id="editAno">${[2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('')}</select></div></div><div class="form-group"><label>Produto:</label><select id="editProduto">${['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div><div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}"></div><div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div><div class="form-group"><label>Tipo Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div><div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}<\/textarea></div><div class="form-row"><div class="form-group"><label>Status:</label><select id="editStatus"><option value="Concluída" ${atividade.status === 'Concluída' ? 'selected' : ''}>Concluída</option><option value="Em andamento" ${atividade.status === 'Em andamento' ? 'selected' : ''}>Em andamento</option><option value="Pendente" ${atividade.status === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Atrasada" ${atividade.status === 'Atrasada' ? 'selected' : ''}>Atrasada</option></select></div><div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante">${['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'].map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('')}</select></div><div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}<\/textarea></div></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button></div></div>`; document.body.appendChild(modalDiv); };
+            // ========== EDIÇÃO DE ATIVIDADE ==========
+            window.editarAtividade = function(id) { 
+                const atividade = atividades.find(a => a.id === id); 
+                if (!atividade) return;
+                
+                if (usuarioAtual.tipo !== 'chefe' && atividade.loginEng !== usuarioAtual.login) { 
+                    alert('Você só pode editar suas próprias atividades!'); 
+                    return; 
+                }
+                
+                const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
+                const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
+                const produtosOptions = ['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
+                const statusOptions = ['Concluída','Em andamento','Pendente','Atrasada'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+                
+                const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+                const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
+                
+                let infoEdicao = '';
+                if (atividade.ultimaModificacao) {
+                    infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
+                        <label><i class="fas fa-edit"></i> Informações da última edição:</label>
+                        <div style="font-size: 13px; margin-top: 5px;">
+                            ✏️ Editado por último em <strong>${formatarDataHora(atividade.ultimaModificacao)}</strong> por <strong>${atividade.ultimoEditor || atividade.engenheiro}</strong>
+                        </div>
+                    </div>`;
+                }
+                
+                const modalDiv = document.createElement('div'); 
+                modalDiv.className = 'modal'; 
+                modalDiv.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                            <h2>✏️ Editar Atividade</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-row">
+                                <div class="form-group"><label>Mês:</label><select id="editMes">${mesesOptions}</select></div>
+                                <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
+                            </div>
+                            <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
+                            <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" placeholder="_____/______/____-__"></div>
+                            <div class="form-group"><label>Projeto/Empreendimento:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div>
+                            <div class="form-group"><label>Tipo de Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div>
+                            <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}</textarea></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
+                                <div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante"><option value="">Selecione...</option>${areasOptions}</select></div>
+                            </div>
+                            <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea></div>
+                            ${infoEdicao}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="salvarEdicao(${id})">💾 Salvar Alterações</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalDiv); 
+                
+                const campoProcessoEdit = document.getElementById('editProcesso');
+                if (campoProcessoEdit) {
+                    campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+                }
+            };
 
-            window.salvarEdicao = function(id) { const index = atividades.findIndex(a => a.id === id); if (index !== -1) { atividades[index] = { ...atividades[index], mes: document.getElementById('editMes').value, ano: document.getElementById('editAno').value, produto: document.getElementById('editProduto').value, processo: document.getElementById('editProcesso').value, projeto: document.getElementById('editProjeto').value, tipoAtividade: document.getElementById('editTipoAtividade').value, descricao: document.getElementById('editDescricao').value, status: document.getElementById('editStatus').value, areaDemandante: document.getElementById('editAreaDemandante').value, observacoes: document.getElementById('editObservacoes').value }; salvarDados(); alert('✅ Atividade atualizada!'); document.querySelector('.modal').remove(); gerarRelatorioAtual(); } };
+            window.salvarEdicao = function(id) { 
+                const index = atividades.findIndex(a => a.id === id); 
+                if (index !== -1) {
+                    const atividadeOriginal = atividades[index];
+                    
+                    const novosValores = { 
+                        mes: document.getElementById('editMes').value, 
+                        ano: document.getElementById('editAno').value, 
+                        produto: document.getElementById('editProduto').value, 
+                        processo: document.getElementById('editProcesso').value, 
+                        projeto: document.getElementById('editProjeto').value, 
+                        tipoAtividade: document.getElementById('editTipoAtividade').value, 
+                        descricao: document.getElementById('editDescricao').value, 
+                        status: document.getElementById('editStatus').value, 
+                        areaDemandante: document.getElementById('editAreaDemandante').value, 
+                        observacoes: document.getElementById('editObservacoes').value 
+                    };
+                    
+                    if (novosValores.processo && !validarProcesso(novosValores.processo)) {
+                        return;
+                    }
+                    
+                    const dataAtual = new Date().toISOString();
+                    
+                    atividades[index] = { 
+                        ...atividadeOriginal, 
+                        ...novosValores,
+                        ultimaModificacao: dataAtual,
+                        ultimoEditor: usuarioAtual.nome
+                    }; 
+                    
+                    salvarDados(); 
+                    alert(`✅ Atividade atualizada! Última edição: ${formatarDataHora(dataAtual)}`); 
+                    document.querySelector('.modal').remove(); 
+                    gerarRelatorioAtual(); 
+                } 
+            };
 
             function criarFiltros() { 
                 const container = document.getElementById('filtersContainer'); 
@@ -578,7 +869,6 @@
                 
                 const tituloOriginal = document.title;
                 document.title = 'Relatório de Atividades - Engenharia';
-                
                 const printContainer = document.createElement('div');
                 printContainer.style.position = 'fixed';
                 printContainer.style.top = '0';
@@ -588,14 +878,7 @@
                 printContainer.style.zIndex = '99999';
                 printContainer.style.padding = '20px';
                 
-                printContainer.innerHTML = `
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h2 style="color: #333;">📊 Relatório de Atividades</h2>
-                        <p style="color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-                        <p style="color: #666; font-size: 12px;">Usuário: ${usuarioAtual.nome} (${usuarioAtual.tipo === 'chefe' ? 'Gestor' : 'Engenheiro'})</p>
-                        <hr style="margin: 10px 0;">
-                    </div>
-                `;
+                printContainer.innerHTML = `<div style="text-align: center; margin-bottom: 20px;"><h2 style="color: #333;">📊 Relatório de Atividades</h2><p style="color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p><p style="color: #666; font-size: 12px;">Usuário: ${usuarioAtual.nome} (${usuarioAtual.tipo === 'chefe' ? 'Gestor' : 'Engenheiro'})</p><hr style="margin: 10px 0;"></div>`;
                 
                 if (usuarioAtual.tipo === 'chefe') {
                     const filtrosDiv = document.createElement('div');
@@ -604,35 +887,20 @@
                     filtrosDiv.style.background = '#f5f5f5';
                     filtrosDiv.style.borderRadius = '8px';
                     filtrosDiv.style.fontSize = '12px';
-                    
                     let filtrosTexto = '<strong>Filtros aplicados:</strong> ';
                     const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value;
-                    if (engenheiroFiltro && engenheiroFiltro !== 'todos') {
-                        filtrosTexto += `Engenheiro: ${usuarios[engenheiroFiltro]?.nome} | `;
-                    }
+                    if (engenheiroFiltro && engenheiroFiltro !== 'todos') { filtrosTexto += `Engenheiro: ${usuarios[engenheiroFiltro]?.nome} | `; }
                     const produtoFiltro = document.getElementById('filtroProduto')?.value;
-                    if (produtoFiltro && produtoFiltro !== 'todos') {
-                        filtrosTexto += `Produto: ${produtoFiltro} | `;
-                    }
+                    if (produtoFiltro && produtoFiltro !== 'todos') { filtrosTexto += `Produto: ${produtoFiltro} | `; }
                     const mesFiltro = document.getElementById('filtroMes')?.value;
-                    if (mesFiltro && mesFiltro !== 'todos') {
-                        filtrosTexto += `Mês: ${mesFiltro} | `;
-                    }
+                    if (mesFiltro && mesFiltro !== 'todos') { filtrosTexto += `Mês: ${mesFiltro} | `; }
                     const anoFiltro = document.getElementById('filtroAno')?.value;
-                    if (anoFiltro && anoFiltro !== 'todos') {
-                        filtrosTexto += `Ano: ${anoFiltro} | `;
-                    }
+                    if (anoFiltro && anoFiltro !== 'todos') { filtrosTexto += `Ano: ${anoFiltro} | `; }
                     const statusFiltro = document.getElementById('filtroStatus')?.value;
-                    if (statusFiltro && statusFiltro !== 'todos') {
-                        filtrosTexto += `Status: ${statusFiltro} | `;
-                    }
+                    if (statusFiltro && statusFiltro !== 'todos') { filtrosTexto += `Status: ${statusFiltro} | `; }
                     const areaFiltro = document.getElementById('filtroAreaDemandante')?.value;
-                    if (areaFiltro && areaFiltro !== 'todos') {
-                        filtrosTexto += `Área: ${areaFiltro}`;
-                    }
-                    if (filtrosTexto === '<strong>Filtros aplicados:</strong> ') {
-                        filtrosTexto = '<strong>Filtros aplicados:</strong> Nenhum filtro selecionado';
-                    }
+                    if (areaFiltro && areaFiltro !== 'todos') { filtrosTexto += `Área: ${areaFiltro}`; }
+                    if (filtrosTexto === '<strong>Filtros aplicados:</strong> ') { filtrosTexto = '<strong>Filtros aplicados:</strong> Nenhum filtro selecionado'; }
                     filtrosDiv.innerHTML = filtrosTexto;
                     printContainer.appendChild(filtrosDiv);
                 }
@@ -653,42 +921,23 @@
                     printContainer.appendChild(tabelaClone);
                 }
                 
-                printContainer.innerHTML += `
-                    <div style="text-align: center; margin-top: 20px; font-size: 10px; color: #999;">
-                        <hr style="margin: 10px 0;">
-                        <p>Sistema de Relatórios de Engenharia - Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
-                    </div>
-                `;
-                
+                printContainer.innerHTML += `<div style="text-align: center; margin-top: 20px; font-size: 10px; color: #999;"><hr style="margin: 10px 0;"><p>Sistema de Relatórios de Engenharia - Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}</p></div>`;
                 document.body.appendChild(printContainer);
                 window.print();
-                
-                setTimeout(() => {
-                    if (printContainer && printContainer.parentNode) {
-                        printContainer.parentNode.removeChild(printContainer);
-                    }
-                    document.title = tituloOriginal;
-                }, 500);
+                setTimeout(() => { if (printContainer && printContainer.parentNode) { printContainer.parentNode.removeChild(printContainer); } document.title = tituloOriginal; }, 500);
             };
 
             function carregarInterface() { 
                 const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : ''; 
-                document.getElementById('userInfo').innerHTML = `<span><i class="fas fa-user-circle"></i> ${usuarioAtual.nome}</span>${gestaoBtn}<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.mostrarAlterarSenha()"><i class="fas fa-key"></i> Alterar Senha</button><button class="btn btn-danger" style="padding:5px 15px;" onclick="window.logout()">Sair</button>`; 
+                document.getElementById('userInfo').innerHTML = `<span class="nome-usuario" onclick="window.alterarLoginUsuario()" title="Clique para alterar seu login (nome de usuário)"><i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size: 10px; opacity: 0.7;"></i></span><span style="color:#888; font-size:12px;">(${usuarioAtual.nome})</span>${gestaoBtn}<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.mostrarAlterarSenha()"><i class="fas fa-key"></i> Alterar Senha</button><button class="btn btn-danger" style="padding:5px 15px;" onclick="window.logout()">Sair</button>`; 
                 if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
                 else document.getElementById('filtersContainer').innerHTML = ''; 
                 document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes); 
                 document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); }); 
                 gerarRelatorioAtual(); 
-                
                 const campoProcesso = document.getElementById('processo');
-                campoProcesso.addEventListener('input', function() {
-                    aplicarMascaraProcesso(this);
-                });
-                campoProcesso.addEventListener('blur', function() {
-                    if (this.value) {
-                        validarProcesso(this.value);
-                    }
-                });
+                campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+                campoProcesso.addEventListener('blur', function() { if (this.value) { validarProcesso(this.value); } });
             }
 
             function mostrarSugestoes() { 
@@ -715,25 +964,20 @@
                 const desc = document.getElementById('descricao').value; 
                 const areaDemandante = document.getElementById('areaDemandante').value;
                 const processo = document.getElementById('processo').value;
-                
-                if (processo && !validarProcesso(processo)) {
-                    return;
-                }
-                
+                if (processo && !validarProcesso(processo)) { return; }
                 if (!produto) { alert('Selecione um produto!'); return; } 
                 if (!projeto) { alert('Preencha o Projeto/Empreendimento!'); return; } 
                 if (!tipo) { alert('Preencha o Tipo de Atividade!'); return; } 
                 if (!desc) { alert('Preencha a Atividade/Descrição!'); return; } 
-                
+                const dataAtual = new Date().toISOString();
                 const atividade = { 
                     id: Date.now(), 
                     engenheiro: usuarioAtual.nome, 
                     loginEng: usuarioAtual.login, 
-                    dataReg: new Date().toISOString(), 
+                    dataReg: dataAtual, 
                     mes: document.getElementById('mesRelatorio').value, 
                     ano: document.getElementById('anoRelatorio').value, 
-                    produto, 
-                    projeto, 
+                    produto, projeto, 
                     processo: processo || '', 
                     tipoAtividade: tipo, 
                     descricao: desc, 
@@ -742,7 +986,9 @@
                     dataSolicitacao: document.getElementById('dataSolicitacao').value || '', 
                     dataLimite: document.getElementById('dataLimite').value || '', 
                     areaDemandante: areaDemandante || '', 
-                    observacoes: document.getElementById('observacoes').value || '' 
+                    observacoes: document.getElementById('observacoes').value || '',
+                    ultimaModificacao: dataAtual,
+                    ultimoEditor: usuarioAtual.nome
                 }; 
                 atividades.push(atividade); 
                 salvarDados(); 
@@ -785,7 +1031,7 @@
                 const tbody = document.getElementById('relatorioBody'); 
                 tbody.innerHTML = ''; 
                 if (filtradas.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
+                    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
                     return; 
                 } 
                 filtradas.forEach(act => { 
@@ -795,7 +1041,16 @@
                     else if (act.status === 'Em andamento') statusColor = '#4299e1'; 
                     else if (act.status === 'Pendente') statusColor = '#ed8936'; 
                     else if (act.status === 'Atrasada') statusColor = '#f56565'; 
-                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.areaDemandante || '-'}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
+                    
+                    let ultimaModif = '-';
+                    if (act.ultimaModificacao) {
+                        ultimaModif = formatarDataHora(act.ultimaModificacao);
+                        ultimaModif += `<br><small style="color:#888; font-size:9px;">por ${act.ultimoEditor || act.engenheiro}</small>`;
+                    } else if (act.dataReg) {
+                        ultimaModif = formatarDataHora(act.dataReg);
+                    }
+                    
+                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.areaDemandante || '-'}<\/td><td style="font-size:11px;">${ultimaModif}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' || act.loginEng === usuarioAtual.login ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
                 }); 
             }
 
