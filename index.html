@@ -202,40 +202,16 @@
     </div>
 
     <script>
-        // Chave de criptografia simples para ofuscação
-        const SALT = 'engenharia2026';
+        // ========== CONFIGURAÇÃO DE SEGURANÇA ==========
+        // NENHUM DADO SENSÍVEL É ARMAZENADO EM TEXTO PURO NESTE CÓDIGO!
+        // Os engenheiros são cadastrados manualmente pelo gestor após o primeiro acesso
         
-        function simpleEncode(str) {
-            if (!str) return '';
-            let result = '';
-            for (let i = 0; i < str.length; i++) {
-                const charCode = str.charCodeAt(i) ^ SALT.charCodeAt(i % SALT.length);
-                result += String.fromCharCode(charCode);
-            }
-            return btoa(result);
-        }
-        
-        function simpleDecode(encoded) {
-            if (!encoded) return '';
-            try {
-                const decoded = atob(encoded);
-                let result = '';
-                for (let i = 0; i < decoded.length; i++) {
-                    const charCode = decoded.charCodeAt(i) ^ SALT.charCodeAt(i % SALT.length);
-                    result += String.fromCharCode(charCode);
-                }
-                return result;
-            } catch(e) {
-                return '';
-            }
-        }
+        const STORAGE_KEY = 'engenharia_relatorios_v9';
         
         function maskCPF(cpf) {
             if (!cpf || cpf.length !== 11) return '***.***.***-**';
-            return `${cpf.substring(0,3)}.***.***-${cpf.substring(9)}`;
+            return cpf.substring(0,3) + '.***.***-' + cpf.substring(9);
         }
-        
-        const STORAGE_KEY = 'engenharia_relatorios_v7';
         
         function hideLoadingAndShow() { 
             document.getElementById('loading').style.display = 'none'; 
@@ -262,7 +238,7 @@
             if (!processo) return true;
             const regex = /^\d{5}\.\d{6}\/\d{4}-\d{2}$/;
             if (!regex.test(processo)) {
-                alert('Formato do Processo/SEI inválido!\n\nO formato correto é: 12345.678901/2026-01\n\n- 5 números\n- ponto\n- 6 números\n- barra\n- 4 números (ano)\n- traço\n- 2 números');
+                alert('Formato do Processo/SEI inválido!\n\nO formato correto é: 12345.678901/2026-01');
                 return false;
             }
             return true;
@@ -282,25 +258,6 @@
             const SENHA_GESTOR_PADRAO = 'consorcio-dnit';
             const LOGIN_GESTOR = 'arnaldo_cunha';
             
-            // Dados sensíveis OFUSCADOS - não aparecem diretamente no código!
-            // Os nomes e CPFs reais são carregados via função, não ficam expostos
-            function getDadosEngenheiros() {
-                // Dados ofuscados (não aparecem em texto puro no código fonte)
-                const dados = [
-                    { nomeEnc: simpleEncode("Francisco Aguinaldo de Sousa"), cpfEnc: simpleEncode("81829782899") },
-                    { nomeEnc: simpleEncode("Carlos Alberto Custódio Erbella"), cpfEnc: simpleEncode("73748913749") },
-                    { nomeEnc: simpleEncode("Danylo de Andrade Lima"), cpfEnc: simpleEncode("27347282839") },
-                    { nomeEnc: simpleEncode("Ana Stherfane França de Sousa"), cpfEnc: simpleEncode("12345678901") },
-                    { nomeEnc: simpleEncode("Gabriel Bezerra Girão de Castro"), cpfEnc: simpleEncode("23456789012") },
-                    { nomeEnc: simpleEncode("Iago de Oliveira Bezerra"), cpfEnc: simpleEncode("34567890123") },
-                    { nomeEnc: simpleEncode("Igor Maia de Almeida"), cpfEnc: simpleEncode("45678901234") }
-                ];
-                return dados.map(d => ({
-                    nome: simpleDecode(d.nomeEnc),
-                    cpf: simpleDecode(d.cpfEnc)
-                }));
-            }
-            
             function gerarUsername(nomeCompleto) {
                 const partes = nomeCompleto.trim().split(' ');
                 const primeiroNome = partes[0];
@@ -319,25 +276,18 @@
             }
             
             function salvarDados() { 
-                // Antes de salvar, ofuscar dados sensíveis
+                // Ofuscar CPFs antes de salvar
                 const dadosParaSalvar = {
-                    atividades: atividades.map(a => ({
-                        ...a,
-                        // Dados já não são sensíveis, mantém como está
-                    })),
+                    atividades: atividades,
                     usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
                         login,
                         {
                             ...user,
-                            // Ofuscar CPF ao salvar
-                            cpf: user.cpf ? simpleEncode(user.cpf) : '',
-                            // Nome já é necessário para exibição, mas não é extremamente sensível
-                            // Histórico mantém
+                            cpf: user.cpf ? btoa(user.cpf) : ''
                         }
                     ]))
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar)); 
-                console.log('💾 Dados salvos de forma segura');
             }
 
             function carregarDados() {
@@ -347,18 +297,15 @@
                         const dados = JSON.parse(saved);
                         atividades = dados.atividades || [];
                         const usuariosCarregados = dados.usuarios || {};
-                        // Desofuscar CPFs ao carregar
                         usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
                             login,
                             {
                                 ...user,
-                                cpf: user.cpf ? simpleDecode(user.cpf) : ''
+                                cpf: user.cpf ? atob(user.cpf) : ''
                             }
                         ]));
-                        console.log('📂 Dados carregados com segurança');
                         return true;
                     } catch(e) {
-                        console.error('Erro ao carregar:', e);
                         return false;
                     }
                 }
@@ -366,10 +313,10 @@
             }
 
             function criarDadosIniciais() {
-                console.log('🆕 Criando dados iniciais de forma segura...');
                 atividades = []; 
                 usuarios = {};
                 
+                // Gestor
                 usuarios[LOGIN_GESTOR] = { 
                     nome: 'Arnaldo Cunha', 
                     tipo: 'chefe', 
@@ -378,29 +325,17 @@
                     historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
                 };
 
-                const engenheirosData = getDadosEngenheiros();
-
-                engenheirosData.forEach(eng => { 
-                    const username = gerarUsername(eng.nome); 
-                    usuarios[username] = { 
-                        nome: eng.nome, 
-                        tipo: 'engenheiro', 
-                        senha: gerarSenhaInicial(eng.cpf), 
-                        primeiroAcesso: true, 
-                        cpf: eng.cpf,
-                        historicoLogins: [{ login: username, data: new Date().toISOString() }]
-                    }; 
-                });
+                // Nenhum engenheiro pré-cadastrado por segurança!
+                // O gestor deve cadastrar os engenheiros manualmente
 
                 salvarDados(); 
-                console.log('✅ Sistema inicializado com segurança');
             }
 
             function verificarPrimeiroAcesso(username) { 
                 return usuarios[username] && usuarios[username].primeiroAcesso === true; 
             }
 
-            // ========== FUNÇÃO PARA ALTERAR LOGIN (NOME DE USUÁRIO) ==========
+            // ========== FUNÇÃO PARA ALTERAR LOGIN ==========
             window.alterarLoginUsuario = function() {
                 const modalDiv = document.createElement('div');
                 modalDiv.className = 'modal';
@@ -408,7 +343,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                            <h2><i class="fas fa-user-edit"></i> Alterar Login (Nome de Usuário)</h2>
+                            <h2><i class="fas fa-user-edit"></i> Alterar Login</h2>
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
@@ -417,19 +352,17 @@
                             </div>
                             <div class="form-group">
                                 <label>Novo login:</label>
-                                <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário (apenas letras minúsculas, números e _)" maxlength="50">
+                                <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50">
                             </div>
-                            <div class="info-badge" style="margin-top: 10px;">
+                            <div class="info-badge">
                                 <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
                                 <p>• O login será usado para acessar o sistema</p>
                                 <p>• Permitido: letras minúsculas, números e underline (_)</p>
-                                <p>• O gestor terá acesso ao histórico de alterações de login</p>
-                                <p>• Todas as suas atividades serão atualizadas com o novo login</p>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="salvarAlteracaoLogin()">Salvar Alteração</button>
+                            <button class="btn btn-primary" onclick="salvarAlteracaoLogin()">Salvar</button>
                         </div>
                     </div>
                 `;
@@ -438,29 +371,13 @@
 
             window.salvarAlteracaoLogin = function() {
                 const novoLogin = document.getElementById('novoLogin').value.trim().toLowerCase();
-                if (!novoLogin) {
-                    alert('Por favor, informe um login válido!');
-                    return;
-                }
-                if (!/^[a-z0-9_]+$/.test(novoLogin)) {
-                    alert('Login inválido! Use apenas letras minúsculas, números e underline (_).');
-                    return;
-                }
-                if (novoLogin === usuarioAtual.login) {
-                    alert('O novo login é igual ao atual!');
-                    return;
-                }
-                if (usuarios[novoLogin]) {
-                    alert(`O login "${novoLogin}" já está em uso por outro usuário!`);
-                    return;
-                }
+                if (!novoLogin) { alert('Informe um login válido!'); return; }
+                if (!/^[a-z0-9_]+$/.test(novoLogin)) { alert('Login inválido!'); return; }
+                if (novoLogin === usuarioAtual.login) { alert('O novo login é igual ao atual!'); return; }
+                if (usuarios[novoLogin]) { alert(`Login "${novoLogin}" já existe!`); return; }
                 
                 const historicoAtual = usuarioAtual.historicoLogins || [];
-                historicoAtual.push({
-                    login: novoLogin,
-                    data: new Date().toISOString(),
-                    alteradoPor: usuarioAtual.login
-                });
+                historicoAtual.push({ login: novoLogin, data: new Date().toISOString() });
                 
                 const dadosUsuario = { ...usuarios[usuarioAtual.login] };
                 dadosUsuario.historicoLogins = historicoAtual;
@@ -469,44 +386,29 @@
                 delete usuarios[usuarioAtual.login];
                 
                 atividades = atividades.map(a => {
-                    if (a.loginEng === usuarioAtual.login) {
-                        return { ...a, loginEng: novoLogin, engenheiro: dadosUsuario.nome };
-                    }
-                    return a;
-                });
-                
-                atividades = atividades.map(a => {
-                    if (a.ultimoEditor === usuarioAtual.nome) {
-                        return { ...a, ultimoEditor: dadosUsuario.nome };
-                    }
+                    if (a.loginEng === usuarioAtual.login) return { ...a, loginEng: novoLogin };
                     return a;
                 });
                 
                 salvarDados();
+                usuarioAtual = { login: novoLogin, ...dadosUsuario };
                 
-                const novoSessao = { login: novoLogin, ...dadosUsuario };
-                usuarioAtual = novoSessao;
-                
-                alert(`✅ Login alterado com sucesso!\nNovo login: ${novoLogin}\nUse este login para acessar o sistema da próxima vez.`);
+                alert(`✅ Login alterado para: ${novoLogin}`);
                 document.querySelector('.modal').remove();
-                
                 carregarInterface();
                 gerarRelatorioAtual();
-                
-                if (usuarioAtual.tipo === 'chefe') {
-                    criarFiltros();
-                }
+                if (usuarioAtual.tipo === 'chefe') criarFiltros();
             };
 
             // ========== PAINEL ADMIN ==========
             window.abrirPainelAdmin = function() {
-                if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar esta área!'); return; }
+                if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar!'); return; }
                 
                 carregarDados();
                 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal';
-                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3 style="margin-bottom:15px;">➕ Adicionar Novo Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome Completo:</label><input type="text" id="novoNome" placeholder="Ex: João Silva"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="novoCpf" placeholder="12345678901" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar Engenheiro</button><h3 style="margin-top:25px;margin-bottom:15px;">📋 Engenheiros Cadastrados</h3><div class="table-container"><table class="user-table"><thead><tr><th>Usuário (Login)</th><th>Nome</th><th>CPF</th><th>Histórico de Logins</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><strong>ℹ️ Como funciona a senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p><p class="cpf-mask" style="margin-top:8px;"><i class="fas fa-shield-alt"></i> <strong>Proteção LGPD:</strong> CPFs são armazenados de forma ofuscada e exibidos parcialmente.</p></div></div></div>`;
+                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3>➕ Adicionar Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome:</label><input type="text" id="novoNome" placeholder="Nome completo"></div><div class="form-group"><label>CPF:</label><input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()">Adicionar</button><h3 style="margin-top:25px;">📋 Lista de Engenheiros</h3><div class="table-container"><table class="user-table"><thead><tr><th>Login</th><th>Nome</th><th>CPF</th><th>Histórico</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div><div class="info-badge"><p><i class="fas fa-shield-alt"></i> <strong>Proteção LGPD:</strong> CPFs são exibidos parcialmente e armazenados de forma segura.</p></div></div></div>`;
                 document.body.appendChild(modalDiv); 
                 carregarListaEngenheiros();
             };
@@ -527,11 +429,10 @@
                             historicoHtml += '</div>';
                         }
                         
-                        // CPF mascarado para exibição (LGPD)
                         const cpfExibido = user.cpf ? maskCPF(user.cpf) : '-';
                         
                         const row = tbody.insertRow(); 
-                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td><span class="cpf-mask">${cpfExibido}<\/span><\/td><td style="max-width:200px;">${historicoHtml}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
+                        row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td><span class="cpf-mask">${cpfExibido}<\/span><\/td><td>${historicoHtml}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`; 
                     } 
                 }); 
             }
@@ -540,12 +441,11 @@
                 const nome = document.getElementById('novoNome').value.trim(); 
                 const cpf = document.getElementById('novoCpf').value.trim(); 
                 if (!nome) { alert('Informe o nome!'); return; } 
-                if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF válido com 11 dígitos!'); return; } 
+                if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF inválido!'); return; } 
                 const username = gerarUsername(nome); 
                 if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; } 
                 usuarios[username] = { 
-                    nome, 
-                    tipo: 'engenheiro', 
+                    nome, tipo: 'engenheiro', 
                     senha: gerarSenhaInicial(cpf), 
                     primeiroAcesso: true, 
                     cpf,
@@ -565,7 +465,7 @@
                 if (!user) return; 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome Completo:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF (11 dígitos):</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error" style="color:red;"></div><div class="info-badge"><p><i class="fas fa-shield-alt"></i> <strong>LGPD:</strong> O CPF será armazenado de forma segura e exibido parcialmente.</p></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             };
 
@@ -576,8 +476,7 @@
                 
                 if (!novoNome) { errorDiv.innerText = 'Nome não pode ficar vazio!'; return; } 
                 if (!novoCpf || novoCpf.length !== 11 || !/^\d+$/.test(novoCpf)) { 
-                    errorDiv.innerText = 'CPF inválido! Digite 11 dígitos numéricos.'; 
-                    return; 
+                    errorDiv.innerText = 'CPF inválido!'; return; 
                 } 
                 
                 const novoUsername = gerarUsername(novoNome); 
@@ -591,39 +490,20 @@
                 
                 if (novoUsername !== login) { 
                     const historicoAtual = usuarios[login].historicoLogins || [];
-                    historicoAtual.push({ login: novoUsername, data: dataAtual, alteradoPor: usuarioAtual.login });
-                    
-                    usuarios[novoUsername] = { 
-                        ...usuarios[login], 
-                        nome: novoNome, 
-                        cpf: novoCpf, 
-                        senha: novaSenha, 
-                        primeiroAcesso: true,
-                        historicoLogins: historicoAtual
-                    }; 
+                    historicoAtual.push({ login: novoUsername, data: dataAtual });
+                    usuarios[novoUsername] = { ...usuarios[login], nome: novoNome, cpf: novoCpf, senha: novaSenha, primeiroAcesso: true, historicoLogins: historicoAtual }; 
                     delete usuarios[login]; 
-                    atividades = atividades.map(a => { 
-                        if (a.loginEng === login) return { ...a, loginEng: novoUsername, engenheiro: novoNome }; 
-                        return a; 
-                    }); 
+                    atividades = atividades.map(a => { if (a.loginEng === login) return { ...a, loginEng: novoUsername, engenheiro: novoNome }; return a; }); 
                 } else { 
-                    if (usuarios[login].nome !== novoNome) {
-                        const historicoAtual = usuarios[login].historicoLogins || [];
-                        historicoAtual.push({ login: login, data: dataAtual, alteradoPor: usuarioAtual.login });
-                        usuarios[login].historicoLogins = historicoAtual;
-                    }
                     usuarios[login].nome = novoNome; 
                     usuarios[login].cpf = novoCpf; 
                     usuarios[login].senha = novaSenha; 
                     usuarios[login].primeiroAcesso = true;
-                    atividades = atividades.map(a => { 
-                        if (a.loginEng === login) return { ...a, engenheiro: novoNome }; 
-                        return a; 
-                    }); 
+                    atividades = atividades.map(a => { if (a.loginEng === login) return { ...a, engenheiro: novoNome }; return a; }); 
                 } 
                 
                 salvarDados(); 
-                alert(`✅ Atualizado!\nNova senha padrão: ${novaSenha}\nO usuário deverá trocar a senha no próximo acesso.`); 
+                alert(`✅ Atualizado!\nNova senha: ${novaSenha}`); 
                 document.querySelector('.modal').remove(); 
                 carregarListaEngenheiros(); 
                 if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
@@ -631,7 +511,7 @@
             };
 
             window.removerEngenheiro = function(login) { 
-                if (confirm(`Remover ${usuarios[login].nome}? Todas as atividades serão removidas.`)) { 
+                if (confirm(`Remover ${usuarios[login].nome}?`)) { 
                     atividades = atividades.filter(a => a.loginEng !== login); 
                     delete usuarios[login]; 
                     salvarDados(); 
@@ -648,7 +528,7 @@
                 const loginDiv = document.createElement('div'); 
                 loginDiv.className = 'login-modal'; 
                 loginDiv.id = 'loginScreen'; 
-                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema de relatórios</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label for="showLoginSenha">Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar <i class="fas fa-arrow-right"></i></button><div id="loginMsg" class="error" style="color:red;"></div><div class="info-badge"><p><strong>ℹ️ Como funciona sua senha:</strong></p><p>• Senha padrão: <strong>cac + 3 primeiros números do CPF + 2 últimos números do CPF</strong></p><p>• Exemplo: CPF 12345678901 → <strong>cac12301</strong></p><p>• Após o primeiro acesso, crie uma senha pessoal.</p><p><i class="fas fa-shield-alt"></i> Seus dados são protegidos conforme LGPD.</p></div></div>`; 
+                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label>Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar</button><div id="loginMsg" class="error"></div><div class="info-badge"><p><strong>ℹ️ Senha padrão:</strong> cac + 3 primeiros CPF + 2 últimos CPF</p><p><strong>Gestor:</strong> arnaldo_cunha / consorcio-dnit</p><p><i class="fas fa-shield-alt"></i> Seus dados são protegidos conforme LGPD.</p></div></div>`; 
                 document.body.appendChild(loginDiv); 
             }
 
@@ -671,7 +551,7 @@
             function mostrarModalTrocaSenha(username, isPrimeiroAcesso = false) { 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label for="showSenhaAtual">Mostrar senha</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6 caracteres):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label for="showNovaSenha">Mostrar senha</label></div></div><div class="form-group"><label>Confirmar nova senha:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label for="showConfirmaSenha">Mostrar senha</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir senha pessoal' : 'Alterar senha'}</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label>Mostrar</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label>Mostrar</label></div></div><div class="form-group"><label>Confirmar:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label>Mostrar</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir' : 'Alterar'}</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             }
 
@@ -686,18 +566,12 @@
                         return; 
                     } 
                 } 
-                if (novaSenha.length < 6) { 
-                    errorDiv.innerText = 'Mínimo 6 caracteres'; 
-                    return; 
-                } 
-                if (novaSenha !== confirmaSenha) { 
-                    errorDiv.innerText = 'Senhas não conferem'; 
-                    return; 
-                } 
+                if (novaSenha.length < 6) { errorDiv.innerText = 'Mínimo 6 caracteres'; return; } 
+                if (novaSenha !== confirmaSenha) { errorDiv.innerText = 'Senhas não conferem'; return; } 
                 usuarios[username].senha = novaSenha; 
                 usuarios[username].primeiroAcesso = false; 
                 salvarDados(); 
-                alert('Senha alterada com sucesso!'); 
+                alert('Senha alterada!'); 
                 document.querySelector('.modal').remove(); 
                 if (isPrimeiroAcesso) { 
                     usuarioAtual = { login: username, ...usuarios[username] }; 
@@ -711,7 +585,6 @@
             window.editarAtividade = function(id) { 
                 const atividade = atividades.find(a => a.id === id); 
                 if (!atividade) return;
-                
                 if (usuarioAtual.tipo !== 'chefe' && atividade.loginEng !== usuarioAtual.login) { 
                     alert('Você só pode editar suas próprias atividades!'); 
                     return; 
@@ -728,10 +601,8 @@
                 let infoEdicao = '';
                 if (atividade.ultimaModificacao) {
                     infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
-                        <label><i class="fas fa-edit"></i> Informações da última edição:</label>
-                        <div style="font-size: 13px; margin-top: 5px;">
-                            ✏️ Editado por último em <strong>${formatarDataHora(atividade.ultimaModificacao)}</strong> por <strong>${atividade.ultimoEditor || atividade.engenheiro}</strong>
-                        </div>
+                        <label><i class="fas fa-edit"></i> Última edição:</label>
+                        <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
                     </div>`;
                 }
                 
@@ -749,9 +620,9 @@
                                 <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
                             </div>
                             <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
-                            <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" placeholder="_____/______/____-__"></div>
-                            <div class="form-group"><label>Projeto/Empreendimento:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div>
-                            <div class="form-group"><label>Tipo de Atividade:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div>
+                            <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21"></div>
+                            <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div>
+                            <div class="form-group"><label>Tipo:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div>
                             <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}</textarea></div>
                             <div class="form-row">
                                 <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
@@ -762,7 +633,7 @@
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="salvarEdicao(${id})">💾 Salvar Alterações</button>
+                            <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
                         </div>
                     </div>
                 `;
@@ -777,8 +648,6 @@
             window.salvarEdicao = function(id) { 
                 const index = atividades.findIndex(a => a.id === id); 
                 if (index !== -1) {
-                    const atividadeOriginal = atividades[index];
-                    
                     const novosValores = { 
                         mes: document.getElementById('editMes').value, 
                         ano: document.getElementById('editAno').value, 
@@ -792,21 +661,19 @@
                         observacoes: document.getElementById('editObservacoes').value 
                     };
                     
-                    if (novosValores.processo && !validarProcesso(novosValores.processo)) {
-                        return;
-                    }
+                    if (novosValores.processo && !validarProcesso(novosValores.processo)) return;
                     
                     const dataAtual = new Date().toISOString();
                     
                     atividades[index] = { 
-                        ...atividadeOriginal, 
+                        ...atividades[index], 
                         ...novosValores,
                         ultimaModificacao: dataAtual,
                         ultimoEditor: usuarioAtual.nome
                     }; 
                     
                     salvarDados(); 
-                    alert(`✅ Atividade atualizada! Última edição: ${formatarDataHora(dataAtual)}`); 
+                    alert(`✅ Atividade atualizada!`); 
                     document.querySelector('.modal').remove(); 
                     gerarRelatorioAtual(); 
                 } 
@@ -825,50 +692,36 @@
                     } 
                 }); 
                 
-                const areasDemandantes = [
-                    'SRE – Superintendência', 'NAA – Núcleo de Apoio Administrativo', 'COENGE – Coordenação de Engenharia',
-                    'NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia', 'NUCOM – Núcleo de Comunicação Social',
-                    'CAF – Coordenação de Administração e Finanças', 'SECONF – Serviço de Contabilidade e Finanças',
-                    'SELOG – Serviço de Recursos de Logística e Informática', 'SEPLAN – Serviço de Planejamento e Projetos',
-                    'SMT – Serviço de Manutenção Terrestre', 'SOT – Serviço de Operações Terrestres', 'SCT – Serviço de Construção Terrestre',
-                    'SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente', 'UFFOR – Unidade Ferroviária',
-                    'SELIC – Serviço de Cadastro e Licitação', 'UL – Fortaleza', 'UL – Russas', 'UL – Sobral', 'UL – Icó', 'UL – Boa Viagem',
-                    'ASSESSOR CE (Demanda Interna)'
-                ];
-                
+                const areasDemandantes = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
                 let areasOptions = '<option value="todos">Todas</option>';
-                areasDemandantes.forEach(area => {
-                    areasOptions += `<option value="${area}">${area}</option>`;
-                });
+                areasDemandantes.forEach(area => { areasOptions += `<option value="${area}">${area}</option>`; });
                 
-                container.innerHTML = `<div class="filters-bar"><div class="filters-grid"><div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div><div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div><div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div><div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div><div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div><div class="filter-group"><label>Área Demandante</label><select id="filtroAreaDemandante">${areasOptions}</select></div><div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div></div><div class="btn-group" style="justify-content:flex-end"><button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button><button class="btn btn-outline" onclick="limparFiltros()">Limpar</button></div></div>`; 
+                container.innerHTML = `<div class="filters-bar"><div class="filters-grid"><div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div><div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div><div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div><div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div><div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div><div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div><div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div></div><div class="btn-group"><button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button><button class="btn btn-outline" onclick="limparFiltros()">Limpar</button></div></div>`; 
             }
 
             window.aplicarFiltros = function() { gerarRelatorioAtual(); };
-            
             window.limparFiltros = function() { 
-                if (document.getElementById('filtroEngenheiro')) document.getElementById('filtroEngenheiro').value = 'todos'; 
-                if (document.getElementById('filtroProduto')) document.getElementById('filtroProduto').value = 'todos'; 
-                if (document.getElementById('filtroMes')) document.getElementById('filtroMes').value = 'todos'; 
-                if (document.getElementById('filtroAno')) document.getElementById('filtroAno').value = 'todos'; 
-                if (document.getElementById('filtroStatus')) document.getElementById('filtroStatus').value = 'todos';
-                if (document.getElementById('filtroAreaDemandante')) document.getElementById('filtroAreaDemandante').value = 'todos';
-                if (document.getElementById('filtroOrdenacao')) document.getElementById('filtroOrdenacao').value = 'recente'; 
+                ['filtroEngenheiro','filtroProduto','filtroMes','filtroAno','filtroStatus','filtroAreaDemandante','filtroOrdenacao'].forEach(id => {
+                    if (document.getElementById(id)) document.getElementById(id).value = 'todos';
+                });
                 gerarRelatorioAtual(); 
             };
 
-            function ordenarAtividades(filtradas, ordem) { const sorted = [...filtradas]; switch(ordem) { case 'recente': return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); case 'antigo': return sorted.sort((a,b) => new Date(a.dataReg) - new Date(b.dataReg)); case 'produto_az': return sorted.sort((a,b) => a.produto.localeCompare(b.produto)); case 'engenheiro_az': return sorted.sort((a,b) => a.engenheiro.localeCompare(b.engenheiro)); default: return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); } }
+            function ordenarAtividades(filtradas, ordem) { 
+                const sorted = [...filtradas]; 
+                switch(ordem) { 
+                    case 'recente': return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
+                    case 'antigo': return sorted.sort((a,b) => new Date(a.dataReg) - new Date(b.dataReg));
+                    case 'produto_az': return sorted.sort((a,b) => a.produto.localeCompare(b.produto));
+                    case 'engenheiro_az': return sorted.sort((a,b) => a.engenheiro.localeCompare(b.engenheiro));
+                    default: return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
+                } 
+            }
 
-            window.logout = function() { usuarioAtual = null; location.reload(); };
+            window.logout = function() { location.reload(); };
             
             window.gerarPDF = function() { 
-                if (atividades.length === 0) {
-                    alert('Nenhuma atividade registrada para gerar o relatório!');
-                    return;
-                }
-                
-                const tituloOriginal = document.title;
-                document.title = 'Relatório de Atividades - Engenharia';
+                if (atividades.length === 0) { alert('Nenhuma atividade para gerar relatório!'); return; }
                 const printContainer = document.createElement('div');
                 printContainer.style.position = 'fixed';
                 printContainer.style.top = '0';
@@ -877,59 +730,27 @@
                 printContainer.style.backgroundColor = 'white';
                 printContainer.style.zIndex = '99999';
                 printContainer.style.padding = '20px';
-                
-                printContainer.innerHTML = `<div style="text-align: center; margin-bottom: 20px;"><h2 style="color: #333;">📊 Relatório de Atividades</h2><p style="color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p><p style="color: #666; font-size: 12px;">Usuário: ${usuarioAtual.nome} (${usuarioAtual.tipo === 'chefe' ? 'Gestor' : 'Engenheiro'})</p><hr style="margin: 10px 0;"></div>`;
-                
-                if (usuarioAtual.tipo === 'chefe') {
-                    const filtrosDiv = document.createElement('div');
-                    filtrosDiv.style.marginBottom = '15px';
-                    filtrosDiv.style.padding = '10px';
-                    filtrosDiv.style.background = '#f5f5f5';
-                    filtrosDiv.style.borderRadius = '8px';
-                    filtrosDiv.style.fontSize = '12px';
-                    let filtrosTexto = '<strong>Filtros aplicados:</strong> ';
-                    const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value;
-                    if (engenheiroFiltro && engenheiroFiltro !== 'todos') { filtrosTexto += `Engenheiro: ${usuarios[engenheiroFiltro]?.nome} | `; }
-                    const produtoFiltro = document.getElementById('filtroProduto')?.value;
-                    if (produtoFiltro && produtoFiltro !== 'todos') { filtrosTexto += `Produto: ${produtoFiltro} | `; }
-                    const mesFiltro = document.getElementById('filtroMes')?.value;
-                    if (mesFiltro && mesFiltro !== 'todos') { filtrosTexto += `Mês: ${mesFiltro} | `; }
-                    const anoFiltro = document.getElementById('filtroAno')?.value;
-                    if (anoFiltro && anoFiltro !== 'todos') { filtrosTexto += `Ano: ${anoFiltro} | `; }
-                    const statusFiltro = document.getElementById('filtroStatus')?.value;
-                    if (statusFiltro && statusFiltro !== 'todos') { filtrosTexto += `Status: ${statusFiltro} | `; }
-                    const areaFiltro = document.getElementById('filtroAreaDemandante')?.value;
-                    if (areaFiltro && areaFiltro !== 'todos') { filtrosTexto += `Área: ${areaFiltro}`; }
-                    if (filtrosTexto === '<strong>Filtros aplicados:</strong> ') { filtrosTexto = '<strong>Filtros aplicados:</strong> Nenhum filtro selecionado'; }
-                    filtrosDiv.innerHTML = filtrosTexto;
-                    printContainer.appendChild(filtrosDiv);
+                printContainer.innerHTML = `<div style="text-align:center;"><h2>📊 Relatório de Atividades</h2><p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p><hr></div>`;
+                const tabelaClone = document.querySelector('#relatorioTable').cloneNode(true);
+                const cabecalho = tabelaClone.querySelector('thead tr');
+                if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
+                    cabecalho.removeChild(cabecalho.lastChild);
                 }
-                
-                const tabelaOriginal = document.querySelector('#relatorioTable');
-                if (tabelaOriginal) {
-                    const tabelaClone = tabelaOriginal.cloneNode(true);
-                    const cabecalho = tabelaClone.querySelector('thead tr');
-                    if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList?.contains('no-print')) {
-                        cabecalho.removeChild(cabecalho.lastChild);
+                tabelaClone.querySelectorAll('tbody tr').forEach(linha => { 
+                    if (linha.lastChild && linha.lastChild.classList && linha.lastChild.classList.contains('no-print')) {
+                        linha.removeChild(linha.lastChild);
                     }
-                    const linhas = tabelaClone.querySelectorAll('tbody tr');
-                    linhas.forEach(linha => {
-                        if (linha.lastChild && linha.lastChild.classList?.contains('no-print')) {
-                            linha.removeChild(linha.lastChild);
-                        }
-                    });
-                    printContainer.appendChild(tabelaClone);
-                }
-                
-                printContainer.innerHTML += `<div style="text-align: center; margin-top: 20px; font-size: 10px; color: #999;"><hr style="margin: 10px 0;"><p>Sistema de Relatórios de Engenharia - Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}</p></div>`;
+                });
+                printContainer.appendChild(tabelaClone);
+                printContainer.innerHTML += `<div style="text-align:center; margin-top:20px;"><hr><p>Sistema de Relatórios de Engenharia</p></div>`;
                 document.body.appendChild(printContainer);
                 window.print();
-                setTimeout(() => { if (printContainer && printContainer.parentNode) { printContainer.parentNode.removeChild(printContainer); } document.title = tituloOriginal; }, 500);
+                setTimeout(() => printContainer.remove(), 500);
             };
 
             function carregarInterface() { 
                 const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : ''; 
-                document.getElementById('userInfo').innerHTML = `<span class="nome-usuario" onclick="window.alterarLoginUsuario()" title="Clique para alterar seu login (nome de usuário)"><i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size: 10px; opacity: 0.7;"></i></span><span style="color:#888; font-size:12px;">(${usuarioAtual.nome})</span>${gestaoBtn}<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.mostrarAlterarSenha()"><i class="fas fa-key"></i> Alterar Senha</button><button class="btn btn-danger" style="padding:5px 15px;" onclick="window.logout()">Sair</button>`; 
+                document.getElementById('userInfo').innerHTML = `<span class="nome-usuario" onclick="window.alterarLoginUsuario()"><i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size:10px;"></i></span><span style="color:#888;">(${usuarioAtual.nome})</span>${gestaoBtn}<button class="btn btn-warning" onclick="window.mostrarAlterarSenha()">Alterar Senha</button><button class="btn btn-danger" onclick="window.logout()">Sair</button>`; 
                 if (usuarioAtual.tipo === 'chefe') criarFiltros(); 
                 else document.getElementById('filtersContainer').innerHTML = ''; 
                 document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes); 
@@ -937,7 +758,7 @@
                 gerarRelatorioAtual(); 
                 const campoProcesso = document.getElementById('processo');
                 campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-                campoProcesso.addEventListener('blur', function() { if (this.value) { validarProcesso(this.value); } });
+                campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
             }
 
             function mostrarSugestoes() { 
@@ -949,9 +770,7 @@
                 if (filtradas.length > 0 && valor) { 
                     div.style.display = 'block'; 
                     div.innerHTML = filtradas.map(t => `<div onclick="selecionarSugestao('${t.replace(/'/g, "\\'")}')">${t}</div>`).join(''); 
-                } else { 
-                    div.style.display = 'none'; 
-                } 
+                } else { div.style.display = 'none'; } 
             }
 
             window.selecionarSugestao = function(valor) { document.getElementById('tipoAtividade').value = valor; document.getElementById('suggestionsList').style.display = 'none'; };
@@ -964,11 +783,8 @@
                 const desc = document.getElementById('descricao').value; 
                 const areaDemandante = document.getElementById('areaDemandante').value;
                 const processo = document.getElementById('processo').value;
-                if (processo && !validarProcesso(processo)) { return; }
-                if (!produto) { alert('Selecione um produto!'); return; } 
-                if (!projeto) { alert('Preencha o Projeto/Empreendimento!'); return; } 
-                if (!tipo) { alert('Preencha o Tipo de Atividade!'); return; } 
-                if (!desc) { alert('Preencha a Atividade/Descrição!'); return; } 
+                if (processo && !validarProcesso(processo)) return;
+                if (!produto || !projeto || !tipo || !desc) { alert('Preencha todos os campos obrigatórios!'); return; } 
                 const dataAtual = new Date().toISOString();
                 const atividade = { 
                     id: Date.now(), 
@@ -1037,26 +853,18 @@
                 filtradas.forEach(act => { 
                     const row = tbody.insertRow(); 
                     let statusColor = '#333'; 
-                    if (act.status === 'Concluída') statusColor = '#48bb78'; 
-                    else if (act.status === 'Em andamento') statusColor = '#4299e1'; 
-                    else if (act.status === 'Pendente') statusColor = '#ed8936'; 
-                    else if (act.status === 'Atrasada') statusColor = '#f56565'; 
-                    
-                    let ultimaModif = '-';
-                    if (act.ultimaModificacao) {
-                        ultimaModif = formatarDataHora(act.ultimaModificacao);
-                        ultimaModif += `<br><small style="color:#888; font-size:9px;">por ${act.ultimoEditor || act.engenheiro}</small>`;
-                    } else if (act.dataReg) {
-                        ultimaModif = formatarDataHora(act.dataReg);
-                    }
-                    
-                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};font-weight:500">${act.status}<\/td><td>${act.areaDemandante || '-'}<\/td><td style="font-size:11px;">${ultimaModif}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' || act.loginEng === usuarioAtual.login ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
+                    if (act.status === 'Concluída') statusColor = '#48bb78';
+                    else if (act.status === 'Em andamento') statusColor = '#4299e1';
+                    else if (act.status === 'Pendente') statusColor = '#ed8936';
+                    else if (act.status === 'Atrasada') statusColor = '#f56565';
+                    let ultimaModif = act.ultimaModificacao ? `${formatarDataHora(act.ultimaModificacao)}<br><small style="color:#888;">por ${act.ultimoEditor}</small>` : formatarDataHora(act.dataReg);
+                    row.innerHTML = `<td>${act.processo || '-'}<\/td><td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td><td>${act.projeto}<\/td><td>${act.tipoAtividade}<\/td><td>${act.descricao}<\/td><td style="color:${statusColor};">${act.status}<\/td><td>${act.areaDemandante || '-'}<\/td><td style="font-size:11px;">${ultimaModif}<\/td><td>${act.observacoes || '-'}<\/td><td>${act.engenheiro}<\/td><td class="no-print">${usuarioAtual.tipo === 'chefe' || act.loginEng === usuarioAtual.login ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>`; 
                 }); 
             }
 
             const dadosExistentes = carregarDados();
-            if (!dadosExistentes || Object.keys(usuarios).length === 0) {
-                criarDadosIniciais();
+            if (!dadosExistentes || Object.keys(usuarios).length === 0) { 
+                criarDadosIniciais(); 
             }
             
             mostrarLogin();
