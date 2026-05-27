@@ -109,17 +109,37 @@
             letter-spacing: 1px;
         }
         
+        /* Estilos para impressão - SEM DUPLICAÇÃO */
         @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .no-print, .modern-header, .main-layout, .user-area, .btn, .btn-group, .stats-card, .header-buttons, .filters-bar .btn-group, .modal, .login-modal { display: none !important; }
-            .report-card, .report-section, .container { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
-            table { font-size: 10px !important; width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid #ccc !important; padding: 6px !important; }
-            .print-header { display: block !important; }
-            .page-break { page-break-before: always; }
-            .filters-bar { margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 8px; }
+            body *:not(#print-report-container):not(#print-report-container *) {
+                visibility: hidden !important;
+            }
+            #print-report-container, #print-report-container * {
+                visibility: visible !important;
+            }
+            #print-report-container {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                padding: 20px !important;
+                margin: 0 !important;
+                z-index: 99999 !important;
+                overflow: visible !important;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 8px;
+                text-align: left;
+            }
         }
-        
+
         @media (max-width: 768px) { 
             .main-layout { grid-template-columns: 1fr; } 
             .modern-header { flex-direction: column; text-align: center; } 
@@ -148,19 +168,19 @@
                         <div class="form-group"><label class="required">Produto:</label><select id="produto" required><option value="">Selecione...</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
                         <div class="form-group">
                             <label>Processo/SEI:</label>
-                            <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21">
+                            <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21" autocomplete="off">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label class="required">Projeto/Empreendimento:</label><input type="text" id="projeto" required></div>
+                        <div class="form-group"><label class="required">Projeto/Empreendimento:</label><input type="text" id="projeto" required autocomplete="off"></div>
                         <div class="form-group suggestions"><label class="required">Tipo de Atividade:</label><input type="text" id="tipoAtividade" required autocomplete="off"><div id="suggestionsList" class="suggestions-list" style="display: none;"></div></div>
                     </div>
-                    <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..."></textarea></div>
+                    <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..." autocomplete="off"></textarea></div>
                     <div class="form-row">
                         <div class="form-group"><label>Status:</label><select id="status"><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
                         <div class="form-group"><label>Prioridade:</label><select id="prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div>
                     </div>
-                    <div class="form-row"><div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao"></div><div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao" autocomplete="off"></div><div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite" autocomplete="off"></div></div>
                     
                     <div class="form-group">
                         <label>Área Demandante:</label>
@@ -190,7 +210,7 @@
                         </select>
                     </div>
                     
-                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..."></textarea></div>
+                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..." autocomplete="off"></textarea></div>
                     <div class="btn-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Atividade</button><button type="button" class="btn btn-outline" onclick="limparFormulario()"><i class="fas fa-eraser"></i> Limpar</button></div>
                 </form>
             </div>
@@ -198,7 +218,7 @@
             <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
         </div>
 
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><tr><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...<\/td><\/tr></tbody></table></div></div>
+        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...</td></tr></tbody></table></div></div>
     </div>
 
     <script>
@@ -352,7 +372,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Novo login:</label>
-                                <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50">
+                                <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50" autocomplete="off">
                             </div>
                             <div class="info-badge">
                                 <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
@@ -408,7 +428,7 @@
                 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal';
-                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3>➕ Adicionar Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome:</label><input type="text" id="novoNome" placeholder="Nome completo"></div><div class="form-group"><label>CPF:</label><input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()">Adicionar</button><h3 style="margin-top:25px;">📋 Lista de Engenheiros</h3><div class="table-container"><table class="user-table"><thead><tr><th>Login</th><th>Nome</th><th>CPF</th><th>Histórico</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div></div></div>`;
+                modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3>➕ Adicionar Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome:</label><input type="text" id="novoNome" placeholder="Nome completo" autocomplete="off"></div><div class="form-group"><label>CPF:</label><input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11" autocomplete="off"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()">Adicionar</button><h3 style="margin-top:25px;">📋 Lista de Engenheiros</h3><div class="table-container"><table class="user-table"><thead><th>Login</th><th>Nome</th><th>CPF</th><th>Histórico</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div></div></div>`;
                 document.body.appendChild(modalDiv); 
                 carregarListaEngenheiros();
             };
@@ -465,7 +485,7 @@
                 if (!user) return; 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}"></div><div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div><div id="editEngError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}" autocomplete="off"></div><div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11" autocomplete="off"></div><div id="editEngError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             };
 
@@ -522,14 +542,32 @@
                 } 
             };
 
-            // ---------- Login ----------
+            // ---------- Login com suporte para tecla ENTER ----------
             function mostrarLogin() { 
                 hideLoadingAndShow(); 
                 const loginDiv = document.createElement('div'); 
                 loginDiv.className = 'login-modal'; 
                 loginDiv.id = 'loginScreen'; 
-                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário"><input type="password" id="userSenha" class="login-input" placeholder="Senha"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label>Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar</button><div id="loginMsg" class="error"></div><div class="info-badge"><p><strong>ℹ️ Senha padrão:</strong> cac + 3 primeiros CPF + 2 últimos CPF</p></div></div>`; 
+                loginDiv.innerHTML = `<div class="login-card"><h2>🔐 Login</h2><p class="login-subtitle">Acesse o sistema</p><input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off"><input type="password" id="userSenha" class="login-input" placeholder="Senha" autocomplete="off"><div class="checkbox-group"><input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')"><label>Mostrar senha</label></div><button onclick="window.efetuarLogin()" class="login-btn">Entrar</button><div id="loginMsg" class="error"></div><div class="info-badge"><p><strong>ℹ️ Senha padrão:</strong> cac + 3 primeiros CPF + 2 últimos CPF</p></div></div>`; 
                 document.body.appendChild(loginDiv); 
+                
+                // Adicionar evento de tecla Enter nos campos de login e senha
+                const loginInput = document.getElementById('userLogin');
+                const senhaInput = document.getElementById('userSenha');
+                
+                function handleEnterPress(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        window.efetuarLogin();
+                    }
+                }
+                
+                if (loginInput) {
+                    loginInput.addEventListener('keypress', handleEnterPress);
+                }
+                if (senhaInput) {
+                    senhaInput.addEventListener('keypress', handleEnterPress);
+                }
             }
 
             window.efetuarLogin = function() { 
@@ -551,7 +589,7 @@
             function mostrarModalTrocaSenha(username, isPrimeiroAcesso = false) { 
                 const modalDiv = document.createElement('div'); 
                 modalDiv.className = 'modal'; 
-                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label>Mostrar</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6):</label><input type="password" id="novaSenha" placeholder="Nova senha"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label>Mostrar</label></div></div><div class="form-group"><label>Confirmar:</label><input type="password" id="confirmaSenha" placeholder="Confirmar"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label>Mostrar</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir' : 'Alterar'}</button></div></div>`; 
+                modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>${isPrimeiroAcesso ? '🔐 Primeiro Acesso' : '🔑 Alterar Senha'}</h2></div><div class="modal-body">${!isPrimeiroAcesso ? `<div class="form-group"><label>Senha atual:</label><input type="password" id="senhaAtual" placeholder="Senha atual" autocomplete="off"><div class="checkbox-group"><input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')"><label>Mostrar</label></div></div>` : ''}<div class="form-group"><label>Nova senha (mínimo 6):</label><input type="password" id="novaSenha" placeholder="Nova senha" autocomplete="off"><div class="checkbox-group"><input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')"><label>Mostrar</label></div></div><div class="form-group"><label>Confirmar:</label><input type="password" id="confirmaSenha" placeholder="Confirmar" autocomplete="off"><div class="checkbox-group"><input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')"><label>Mostrar</label></div></div><div id="pwdError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir' : 'Alterar'}</button></div></div>`; 
                 document.body.appendChild(modalDiv); 
             }
 
@@ -620,15 +658,15 @@
                                 <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
                             </div>
                             <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
-                            <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21"></div>
-                            <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}"></div>
-                            <div class="form-group"><label>Tipo:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}"></div>
-                            <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3">${atividade.descricao}</textarea></div>
+                            <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" autocomplete="off"></div>
+                            <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}" autocomplete="off"></div>
+                            <div class="form-group"><label>Tipo:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}" autocomplete="off"></div>
+                            <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3" autocomplete="off">${atividade.descricao}</textarea></div>
                             <div class="form-row">
                                 <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
                                 <div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante"><option value="">Selecione...</option>${areasOptions}</select></div>
                             </div>
-                            <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea></div>
+                            <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2" autocomplete="off">${atividade.observacoes || ''}</textarea></div>
                             ${infoEdicao}
                         </div>
                         <div class="modal-footer">
@@ -720,18 +758,28 @@
 
             window.logout = function() { location.reload(); };
             
+            // ========== FUNÇÃO GERAR PDF CORRIGIDA - SEM DUPLICAÇÃO ==========
             window.gerarPDF = function() { 
-                if (atividades.length === 0) { alert('Nenhuma atividade para gerar relatório!'); return; }
-                const printContainer = document.createElement('div');
-                printContainer.style.position = 'fixed';
-                printContainer.style.top = '0';
-                printContainer.style.left = '0';
-                printContainer.style.width = '100%';
-                printContainer.style.backgroundColor = 'white';
-                printContainer.style.zIndex = '99999';
-                printContainer.style.padding = '20px';
-                printContainer.innerHTML = `<div style="text-align:center;"><h2>📊 Relatório de Atividades</h2><p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p><hr></div>`;
-                const tabelaClone = document.querySelector('#relatorioTable').cloneNode(true);
+                // Verificar se há dados na tabela atual
+                const currentRows = document.querySelectorAll('#relatorioBody tr');
+                const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
+                
+                if (!hasData) { 
+                    alert('Nenhuma atividade para gerar relatório!'); 
+                    return; 
+                }
+                
+                // Remover qualquer container de impressão anterior que possa existir
+                const existingContainer = document.getElementById('print-report-container');
+                if (existingContainer) {
+                    existingContainer.remove();
+                }
+                
+                // Clonar a tabela atual (sem a coluna de ações)
+                const tabelaOriginal = document.getElementById('relatorioTable');
+                const tabelaClone = tabelaOriginal.cloneNode(true);
+                
+                // Remover a coluna de ações (última coluna) do cabeçalho e das linhas
                 const cabecalho = tabelaClone.querySelector('thead tr');
                 if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
                     cabecalho.removeChild(cabecalho.lastChild);
@@ -741,11 +789,56 @@
                         linha.removeChild(linha.lastChild);
                     }
                 });
-                printContainer.appendChild(tabelaClone);
-                printContainer.innerHTML += `<div style="text-align:center; margin-top:20px;"><hr><p>Sistema de Relatórios de Engenharia</p></div>`;
+                
+                // Criar container de impressão
+                const printContainer = document.createElement('div');
+                printContainer.id = 'print-report-container';
+                printContainer.style.position = 'fixed';
+                printContainer.style.top = '0';
+                printContainer.style.left = '0';
+                printContainer.style.width = '100%';
+                printContainer.style.height = '100%';
+                printContainer.style.backgroundColor = 'white';
+                printContainer.style.zIndex = '99999';
+                printContainer.style.padding = '20px';
+                printContainer.style.overflow = 'auto';
+                
+                // Montar o conteúdo do relatório de forma ÚNICA
+                let htmlContent = `
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <h2>📊 Relatório de Atividades</h2>
+                        <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        <p><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
+                        <hr>
+                    </div>
+                `;
+                
+                // Adicionar a tabela como string HTML
+                htmlContent += tabelaClone.outerHTML;
+                
+                // Adicionar rodapé
+                htmlContent += `
+                    <div style="text-align:center; margin-top:20px;">
+                        <hr>
+                        <p style="font-size:10px; color:#666;">Sistema de Relatórios de Engenharia</p>
+                    </div>
+                `;
+                
+                // Definir o conteúdo de uma única vez
+                printContainer.innerHTML = htmlContent;
+                
+                // Adicionar ao body
                 document.body.appendChild(printContainer);
-                window.print();
-                setTimeout(() => printContainer.remove(), 500);
+                
+                // Pequeno delay para garantir que o DOM foi atualizado
+                setTimeout(() => {
+                    window.print();
+                    setTimeout(() => {
+                        if (printContainer && printContainer.remove) {
+                            printContainer.remove();
+                        }
+                    }, 500);
+                }, 100);
             };
 
             function carregarInterface() { 
@@ -842,12 +935,40 @@
                     filtradas = filtradas.filter(a => a.loginEng === usuarioAtual.login); 
                     filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg)); 
                 } 
-                const stats = { total: filtradas.length, concluidas: filtradas.filter(a => a.status === 'Concluída').length, andamento: filtradas.filter(a => a.status === 'Em andamento').length, pendentes: filtradas.filter(a => a.status === 'Pendente').length, atrasadas: filtradas.filter(a => a.status === 'Atrasada').length, engenheiros: new Set(filtradas.map(a => a.engenheiro)).size, produtos: new Set(filtradas.map(a => a.produto)).size }; 
-                document.getElementById('statsContainer').innerHTML = `<div class="stat-item"><h4>Total</h4><div class="value">${stats.total}</div></div><div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div><div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div><div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div><div class="stat-item"><h4>⚠️ Atrasadas</h4><div class="value">${stats.atrasadas}</div></div><div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${stats.engenheiros}</div></div><div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`; 
+                
+                // Estatísticas: removendo a contagem de engenheiros para usuários comuns
+                const stats = { 
+                    total: filtradas.length, 
+                    concluidas: filtradas.filter(a => a.status === 'Concluída').length, 
+                    andamento: filtradas.filter(a => a.status === 'Em andamento').length, 
+                    pendentes: filtradas.filter(a => a.status === 'Pendente').length, 
+                    atrasadas: filtradas.filter(a => a.status === 'Atrasada').length, 
+                    produtos: new Set(filtradas.map(a => a.produto)).size 
+                };
+                
+                // Adicionar contagem de engenheiros APENAS para o gestor
+                let statsHtml = `
+                    <div class="stat-item"><h4>Total</h4><div class="value">${stats.total}</div></div>
+                    <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
+                    <div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div>
+                    <div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div>
+                    <div class="stat-item"><h4>⚠️ Atrasadas</h4><div class="value">${stats.atrasadas}</div></div>
+                `;
+                
+                // Apenas para o gestor, mostrar contagem de engenheiros
+                if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
+                    const engenheirosCount = new Set(filtradas.map(a => a.engenheiro)).size;
+                    statsHtml += `<div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>`;
+                }
+                
+                statsHtml += `<div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`;
+                
+                document.getElementById('statsContainer').innerHTML = statsHtml;
+                
                 const tbody = document.getElementById('relatorioBody'); 
                 tbody.innerHTML = ''; 
                 if (filtradas.length === 0) { 
-                    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center">Nenhuma atividade encontrada<\/td><\/tr>'; 
+                    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center">Nenhuma atividade encontrada</td></tr>'; 
                     return; 
                 } 
                 filtradas.forEach(act => { 
