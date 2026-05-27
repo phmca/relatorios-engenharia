@@ -43,10 +43,37 @@
         .btn-outline { background: transparent; border: 1px solid #e1e5eb; color: #666; }
         .btn-outline:hover { background: #f8f9fc; border-color: #667eea; color: #667eea; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-item { background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #eef2f7; }
-        .stat-item h4 { font-size: 0.75rem; color: #888; margin-bottom: 5px; }
-        .stat-item .value { font-size: 1.8rem; font-weight: 700; color: #667eea; }
+      .stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 15px; 
+    margin-bottom: 20px; 
+}
+.stat-item { 
+    background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); 
+    padding: 15px; 
+    border-radius: 16px; 
+    text-align: center; 
+    border: 1px solid #eef2f7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0; /* Permite que o conteúdo seja quebrado se necessário */
+}
+.stat-item h4 { 
+    font-size: 0.75rem; 
+    color: #888; 
+    margin-bottom: 5px;
+    white-space: nowrap; /* Impede que o texto quebre */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stat-item .value { 
+    font-size: 1.8rem; 
+    font-weight: 700; 
+    color: #667eea;
+    line-height: 1.2;
+}
         .table-container { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eef2f7; }
@@ -110,36 +137,48 @@
         }
         
         /* Estilos para impressão - SEM DUPLICAÇÃO */
-        @media print {
-            body *:not(#print-report-container):not(#print-report-container *) {
-                visibility: hidden !important;
-            }
-            #print-report-container, #print-report-container * {
-                visibility: visible !important;
-            }
-            #print-report-container {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-                background: white !important;
-                padding: 20px !important;
-                margin: 0 !important;
-                z-index: 99999 !important;
-                overflow: visible !important;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th, td {
-                border: 1px solid #ccc;
-                padding: 8px;
-                text-align: left;
-            }
-        }
-
+       /* Estilos para impressão - UMA ÚNICA PÁGINA */
+@media print {
+    body *:not(#print-report-container):not(#print-report-container *) {
+        visibility: hidden !important;
+    }
+    #print-report-container, #print-report-container * {
+        visibility: visible !important;
+    }
+    #print-report-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: white !important;
+        padding: 10px !important;
+        margin: 0 !important;
+        z-index: 99999 !important;
+        overflow: visible !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px !important;
+        page-break-inside: avoid !important;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px !important;
+        text-align: left;
+    }
+    .no-print {
+        display: none !important;
+    }
+    /* Evita quebras de página dentro da tabela */
+    tr, tbody, thead {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
         @media (max-width: 768px) { 
             .main-layout { grid-template-columns: 1fr; } 
             .modern-header { flex-direction: column; text-align: center; } 
@@ -758,88 +797,108 @@
 
             window.logout = function() { location.reload(); };
             
-            // ========== FUNÇÃO GERAR PDF CORRIGIDA - SEM DUPLICAÇÃO ==========
-            window.gerarPDF = function() { 
-                // Verificar se há dados na tabela atual
-                const currentRows = document.querySelectorAll('#relatorioBody tr');
-                const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
-                
-                if (!hasData) { 
-                    alert('Nenhuma atividade para gerar relatório!'); 
-                    return; 
-                }
-                
-                // Remover qualquer container de impressão anterior que possa existir
-                const existingContainer = document.getElementById('print-report-container');
-                if (existingContainer) {
-                    existingContainer.remove();
-                }
-                
-                // Clonar a tabela atual (sem a coluna de ações)
-                const tabelaOriginal = document.getElementById('relatorioTable');
-                const tabelaClone = tabelaOriginal.cloneNode(true);
-                
-                // Remover a coluna de ações (última coluna) do cabeçalho e das linhas
-                const cabecalho = tabelaClone.querySelector('thead tr');
-                if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
-                    cabecalho.removeChild(cabecalho.lastChild);
-                }
-                tabelaClone.querySelectorAll('tbody tr').forEach(linha => { 
-                    if (linha.lastChild && linha.lastChild.classList && linha.lastChild.classList.contains('no-print')) {
-                        linha.removeChild(linha.lastChild);
-                    }
-                });
-                
-                // Criar container de impressão
-                const printContainer = document.createElement('div');
-                printContainer.id = 'print-report-container';
-                printContainer.style.position = 'fixed';
-                printContainer.style.top = '0';
-                printContainer.style.left = '0';
-                printContainer.style.width = '100%';
-                printContainer.style.height = '100%';
-                printContainer.style.backgroundColor = 'white';
-                printContainer.style.zIndex = '99999';
-                printContainer.style.padding = '20px';
-                printContainer.style.overflow = 'auto';
-                
-                // Montar o conteúdo do relatório de forma ÚNICA
-                let htmlContent = `
-                    <div style="text-align:center; margin-bottom:20px;">
-                        <h2>📊 Relatório de Atividades</h2>
-                        <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-                        <p><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
-                        <hr>
-                    </div>
-                `;
-                
-                // Adicionar a tabela como string HTML
-                htmlContent += tabelaClone.outerHTML;
-                
-                // Adicionar rodapé
-                htmlContent += `
-                    <div style="text-align:center; margin-top:20px;">
-                        <hr>
-                        <p style="font-size:10px; color:#666;">Sistema de Relatórios de Engenharia</p>
-                    </div>
-                `;
-                
-                // Definir o conteúdo de uma única vez
-                printContainer.innerHTML = htmlContent;
-                
-                // Adicionar ao body
-                document.body.appendChild(printContainer);
-                
-                // Pequeno delay para garantir que o DOM foi atualizado
-                setTimeout(() => {
-                    window.print();
-                    setTimeout(() => {
-                        if (printContainer && printContainer.remove) {
-                            printContainer.remove();
-                        }
-                    }, 500);
-                }, 100);
-            };
+window.gerarPDF = function() { 
+    // Verificar se há dados na tabela atual
+    const currentRows = document.querySelectorAll('#relatorioBody tr');
+    const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
+    
+    if (!hasData) { 
+        alert('Nenhuma atividade para gerar relatório!'); 
+        return; 
+    }
+    
+    // Remover qualquer container de impressão anterior
+    const existingContainer = document.getElementById('print-report-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Clonar a tabela atual (sem a coluna de ações)
+    const tabelaOriginal = document.getElementById('relatorioTable');
+    const tabelaClone = tabelaOriginal.cloneNode(true);
+    
+    // Remover a coluna de ações (última coluna) do cabeçalho e das linhas
+    const cabecalho = tabelaClone.querySelector('thead tr');
+    if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
+        cabecalho.removeChild(cabecalho.lastChild);
+    }
+    tabelaClone.querySelectorAll('tbody tr').forEach(linha => { 
+        if (linha.lastChild && linha.lastChild.classList && linha.lastChild.classList.contains('no-print')) {
+            linha.removeChild(linha.lastChild);
+        }
+    });
+    
+    // Reduzir o tamanho da fonte da tabela para caber melhor
+    tabelaClone.style.fontSize = '10px';
+    tabelaClone.style.width = '100%';
+    
+    // Criar container de impressão
+    const printContainer = document.createElement('div');
+    printContainer.id = 'print-report-container';
+    printContainer.style.position = 'fixed';
+    printContainer.style.top = '0';
+    printContainer.style.left = '0';
+    printContainer.style.width = '100%';
+    printContainer.style.height = 'auto';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.zIndex = '99999';
+    printContainer.style.padding = '10px';
+    printContainer.style.margin = '0';
+    printContainer.style.overflow = 'visible';
+    
+    // Montar o conteúdo do relatório de forma compacta
+    let htmlContent = `
+        <div style="text-align:center; margin-bottom:10px;">
+            <h2 style="margin:0; padding:0; font-size:16px;">📊 Relatório de Atividades</h2>
+            <p style="margin:5px 0; font-size:11px;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            <p style="margin:0; font-size:10px;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
+            <hr style="margin:8px 0;">
+        </div>
+    `;
+    
+    // Adicionar a tabela
+    htmlContent += tabelaClone.outerHTML;
+    
+    // Adicionar rodapé compacto
+    htmlContent += `
+        <div style="text-align:center; margin-top:10px; font-size:9px; color:#666;">
+            <hr style="margin:8px 0;">
+            <p>Sistema de Relatórios de Engenharia</p>
+        </div>
+    `;
+    
+    // Definir o conteúdo
+    printContainer.innerHTML = htmlContent;
+    
+    // Adicionar ao body
+    document.body.appendChild(printContainer);
+    
+    // Forçar o navegador a usar as configurações de página
+    const style = document.createElement('style');
+    style.textContent = `
+        @page {
+            size: landscape;
+            margin: 0.5cm;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        }
+    `;
+    printContainer.appendChild(style);
+    
+    // Aguardar renderização e imprimir
+    setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+            if (printContainer && printContainer.remove) {
+                printContainer.remove();
+            }
+        }, 1000);
+    }, 200);
+};
 
             function carregarInterface() { 
                 const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : ''; 
@@ -948,7 +1007,7 @@
                 
                 // Adicionar contagem de engenheiros APENAS para o gestor
                 let statsHtml = `
-                    <div class="stat-item"><h4>Total</h4><div class="value">${stats.total}</div></div>
+                    <div class="stat-item"><h4>🧮 Total</h4><div class="value">${stats.total}</div></div>
                     <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
                     <div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div>
                     <div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div>
