@@ -6,6 +6,11 @@
     <title>Sistema de Relatórios - Engenharia</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- 🔥 FIREBASE SDK (versão compatível) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { height: 100%; font-family: 'Poppins', sans-serif; background: #f0f2f5; }
@@ -88,75 +93,31 @@
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
         .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
-        .history-item { font-size: 11px; color: #666; padding: 4px 0; border-bottom: 1px dashed #eee; }
-        .history-item:last-child { border-bottom: none; }
-        .history-timestamp { font-weight: 600; color: #667eea; }
         .nome-usuario { cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 5px; }
         .nome-usuario:hover { color: #667eea; }
         .cpf-mask { font-family: monospace; letter-spacing: 1px; }
         
-        /* Estilos para impressão - UMA ÚNICA PÁGINA */
-        @media print {
-            body *:not(#print-report-container):not(#print-report-container *) {
-                visibility: hidden !important;
-            }
-            #print-report-container, #print-report-container * {
-                visibility: visible !important;
-            }
-            #print-report-container {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-                background: white !important;
-                padding: 10px !important;
-                margin: 0 !important;
-                z-index: 99999 !important;
-                overflow: visible !important;
-                page-break-after: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px !important;
-                page-break-inside: avoid !important;
-            }
-            th, td {
-                border: 1px solid #ccc;
-                padding: 6px !important;
-                text-align: left;
-            }
-            .no-print {
-                display: none !important;
-            }
-            tr, tbody, thead {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-        }
-        
-        /* Indicador de sincronização */
         .sync-status {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             font-size: 0.75rem;
-            color: #48bb78;
-            background: #f0fff4;
             padding: 4px 12px;
             border-radius: 20px;
             border: 1px solid #c6f6d5;
+            background: #f0fff4;
+            color: #48bb78;
         }
         .sync-status.sync-error {
             color: #f56565;
             background: #fff5f5;
             border-color: #fed7d7;
         }
-        .sync-status .fa-spin {
-            animation: spin 1s linear infinite;
-        }
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+        .status-dot.online { background: #48bb78; }
+        .status-dot.offline { background: #f56565; }
+        .status-dot.syncing { background: #ed8936; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         
         @media (max-width: 768px) { 
             .main-layout { grid-template-columns: 1fr; } 
@@ -165,20 +126,14 @@
             .user-area { justify-content: center; }
         }
         
-        .status-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 4px;
-        }
-        .status-dot.online { background: #48bb78; }
-        .status-dot.offline { background: #f56565; }
-        .status-dot.syncing { background: #ed8936; animation: pulse 1s infinite; }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        @media print {
+            body *:not(#print-report-container):not(#print-report-container *) { visibility: hidden !important; }
+            #print-report-container, #print-report-container * { visibility: visible !important; }
+            #print-report-container { position: absolute !important; top: 0; left: 0; width: 100%; height: auto; background: white; padding: 10px; margin: 0; z-index: 99999; overflow: visible; page-break-after: avoid; page-break-inside: avoid; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; page-break-inside: avoid; }
+            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            .no-print { display: none !important; }
+            tr, tbody, thead { page-break-inside: avoid; break-inside: avoid; }
         }
     </style>
 </head>
@@ -260,22 +215,33 @@
     </div>
 
     <script>
-        // ========== CONFIGURAÇÃO DE SINCRONIZAÇÃO JSONBIN.IO ==========
-        // 🔑 SUBSTITUA COM SEUS DADOS DO JSONBIN.IO
-        const BIN_ID = 'SEU_BIN_ID_AQUI'; // Ex: 67c5f8e8ad19ca34f8a9b123
-        const API_KEY = 'SUA_API_KEY_AQUI'; // Ex: $2a$10$abc123def456ghi789jkl
-        
+        // ============================================================
+        // 🔥 CONFIGURAÇÃO DO FIREBASE (SUAS CREDENCIAIS)
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWI10umAzehY6FWE1XLsswWGsXc6QpxIo",
+            authDomain: "relatorios-engenharia.firebaseapp.com",
+            databaseURL: "https://relatorios-engenharia-default-rtdb.firebaseio.com",
+            projectId: "relatorios-engenharia",
+            storageBucket: "relatorios-engenharia.firebasestorage.app",
+            messagingSenderId: "941665430962",
+            appId: "1:941665430962:web:43b0581e8ebe0d270548ab"
+        };
+        // ============================================================
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         // ========== CONFIGURAÇÃO DO SISTEMA ==========
         const STORAGE_KEY = 'engenharia_relatorios_v9';
         const SENHA_GESTOR_PADRAO = 'consorcio_dnit';
         const LOGIN_GESTOR = 'arnaldo_cunha';
         
-        // ========== VARIÁVEIS GLOBAIS ==========
         let atividades = [];
         let usuarios = {};
         let usuarioAtual = null;
         let sincronizando = false;
-        let ultimaSincronizacao = null;
 
         // ========== FUNÇÕES DE SINCRONIZAÇÃO ==========
         function atualizarStatusSincronizacao(status, mensagem) {
@@ -290,7 +256,6 @@
                 else if (status === 'syncing') dot.classList.add('syncing');
             }
             
-            // Atualizar texto
             let texto = '';
             switch(status) {
                 case 'online': texto = '✅ Sincronizado'; break;
@@ -299,70 +264,57 @@
                 default: texto = mensagem || 'Sincronizado';
             }
             syncStatus.innerHTML = `<span class="status-dot ${status}"></span> ${texto}`;
-            
-            // Adicionar classe de erro se offline
             syncStatus.classList.toggle('sync-error', status === 'offline');
         }
 
-        async function salvarNaNuvem(dados) {
+        async function salvarNoFirebase(dados) {
             try {
                 sincronizando = true;
                 atualizarStatusSincronizacao('syncing', 'Sincronizando...');
                 
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify(dados)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                ultimaSincronizacao = new Date();
+                await database.ref('sistema').set(dados);
                 atualizarStatusSincronizacao('online', 'Sincronizado');
-                return result;
+                return true;
             } catch (error) {
-                console.error('Erro ao salvar na nuvem:', error);
+                console.error('Erro ao salvar no Firebase:', error);
                 atualizarStatusSincronizacao('offline', 'Erro ao sincronizar');
-                return null;
+                return false;
             } finally {
                 sincronizando = false;
             }
         }
 
-        async function carregarDaNuvem() {
+        async function carregarDoFirebase() {
             try {
                 atualizarStatusSincronizacao('syncing', 'Carregando...');
                 
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    headers: {
-                        'X-Master-Key': API_KEY
-                    }
-                });
+                const snapshot = await database.ref('sistema').once('value');
+                const dados = snapshot.val();
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (dados) {
+                    const usuariosCarregados = dados.usuarios || {};
+                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
+                        login,
+                        {
+                            ...user,
+                            cpf: user.cpf ? atob(user.cpf) : ''
+                        }
+                    ]));
+                    atividades = dados.atividades || [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+                    atualizarStatusSincronizacao('online', 'Sincronizado');
+                    return true;
                 }
-                
-                const data = await response.json();
-                ultimaSincronizacao = new Date();
-                atualizarStatusSincronizacao('online', 'Sincronizado');
-                return data.record;
+                return false;
             } catch (error) {
-                console.error('Erro ao carregar da nuvem:', error);
+                console.error('Erro ao carregar do Firebase:', error);
                 atualizarStatusSincronizacao('offline', 'Usando dados locais');
-                return null;
+                return false;
             }
         }
 
         // ========== FUNÇÕES DE PERSISTÊNCIA ==========
         function salvarDados() {
-            // Ofuscar CPFs antes de salvar
             const dadosParaSalvar = {
                 atividades: atividades,
                 usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
@@ -374,37 +326,14 @@
                 ]))
             };
             
-            // Salvar localmente
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
-            
-            // Salvar na nuvem (assíncrono)
-            salvarNaNuvem(dadosParaSalvar);
+            salvarNoFirebase(dadosParaSalvar);
         }
 
         async function carregarDados() {
-            // Primeiro tenta carregar da nuvem
-            const dadosNuvem = await carregarDaNuvem();
-            if (dadosNuvem) {
-                try {
-                    const usuariosCarregados = dadosNuvem.usuarios || {};
-                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
-                        login,
-                        {
-                            ...user,
-                            cpf: user.cpf ? atob(user.cpf) : ''
-                        }
-                    ]));
-                    atividades = dadosNuvem.atividades || [];
-                    
-                    // Salvar localmente como cache
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosNuvem));
-                    return true;
-                } catch(e) {
-                    console.error('Erro ao processar dados da nuvem:', e);
-                }
-            }
+            const carregadoNuvem = await carregarDoFirebase();
+            if (carregadoNuvem) return true;
             
-            // Fallback para localStorage
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
@@ -425,27 +354,6 @@
                 }
             }
             return false;
-        }
-
-        function criarDadosIniciais() {
-            atividades = [];
-            usuarios = {};
-            
-            // Gestor com senha padrão "consorcio_dnit"
-            usuarios[LOGIN_GESTOR] = {
-                nome: 'Arnaldo Cunha',
-                tipo: 'chefe',
-                senha: SENHA_GESTOR_PADRAO,
-                primeiroAcesso: true,
-                historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
-            };
-
-            // Nenhum engenheiro pré-cadastrado por segurança
-            salvarDados();
-        }
-
-        function verificarPrimeiroAcesso(username) {
-            return usuarios[username] && usuarios[username].primeiroAcesso === true;
         }
 
         // ========== FUNÇÕES AUXILIARES ==========
@@ -505,6 +413,25 @@
             const primeiros3 = cpfLimpo.substring(0, 3);
             const ultimos2 = cpfLimpo.substring(cpfLimpo.length - 2);
             return `cac${primeiros3}${ultimos2}`;
+        }
+
+        function criarDadosIniciais() {
+            atividades = [];
+            usuarios = {};
+            
+            usuarios[LOGIN_GESTOR] = {
+                nome: 'Arnaldo Cunha',
+                tipo: 'chefe',
+                senha: SENHA_GESTOR_PADRAO,
+                primeiroAcesso: true,
+                historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
+            };
+
+            salvarDados();
+        }
+
+        function verificarPrimeiroAcesso(username) {
+            return usuarios[username] && usuarios[username].primeiroAcesso === true;
         }
 
         // ========== FUNÇÕES DE USUÁRIO ==========
@@ -575,8 +502,6 @@
         // ========== PAINEL ADMIN ==========
         window.abrirPainelAdmin = function() {
             if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar!'); return; }
-            
-            carregarDados();
             
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
@@ -714,14 +639,14 @@
                     <div id="loginMsg" class="error"></div>
                     <div class="info-badge">
                         <p><strong>ℹ️ Credenciais padrão:</strong></p>
-                        <p>👤 Login primeiro acesso : 'primeiro nome_último nome'</p>
-                        <p> Senha : cac + 3 primeiros números do seguidos dos 2 últimos números do CPF</p>
+                        <p>👤 Usuário: arnaldo_cunha</p>
+                        <p>🔑 Senha: consorcio_dnit</p>
+                        <p style="margin-top:8px; font-size:0.7rem; color:#888;">* Para engenheiros: cac + 3 primeiros CPF + 2 últimos CPF</p>
                     </div>
                 </div>
             `;
             document.body.appendChild(loginDiv);
 
-            // Evento de tecla Enter
             const loginInput = document.getElementById('userLogin');
             const senhaInput = document.getElementById('userSenha');
             
@@ -800,7 +725,7 @@
             document.body.appendChild(modalDiv);
         }
 
-        window.executarTrocaSenha = function(username, isPrimeiroAcesso) {
+        window.executarTrocaSenha = async function(username, isPrimeiroAcesso) {
             const novaSenha = document.getElementById('novaSenha').value;
             const confirmaSenha = document.getElementById('confirmaSenha').value;
             const errorDiv = document.getElementById('pwdError');
@@ -816,10 +741,33 @@
             if (novaSenha.length < 6) { errorDiv.innerText = 'Mínimo 6 caracteres'; return; }
             if (novaSenha !== confirmaSenha) { errorDiv.innerText = 'Senhas não conferem'; return; }
             
+            // Atualizar senha
             usuarios[username].senha = novaSenha;
             usuarios[username].primeiroAcesso = false;
-            salvarDados();
-            alert('Senha alterada!');
+            
+            // Salvar e sincronizar
+            const dadosParaSalvar = {
+                atividades: atividades,
+                usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
+                    login,
+                    {
+                        ...user,
+                        cpf: user.cpf ? btoa(user.cpf) : ''
+                    }
+                ]))
+            };
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
+            
+            // Forçar sincronização imediata
+            try {
+                await database.ref('sistema').set(dadosParaSalvar);
+                alert('✅ Senha alterada e sincronizada com a nuvem!');
+            } catch (error) {
+                alert('⚠️ Senha alterada localmente, mas houve erro na sincronização. Tente novamente.');
+                console.error('Erro ao sincronizar:', error);
+            }
+            
             document.querySelector('.modal').remove();
             
             if (isPrimeiroAcesso) {
@@ -990,12 +938,9 @@
                     ]))
                 };
                 
-                const resultado = await salvarNaNuvem(dadosParaSalvar);
-                if (resultado) {
-                    alert('✅ Dados sincronizados com sucesso!');
-                } else {
-                    alert('⚠️ Falha ao sincronizar. Verifique sua conexão.');
-                }
+                await database.ref('sistema').set(dadosParaSalvar);
+                alert('✅ Dados sincronizados com sucesso!');
+                atualizarStatusSincronizacao('online', 'Sincronizado');
             } catch (error) {
                 alert('❌ Erro ao sincronizar: ' + error.message);
             }
@@ -1312,7 +1257,7 @@
                 criarDadosIniciais();
             }
             
-            // Verificar se o gestor existe, se não, criar
+            // Verificar se o gestor existe
             if (!usuarios[LOGIN_GESTOR]) {
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
