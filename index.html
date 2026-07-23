@@ -888,45 +888,58 @@
         };
 
       
-        function criarFiltros() {
-            const container = document.getElementById('filtersContainer');
-            if (!container || usuarioAtual.tipo !== 'chefe') {
-                if (container) container.innerHTML = '';
-                return;
+      function criarFiltros() {
+    const container = document.getElementById('filtersContainer');
+    if (!container) return;
+    
+    // Se for engenheiro, mostra filtros básicos (sem filtro de engenheiro)
+    const isEngenheiro = usuarioAtual && usuarioAtual.tipo === 'engenheiro';
+    const isChefe = usuarioAtual && usuarioAtual.tipo === 'chefe';
+    
+    let engenheirosOptions = '<option value="todos">Todos</option>';
+    if (isChefe) {
+        Object.keys(usuarios).forEach(login => {
+            if (usuarios[login].tipo === 'engenheiro') {
+                engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`;
             }
-            
-            let engenheirosOptions = '<option value="todos">Todos</option>';
-            Object.keys(usuarios).forEach(login => {
-                if (usuarios[login].tipo === 'engenheiro') {
-                    engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`;
-                }
-            });
-            
-            const areasDemandantes = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
-            let areasOptions = '<option value="todos">Todas</option>';
-            areasDemandantes.forEach(area => { areasOptions += `<option value="${area}">${area}</option>`; });
-            
-            container.innerHTML = `
-                <div class="filters-bar">
-                    <div class="filters-grid">
-                        <div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div>
-                        <div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
-                        <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
-                        <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
-                        <div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
-                        <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
-                        <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button>
-                        <button class="btn btn-outline" onclick="limparFiltros()">Limpar</button>
-                        <button class="btn btn-outline" onclick="forcarSincronizacao()" title="Sincronizar com a nuvem">
-                            <i class="fas fa-sync"></i> Sincronizar
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+        });
+    }
+    
+    const areasDemandantes = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+    let areasOptions = '<option value="todos">Todas</option>';
+    areasDemandantes.forEach(area => { areasOptions += `<option value="${area}">${area}</option>`; });
+
+    let filtrosHtml = `
+        <div class="filters-bar">
+            <div class="filters-grid">
+    `;
+    
+    if (isChefe) {
+        filtrosHtml += `
+            <div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div>
+        `;
+    }
+    
+    filtrosHtml += `
+                <div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
+                <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
+                <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
+                <div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
+                <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
+                <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button>
+                <button class="btn btn-outline" onclick="limparFiltros()">Limpar</button>
+                <button class="btn btn-outline" onclick="forcarSincronizacao()" title="Sincronizar com a nuvem">
+                    <i class="fas fa-sync"></i> Sincronizar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = filtrosHtml;
+}
 
         window.forcarSincronizacao = async function() {
             if (sincronizando) {
@@ -1071,30 +1084,33 @@
             }, 200);
         };
 
-        function carregarInterface() {
-            const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
-            document.getElementById('userInfo').innerHTML = `
-                <span class="nome-usuario" onclick="window.alterarLoginUsuario()">
-                    <i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size:10px;"></i>
-                </span>
-                <span style="color:#888;">(${usuarioAtual.nome})</span>
-                ${gestaoBtn}
-                <button class="btn btn-warning" onclick="window.mostrarAlterarSenha()">Alterar Senha</button>
-                <button class="btn btn-danger" onclick="window.logout()">Sair</button>
-            `;
-            
-            if (usuarioAtual.tipo === 'chefe') criarFiltros();
-            else document.getElementById('filtersContainer').innerHTML = '';
-            
-            document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes);
-            document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); });
-            
-            gerarRelatorioAtual();
-            
-            const campoProcesso = document.getElementById('processo');
-            campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-            campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
-        }
+       function carregarInterface() {
+    const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
+    document.getElementById('userInfo').innerHTML = `
+        <span class="nome-usuario" onclick="window.alterarLoginUsuario()">
+            <i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size:10px;"></i>
+        </span>
+        <span style="color:#888;">(${usuarioAtual.nome})</span>
+        ${gestaoBtn}
+        <button class="btn btn-warning" onclick="window.mostrarAlterarSenha()">Alterar Senha</button>
+        <button class="btn btn-danger" onclick="window.logout()">Sair</button>
+    `;
+    
+    if (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro') {
+        criarFiltros();
+    } else {
+        document.getElementById('filtersContainer').innerHTML = '';
+    }
+    
+    document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes);
+    document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); });
+    
+    gerarRelatorioAtual();
+    
+    const campoProcesso = document.getElementById('processo');
+    campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+    campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+}
 
         function mostrarSugestoes() {
             const input = document.getElementById('tipoAtividade');
@@ -1171,35 +1187,40 @@
             document.getElementById('anoRelatorio').value = '2026';
         }
 
-        function gerarRelatorioAtual() {
-            let filtradas = [...atividades];
-            
-            if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
-                const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos';
-                if (engenheiroFiltro !== 'todos') filtradas = filtradas.filter(a => a.loginEng === engenheiroFiltro);
-                
-                const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos';
-                if (produtoFiltro !== 'todos') filtradas = filtradas.filter(a => a.produto === produtoFiltro);
-                
-                const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
-                if (mesFiltro !== 'todos') filtradas = filtradas.filter(a => a.mes === mesFiltro);
-                
-                const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
-                if (anoFiltro !== 'todos') filtradas = filtradas.filter(a => a.ano === anoFiltro);
-                
-                const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
-                if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
-                
-                const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
-                if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
-                
-                const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente';
-                filtradas = ordenarAtividades(filtradas, ordem);
-            } else if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
-                filtradas = filtradas.filter(a => a.loginEng === usuarioAtual.login);
-                filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
-            }
-            
+   function gerarRelatorioAtual() {
+    let filtradas = [...atividades];
+    
+    if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
+        filtradas = filtradas.filter(a => a.loginEng === usuarioAtual.login);
+    }
+    
+    
+    if (usuarioAtual && (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro')) {
+        if (usuarioAtual.tipo === 'chefe') {
+            const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos';
+            if (engenheiroFiltro !== 'todos') filtradas = filtradas.filter(a => a.loginEng === engenheiroFiltro);
+        }
+        
+        const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos';
+        if (produtoFiltro !== 'todos') filtradas = filtradas.filter(a => a.produto === produtoFiltro);
+        
+        const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
+        if (mesFiltro !== 'todos') filtradas = filtradas.filter(a => a.mes === mesFiltro);
+        
+        const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
+        if (anoFiltro !== 'todos') filtradas = filtradas.filter(a => a.ano === anoFiltro);
+        
+        const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
+        if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
+        
+        const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
+        if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
+        
+        const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente';
+        filtradas = ordenarAtividades(filtradas, ordem);
+    } else if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
+        filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
+    }
             const stats = {
                 total: filtradas.length,
                 concluidas: filtradas.filter(a => a.status === 'Concluída').length,
