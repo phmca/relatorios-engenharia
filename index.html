@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- 🔥 FIREBASE SDK (versão compatível) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -19,6 +18,8 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .container { max-width: 1400px; margin: 0 auto; padding: 30px; display: none; }
         .modern-header { background: white; border-radius: 20px; padding: 15px 30px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 15px; flex:1;}
+        .logo-area img { height: 155px; width: auto; object-fit: contain; }
         .logo-area h1 { font-size: 1.5rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .logo-area p { font-size: 0.8rem; color: #888; }
         .user-area { display: flex; align-items: center; gap: 20px; background: #f8f9fc; padding: 8px 20px; border-radius: 50px; flex-wrap: wrap; }
@@ -124,6 +125,7 @@
             .modern-header { flex-direction: column; text-align: center; } 
             .modal-large { width: 95%; } 
             .user-area { justify-content: center; }
+            .logo-area { flex-direction: column; }
         }
         
         @media print {
@@ -141,13 +143,15 @@
     <div class="loading" id="loading"><div class="spinner"></div></div>
 
     <div class="container" id="mainContainer">
-        <div class="modern-header no-print">
-            <div class="logo-area">
-                <h1>📊 Registro de Atividades</h1>
-                <p>Sistema de gestão de atividades</p>
-            </div>
-            <div class="user-area" id="userInfo"></div>
+       <div class="modern-header no-print">
+    <div class="logo-area">
+        <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo ASSESSOR / CONSÓRCIO-CE">
+        <div style="flex:1; text-align:center;">
+            <h1 style="margin:0;">Registro de Atividades</h1>
         </div>
+    </div>
+    <div class="user-area" id="userInfo"></div>
+</div>
 
         <div class="main-layout no-print">
             <div class="form-card">
@@ -211,13 +215,10 @@
             <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
         </div>
 
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span> <span id="syncStatus" class="sync-status"><span class="status-dot online"></span> Sincronizado</span></div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...</td></tr></tbody></table></div></div>
+        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span> </div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...</td></tr></tbody></table></div></div>
     </div>
 
     <script>
-        // ============================================================
-        // 🔥 CONFIGURAÇÃO DO FIREBASE (SUAS CREDENCIAIS)
-        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAWI10umAzehY6FWE1XLsswWGsXc6QpxIo",
             authDomain: "relatorios-engenharia.firebaseapp.com",
@@ -227,13 +228,9 @@
             messagingSenderId: "941665430962",
             appId: "1:941665430962:web:43b0581e8ebe0d270548ab"
         };
-        // ============================================================
-
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ========== CONFIGURAÇÃO DO SISTEMA ==========
         const STORAGE_KEY = 'engenharia_relatorios_v9';
         const SENHA_GESTOR_PADRAO = 'consorcio_dnit';
         const LOGIN_GESTOR = 'arnaldo_cunha';
@@ -243,7 +240,6 @@
         let usuarioAtual = null;
         let sincronizando = false;
 
-        // ========== FUNÇÕES DE SINCRONIZAÇÃO ==========
         function atualizarStatusSincronizacao(status, mensagem) {
             const syncStatus = document.getElementById('syncStatus');
             if (!syncStatus) return;
@@ -313,7 +309,6 @@
             }
         }
 
-        // ========== FUNÇÕES DE PERSISTÊNCIA ==========
         function salvarDados() {
             const dadosParaSalvar = {
                 atividades: atividades,
@@ -356,7 +351,6 @@
             return false;
         }
 
-        // ========== FUNÇÕES AUXILIARES ==========
         function maskCPF(cpf) {
             if (!cpf || cpf.length !== 11) return '***.***.***-**';
             return cpf.substring(0,3) + '.***.***-' + cpf.substring(9);
@@ -427,14 +421,22 @@
                 historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
             };
 
+            usuarios['dev1'] = {
+                nome: 'Desenvolvedor',
+                tipo: 'chefe',
+                senha: 'dnit@321',
+                primeiroAcesso: false,
+                historicoLogins: [{ login: 'dev1', data: new Date().toISOString() }]
+            };
+
             salvarDados();
         }
 
         function verificarPrimeiroAcesso(username) {
+            if (username === 'dev1') return false;
             return usuarios[username] && usuarios[username].primeiroAcesso === true;
         }
 
-        // ========== FUNÇÕES DE USUÁRIO ==========
         window.alterarLoginUsuario = function() {
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
@@ -499,7 +501,7 @@
             if (usuarioAtual.tipo === 'chefe') criarFiltros();
         };
 
-        // ========== PAINEL ADMIN ==========
+
         window.abrirPainelAdmin = function() {
             if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar!'); return; }
             
@@ -619,7 +621,7 @@
             }
         };
 
-        // ========== LOGIN ==========
+        
         function mostrarLogin() {
             hideLoadingAndShow();
             const loginDiv = document.createElement('div');
@@ -666,6 +668,13 @@
             
             if (usuarios[login] && usuarios[login].senha === senha) {
                 document.getElementById('loginScreen').remove();
+              
+                if (login === 'dev1') {
+                    usuarioAtual = { login: login, ...usuarios[login] };
+                    carregarInterface();
+                    return;
+                }
+                
                 if (verificarPrimeiroAcesso(login)) {
                     mostrarModalTrocaSenha(login, true);
                     return;
@@ -740,11 +749,11 @@
             if (novaSenha.length < 6) { errorDiv.innerText = 'Mínimo 6 caracteres'; return; }
             if (novaSenha !== confirmaSenha) { errorDiv.innerText = 'Senhas não conferem'; return; }
             
-            // Atualizar senha
+            
             usuarios[username].senha = novaSenha;
             usuarios[username].primeiroAcesso = false;
             
-            // Salvar e sincronizar
+          
             const dadosParaSalvar = {
                 atividades: atividades,
                 usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
@@ -758,7 +767,7 @@
             
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
             
-            // Forçar sincronização imediata
+            
             try {
                 await database.ref('sistema').set(dadosParaSalvar);
                 alert('✅ Senha alterada e sincronizada com a nuvem!');
@@ -779,7 +788,7 @@
             if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false);
         };
 
-        // ========== EDIÇÃO DE ATIVIDADE ==========
+        
         window.editarAtividade = function(id) {
             const atividade = atividades.find(a => a.id === id);
             if (!atividade) return;
@@ -878,7 +887,7 @@
             }
         };
 
-        // ========== FILTROS ==========
+      
         function criarFiltros() {
             const container = document.getElementById('filtersContainer');
             if (!container || usuarioAtual.tipo !== 'chefe') {
@@ -966,7 +975,7 @@
 
         window.logout = function() { location.reload(); };
 
-        // ========== GERAR PDF ==========
+    
         window.gerarPDF = function() {
             const currentRows = document.querySelectorAll('#relatorioBody tr');
             const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
@@ -1010,14 +1019,20 @@
             printContainer.style.margin = '0';
             printContainer.style.overflow = 'visible';
             
-            let htmlContent = `
-                <div style="text-align:center; margin-bottom:10px;">
-                    <h2 style="margin:0; padding:0; font-size:16px;">📊 Relatório de Atividades</h2>
-                    <p style="margin:5px 0; font-size:11px;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-                    <p style="margin:0; font-size:10px;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
-                    <hr style="margin:8px 0;">
-                </div>
-            `;
+        let htmlContent = `
+    <div style="text-align:center; margin-bottom:30px; position:relative; min-height:150px;">
+        <div style="position:absolute; left:0; top:50%; transform:translateY(-50%);">
+            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo" style="height:170px; width:auto; object-fit:contain;">
+        </div>
+        <div style="padding-top:10px;">
+            <h2 style="margin:0; padding:0; font-size:16px;">Relatório de Atividades</h2>
+            <p style="margin:2px 0 0 0; font-size:11px;">Sistema de gestão de atividades</p>
+            <p style="margin:8px 0 0 0; font-size:10px; color:#555;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            <p style="margin:0; font-size:10px; color:#555;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
+        </div>
+    </div>
+    <hr style="margin:12px 0 20px 0;">
+`;
             
             htmlContent += tabelaClone.outerHTML;
             
@@ -1056,7 +1071,6 @@
             }, 200);
         };
 
-        // ========== CARREGAR INTERFACE ==========
         function carregarInterface() {
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             document.getElementById('userInfo').innerHTML = `
@@ -1106,7 +1120,6 @@
             }
         });
 
-        // ========== SALVAR ATIVIDADE ==========
         function salvarAtividade() {
             const produto = document.getElementById('produto').value;
             const projeto = document.getElementById('projeto').value;
@@ -1158,7 +1171,6 @@
             document.getElementById('anoRelatorio').value = '2026';
         }
 
-        // ========== GERAR RELATÓRIO ==========
         function gerarRelatorioAtual() {
             let filtradas = [...atividades];
             
@@ -1188,7 +1200,6 @@
                 filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
             }
             
-            // Estatísticas
             const stats = {
                 total: filtradas.length,
                 concluidas: filtradas.filter(a => a.status === 'Concluída').length,
@@ -1248,15 +1259,12 @@
             });
         }
 
-        // ========== INICIALIZAÇÃO ==========
         (async function() {
-            // Carregar dados
             const dadosExistentes = await carregarDados();
             if (!dadosExistentes || Object.keys(usuarios).length === 0) {
                 criarDadosIniciais();
             }
             
-            // Verificar se o gestor existe
             if (!usuarios[LOGIN_GESTOR]) {
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
@@ -1264,6 +1272,17 @@
                     senha: SENHA_GESTOR_PADRAO,
                     primeiroAcesso: true,
                     historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
+                };
+                salvarDados();
+            }
+
+            if (!usuarios['dev1']) {
+                usuarios['dev1'] = {
+                    nome: 'Desenvolvedor',
+                    tipo: 'chefe',
+                    senha: 'dnit@321',
+                    primeiroAcesso: false,
+                    historicoLogins: [{ login: 'dev1', data: new Date().toISOString() }]
                 };
                 salvarDados();
             }
