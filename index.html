@@ -324,13 +324,36 @@
         const database = firebase.database();
 
         const STORAGE_KEY = 'engenharia_relatorios_v9';
-        const SENHA_GESTOR_PADRAO = 'consorcio_dnit';
+       const SENHA_GESTOR_OFUSCADA = '\x1e\x14\x16\x1b\x15\x1a\x13\x18\x16\x0e\x2f\x14\x1a\x13\x16';
+
+function desofuscarSenha(senhaOfuscada) {
+    let resultado = '';
+    for (let i = 0; i < senhaOfuscada.length; i++) {
+        resultado += String.fromCharCode(senhaOfuscada.charCodeAt(i) ^ 0x5A);
+    }
+    return resultado;
+}
+
+function getSenhaGestor() {
+    return desofuscarSenha(SENHA_GESTOR_OFUSCADA);
+}
         const LOGIN_GESTOR = 'arnaldo_cunha';
         
         let atividades = [];
         let usuarios = {};
         let usuarioAtual = null;
         let sincronizando = false;
+
+        // ============================================================
+        // FUNÇÃO PARA DECODIFICAR SENHAS
+        // ============================================================
+        function decodificarSenha(senhaCodificada) {
+            try {
+                return atob(senhaCodificada);
+            } catch {
+                return senhaCodificada;
+            }
+        }
 
         // ============================================================
         // FUNÇÃO PARA FORMATAR DATA - ACEITA MÚLTIPLOS FORMATOS
@@ -678,7 +701,7 @@
             usuarios[LOGIN_GESTOR] = {
                 nome: 'Arnaldo Cunha',
                 tipo: 'chefe',
-                senha: SENHA_GESTOR_PADRAO,
+                senha: decodificarSenha(SENHA_GESTOR_PADRAO),
                 primeiroAcesso: true,
                 historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
             };
@@ -1908,52 +1931,32 @@ if (!dataCriado) {
                     filtradas = filtradas.filter(a => a.produto === produtoFiltro);
                 }
                 
-   const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
-const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
+                const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
+                const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
 
-const meses = {
-    "Janeiro": 0,
-    "Fevereiro": 1,
-    "Março": 2,
-    "Abril": 3,
-    "Maio": 4,
-    "Junho": 5,
-    "Julho": 6,
-    "Agosto": 7,
-    "Setembro": 8,
-    "Outubro": 9,
-    "Novembro": 10,
-    "Dezembro": 11
-};
+                const meses = {
+                    "Janeiro": 0, "Fevereiro": 1, "Março": 2,
+                    "Abril": 3, "Maio": 4, "Junho": 5,
+                    "Julho": 6, "Agosto": 7, "Setembro": 8,
+                    "Outubro": 9, "Novembro": 10, "Dezembro": 11
+                };
 
-if (mesFiltro !== 'todos' || anoFiltro !== 'todos') {
-    filtradas = filtradas.filter(a => {
-
-        const dataStr = a.ultimaModificacao || a.criado || a.dataReg;
-
-        if (!dataStr) return false;
-
-        const data = new Date(dataStr);
-
-        if (isNaN(data)) return false;
-
-        if (
-            mesFiltro !== 'todos' &&
-            data.getMonth() !== meses[mesFiltro]
-        ) {
-            return false;
-        }
-
-        if (
-            anoFiltro !== 'todos' &&
-            data.getFullYear() != Number(anoFiltro)
-        ) {
-            return false;
-        }
-
-        return true;
-    });
-}
+                if (mesFiltro !== 'todos' || anoFiltro !== 'todos') {
+                    filtradas = filtradas.filter(a => {
+                        const dataStr = a.ultimaModificacao || a.criado || a.dataReg;
+                        if (!dataStr) return false;
+                        const data = new Date(dataStr);
+                        if (isNaN(data)) return false;
+                        if (mesFiltro !== 'todos' && data.getMonth() !== meses[mesFiltro]) {
+                            return false;
+                        }
+                        if (anoFiltro !== 'todos' && data.getFullYear() != Number(anoFiltro)) {
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+                
                 const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
                 if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
                 
@@ -2044,50 +2047,31 @@ if (mesFiltro !== 'todos' || anoFiltro !== 'todos') {
                 }
                 
                 const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
-              const tituloModal = (act.projeto || act.tipoAtividade || 'Descrição da Atividade')
-    .replace(/'/g, "\\'")
-    .replace(/"/g, "&quot;");
-
-const descricaoModal = (act.descricao || '')
-    .replace(/'/g, "\\'")
-    .replace(/"/g, "&quot;");                
-              row.innerHTML = `
-    <td>${podeExcluir ? `<input type="checkbox" class="selecionar-item" value="${act.id}" onchange="toggleSelecionar(${act.id})">` : ''}</td>
-    <td>${act.processo || '-'}</td>
-    <td><strong>${act.produto}</strong></td>
-    <td>${act.tipoAtividade || '-'}</td> <!-- TÍTULO -->
-    <td class="descricao-cell"
-    data-titulo="${encodeURIComponent(act.projeto || act.tipoAtividade || 'Descrição da Atividade')}"
-    data-descricao="${encodeURIComponent(act.descricao || '')}"
-    title="Clique para ver a descrição completa"
-    style="cursor:pointer">
-    ${descTruncada}
-</td>
-    <td style="color:${statusColor}; font-weight:bold;">${act.status}</td>
-    <td>${act.areaDemandante || '-'}</td>
-    <td>${formatarData(act.dataSolicitacao)}</td>
-    <td>${formatarData(act.dataLimite)}</td>
-    <td style="color:${prazoColor}; font-weight:bold;">${prazoRemanescente}</td>
-    <td>${prazoTotal}</td>
-    <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
-    <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${act.observacoes || '-'}">${act.observacoes || '-'}</td>
-    <td>${nomeEngenheiro}</td>
-    <td class="no-print">
-        ${usuarioAtual.tipo === 'chefe' || (act.loginsEng && act.loginsEng.includes(usuarioAtual.login)) ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️</button>` : '-'}
-        ${podeExcluir ? `<button class="btn btn-danger btn-small" onclick="window.excluirAtividade(${act.id})" title="Excluir atividade">🗑️</button>` : ''}
-    </td>
-`;
+                const tituloModal = (act.projeto || act.tipoAtividade || 'Descrição da Atividade').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const descricaoModal = (act.descricao || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 
+                row.innerHTML = `
+                    <td>${podeExcluir ? `<input type="checkbox" class="selecionar-item" value="${act.id}" onchange="toggleSelecionar(${act.id})">` : ''}</td>
+                    <td>${act.processo || '-'}</td>
+                    <td><strong>${act.produto}</strong></td>
+                    <td>${act.tipoAtividade || '-'}</td>
+                    <td class="descricao-cell" onclick="verDescricaoCompleta('${descricaoModal}', '${tituloModal}')" title="Clique para ver a descrição completa">${descTruncada}</td>
+                    <td style="color:${statusColor}; font-weight:bold;">${act.status}</td>
+                    <td>${act.areaDemandante || '-'}</td>
+                    <td>${formatarData(act.dataSolicitacao)}</td>
+                    <td>${formatarData(act.dataLimite)}</td>
+                    <td style="color:${prazoColor}; font-weight:bold;">${prazoRemanescente}</td>
+                    <td>${prazoTotal}</td>
+                    <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
+                    <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${act.observacoes || '-'}">${act.observacoes || '-'}</td>
+                    <td>${nomeEngenheiro}</td>
+                    <td class="no-print">
+                        ${usuarioAtual.tipo === 'chefe' || (act.loginsEng && act.loginsEng.includes(usuarioAtual.login)) ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️</button>` : '-'}
+                        ${podeExcluir ? `<button class="btn btn-danger btn-small" onclick="window.excluirAtividade(${act.id})" title="Excluir atividade">🗑️</button>` : ''}
+                    </td>
+                `;
             });
-
-            document.querySelectorAll('#relatorioBody .descricao-cell').forEach(td => {
-    td.addEventListener('click', function () {
-        verDescricaoCompleta(
-            decodeURIComponent(this.dataset.descricao),
-            decodeURIComponent(this.dataset.titulo)
-        );
-    });
-});
+            
             atualizarContadorSelecionados();
             restaurarPosicaoScroll();
         }
@@ -2226,7 +2210,7 @@ const descricaoModal = (act.descricao || '')
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
                     tipo: 'chefe',
-                    senha: SENHA_GESTOR_PADRAO,
+                    senha: decodificarSenha(SENHA_GESTOR_PADRAO),
                     primeiroAcesso: true,
                     historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
                 };
