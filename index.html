@@ -1464,11 +1464,23 @@ function getSenhaGestor() {
                             alert('Arquivo vazio ou formato inválido!');
                             return;
                         }
-                        const POS = {
-                            processo: 0, produto: 1, tipoAtividade: 2, descricao: 3, status: 4,
-                            areaDemandante: 5, dataSolicitacao: 6, dataLimite: 7,
-                            prioridade: 10, criado: 11, criadoPor: 12, atribuido: 13
-                        };
+                      // Atualizar o mapeamento de posições
+const POS = {
+    processo: 0,
+    produto: 1,
+    tipoAtividade: 2,
+    descricao: 3,
+    status: 4,
+    areaDemandante: 5,
+    dataSolicitacao: 6,
+    dataLimite: 7,
+    prazoRemanescente: 8,  
+    prazoTotal: 9,         
+    prioridade: 10,
+    criado: 11,
+    criadoPor: 12,
+    atribuido: 13
+};
                         const cabecalho = linhas[0].map(h => h.trim().replace(/^"|"$/g, ''));
                         console.log('📊 CABEÇALHO:', cabecalho);
                         const dadosLinhas = linhas.slice(1);
@@ -1498,86 +1510,118 @@ function getSenhaGestor() {
                         let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
                         let anoAtual = String(new Date().getFullYear());
 
-                        dadosLinhas.forEach((valores, index) => {
-                            try {
-                                const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
-                                const processo = getValor(valoresLimpos, POS.processo) || '';
-                                const produtoRaw = getValor(valoresLimpos, POS.produto);
-                                const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
-                                const produto = padronizarProduto(produtoRaw, areaDemandante);
-                                const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
-                                const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
-                                const status = mapearStatus(getValor(valoresLimpos, POS.status));
-                                const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
-                                const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
-                                const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
-const criadoRaw = getValor(valoresLimpos, POS.criado);
-let dataCriado = formatarDataISO(criadoRaw);
-
-if (!dataCriado) {
-    // Se a planilha não tem data, usa a data atual
-    dataCriado = new Date().toISOString().split('T')[0];
-}
-                                let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
-                                let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
-                                const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
-                                let engenheirosNomes = [];
-                                if (atribuidoRaw) {
-                                    let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
-                                    engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
-                                }
-                                if (engenheirosNomes.length === 0 && criadoPor) {
-                                    engenheirosNomes = [criadoPor];
-                                }
-                                if (engenheirosNomes.length === 0) {
-                                    engenheirosNomes = ['Sistema'];
-                                }
-                                const engenheiroCompleto = engenheirosNomes.join(', ');
-                                const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
-                                engenheirosNomes.forEach(nome => {
-                                    const login = gerarUsername(nome);
-                                    if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
-                                        engenheirosParaAdicionar.push({ nome: nome, login: login });
-                                    }
-                                });
-                                if (!produto || !descricao) {
-                                    erros++;
-                                    errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
-                                    return;
-                                }
-                                const novaAtividade = {
-                                    id: Date.now() + importados + Math.random() * 1000,
-                                    engenheiro: engenheiroCompleto,
-                                    engenheirosLista: engenheirosNomes,
-                                    loginsEng: loginsEngenheiros,
-                                    loginEng: loginsEngenheiros[0] || 'sistema',
-                                    dataReg: dataCriado,
-                                    mes: mesAtual,
-                                    ano: anoAtual,
-                                    produto: produto,
-                                    projeto: tipoAtividade,
-                                    processo: processo,
-                                    tipoAtividade: tipoAtividade,
-                                    descricao: descricao,
-                                    status: status,
-                                    prioridade: prioridade,
-                                    dataSolicitacao: dataSolicitacao,
-                                    dataLimite: dataLimite,
-                                    areaDemandante: areaDemandante,
-                                    observacoes: '',
-                                    criado: dataCriado,
-                                    criadoPor: criadoPor || null,
-                                    ultimaModificacao: dataCriado,
-                                    ultimoEditor: criadoPor || null
-                                };
-                                atividades.push(novaAtividade);
-                                importados++;
-                            } catch (err) {
-                                erros++;
-                                errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
-                                console.error('Erro ao importar linha', index, err);
-                            }
-                        });
+                      dadosLinhas.forEach((valores, index) => {
+    try {
+        const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
+        
+        const processo = getValor(valoresLimpos, POS.processo) || '';
+        const produtoRaw = getValor(valoresLimpos, POS.produto);
+        const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
+        const produto = padronizarProduto(produtoRaw, areaDemandante);
+        
+        const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
+        const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
+        const status = mapearStatus(getValor(valoresLimpos, POS.status));
+        const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
+        const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
+        const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
+        
+        // ============================================================
+        // PRAZO REMANESCENTE E PRAZO TOTAL - DA PLANILHA
+        // ============================================================
+        const prazoRemanescenteRaw = getValor(valoresLimpos, POS.prazoRemanescente);
+        const prazoTotalRaw = getValor(valoresLimpos, POS.prazoTotal);
+        
+        let prazoRemanescente = prazoRemanescenteRaw || '';
+        let prazoTotal = prazoTotalRaw || '';
+        
+        // Se não veio da planilha, tenta calcular
+        if (dataSolicitacao && dataLimite && (!prazoRemanescente || !prazoTotal)) {
+            const inicio = new Date(dataSolicitacao);
+            const fim = new Date(dataLimite);
+            const diffTime = fim - inicio;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays >= 0) {
+                if (!prazoRemanescente) prazoRemanescente = diffDays;
+                if (!prazoTotal) prazoTotal = diffDays;
+            }
+        }
+        
+        const criadoRaw = getValor(valoresLimpos, POS.criado);
+        let dataCriado = formatarDataISO(criadoRaw);
+        if (!dataCriado) {
+            dataCriado = new Date().toISOString().split('T')[0];
+        }
+        
+        let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
+        let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
+        
+        const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
+        let engenheirosNomes = [];
+        if (atribuidoRaw) {
+            let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
+            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
+        }
+        if (engenheirosNomes.length === 0 && criadoPor) {
+            engenheirosNomes = [criadoPor];
+        }
+        if (engenheirosNomes.length === 0) {
+            engenheirosNomes = ['Sistema'];
+        }
+        
+        const engenheiroCompleto = engenheirosNomes.join(', ');
+        const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
+        
+        engenheirosNomes.forEach(nome => {
+            const login = gerarUsername(nome);
+            if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
+                engenheirosParaAdicionar.push({ nome: nome, login: login });
+            }
+        });
+        
+        if (!produto || !descricao) {
+            erros++;
+            errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
+            return;
+        }
+        
+        const novaAtividade = {
+            id: Date.now() + importados + Math.random() * 1000,
+            engenheiro: engenheiroCompleto,
+            engenheirosLista: engenheirosNomes,
+            loginsEng: loginsEngenheiros,
+            loginEng: loginsEngenheiros[0] || 'sistema',
+            dataReg: dataCriado,
+            mes: mesAtual,
+            ano: anoAtual,
+            produto: produto,
+            projeto: tipoAtividade,
+            processo: processo,
+            tipoAtividade: tipoAtividade,
+            descricao: descricao,
+            status: status,
+            prioridade: prioridade,
+            dataSolicitacao: dataSolicitacao,
+            dataLimite: dataLimite,
+            prazoRemanescente: prazoRemanescente, // <-- DA PLANILHA
+            prazoTotal: prazoTotal,               // <-- DA PLANILHA
+            areaDemandante: areaDemandante,
+            observacoes: '',
+            criado: dataCriado,
+            criadoPor: criadoPor || null,
+            ultimaModificacao: dataCriado,
+            ultimoEditor: criadoPor || null
+        };
+        
+        atividades.push(novaAtividade);
+        importados++;
+        
+    } catch (err) {
+        erros++;
+        errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
+        console.error('Erro ao importar linha', index, err);
+    }
+});
 
                         engenheirosParaAdicionar.forEach(({ nome, login }) => {
                             if (!usuarios[login] && nome) {
