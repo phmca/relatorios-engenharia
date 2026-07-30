@@ -751,7 +751,16 @@ function getSenhaGestor() {
         // ============================================================
         // DESCRIÇÃO COMPLETA
         // ============================================================
-        window.verDescricaoCompleta = function(descricao, titulo) {
+        window.verDescricaoCompleta = function(id) {
+            const atv = atividades.find(a => String(a.id) === String(id));
+            const descricao = atv ? atv.descricao : '';
+            const titulo = atv ? (atv.projeto || atv.tipoAtividade || 'Descrição da Atividade') : '';
+
+            const escapeHtml = (str) => String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
             modalDiv.innerHTML = `
@@ -761,8 +770,8 @@ function getSenhaGestor() {
                         <h2><i class="fas fa-file-alt"></i> Descrição Completa</h2>
                     </div>
                     <div class="modal-body">
-                        ${titulo ? `<h3 style="color:#667eea; margin-bottom:15px;">${titulo}</h3>` : ''}
-                        <div class="descricao-detalhada">${descricao || 'Descrição não disponível'}</div>
+                        ${titulo ? `<h3 style="color:#667eea; margin-bottom:15px;">${escapeHtml(titulo)}</h3>` : ''}
+                        <div class="descricao-detalhada">${escapeHtml(descricao) || 'Descrição não disponível'}</div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Fechar</button>
@@ -2047,15 +2056,13 @@ if (!dataCriado) {
                 }
                 
                 const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
-                const tituloModal = (act.projeto || act.tipoAtividade || 'Descrição da Atividade').replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                const descricaoModal = (act.descricao || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 
                 row.innerHTML = `
                     <td>${podeExcluir ? `<input type="checkbox" class="selecionar-item" value="${act.id}" onchange="toggleSelecionar(${act.id})">` : ''}</td>
                     <td>${act.processo || '-'}</td>
                     <td><strong>${act.produto}</strong></td>
                     <td>${act.tipoAtividade || '-'}</td>
-                    <td class="descricao-cell" onclick="verDescricaoCompleta('${descricaoModal}', '${tituloModal}')" title="Clique para ver a descrição completa">${descTruncada}</td>
+                    <td class="descricao-cell" onclick="verDescricaoCompleta('${act.id}')" title="Clique para ver a descrição completa">${descTruncada}</td>
                     <td style="color:${statusColor}; font-weight:bold;">${act.status}</td>
                     <td>${act.areaDemandante || '-'}</td>
                     <td>${formatarData(act.dataSolicitacao)}</td>
