@@ -43,21 +43,36 @@
         .btn-secondary { background: #48bb78; color: white; }
         .btn-secondary:hover { background: #38a169; transform: translateY(-2px); }
         .btn-danger { background: #f56565; color: white; }
-        .btn-danger:hover { background: #e53e3e; }
+        .btn-danger:hover { background: #e53e3e; transform: translateY(-2px); }
         .btn-warning { background: #ed8936; color: white; }
-        .btn-warning:hover { background: #dd6b20; }
+        .btn-warning:hover { background: #dd6b20; transform: translateY(-2px); }
         .btn-outline { background: transparent; border: 1px solid #e1e5eb; color: #666; }
         .btn-outline:hover { background: #f8f9fc; border-color: #667eea; color: #667eea; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-item { background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #eef2f7; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
         .stat-item h4 { font-size: 0.75rem; color: #888; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-item .value { font-size: 1.8rem; font-weight: 700; color: #667eea; line-height: 1.2; }
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eef2f7; }
-        th { background: #f8f9fc; color: #555; font-weight: 600; }
+        .table-container { overflow-x: auto; margin-top: 20px; max-height: 600px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eef2f7; }
+        th { background: #f8f9fc; color: #555; font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
         tr:hover { background: #f8f9fc; }
+        .descricao-cell { 
+            cursor: pointer; 
+            max-width: 200px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap;
+            color: #667eea;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .descricao-cell:hover { 
+            color: #764ba2;
+            text-decoration: underline;
+        }
         .filters-bar { background: #f8f9fc; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
         .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .filter-group { display: flex; flex-direction: column; }
@@ -93,7 +108,6 @@
         .suggestions { position: relative; }
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
-        .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
         .nome-usuario { cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 5px; }
         .nome-usuario:hover { color: #667eea; }
         .cpf-mask { font-family: monospace; letter-spacing: 1px; }
@@ -120,6 +134,19 @@
         .status-dot.syncing { background: #ed8936; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         
+        .btn-import { background: #4299e1; color: white; }
+        .btn-import:hover { background: #3182ce; transform: translateY(-2px); }
+        
+        .descricao-detalhada {
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+            border-left: 4px solid #667eea;
+        }
+        
         @media (max-width: 768px) { 
             .main-layout { grid-template-columns: 1fr; } 
             .modern-header { flex-direction: column; text-align: center; } 
@@ -132,8 +159,8 @@
             body *:not(#print-report-container):not(#print-report-container *) { visibility: hidden !important; }
             #print-report-container, #print-report-container * { visibility: visible !important; }
             #print-report-container { position: absolute !important; top: 0; left: 0; width: 100%; height: auto; background: white; padding: 10px; margin: 0; z-index: 99999; overflow: visible; page-break-after: avoid; page-break-inside: avoid; }
-            table { width: 100%; border-collapse: collapse; font-size: 11px; page-break-inside: avoid; }
-            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            table { width: 100%; border-collapse: collapse; font-size: 10px; page-break-inside: avoid; }
+            th, td { border: 1px solid #ccc; padding: 4px; text-align: left; }
             .no-print { display: none !important; }
             tr, tbody, thead { page-break-inside: avoid; break-inside: avoid; }
         }
@@ -144,14 +171,14 @@
 
     <div class="container" id="mainContainer">
        <div class="modern-header no-print">
-    <div class="logo-area">
-        <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo ASSESSOR / CONSÓRCIO-CE">
-        <div style="flex:1; text-align:center;">
-            <h1 style="margin:0;">Registro de Atividades</h1>
+            <div class="logo-area">
+                <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo ASSESSOR / CONSÓRCIO-CE">
+                <div style="flex:1; text-align:center;">
+                    <h1 style="margin:0;">Registro de Atividades</h1>
+                </div>
+            </div>
+            <div class="user-area" id="userInfo"></div>
         </div>
-    </div>
-    <div class="user-area" id="userInfo"></div>
-</div>
 
         <div class="main-layout no-print">
             <div class="form-card">
@@ -159,10 +186,23 @@
                 <form id="activityForm">
                     <div class="form-row">
                         <div class="form-group"><label>Mês do Relatório:</label><select id="mesRelatorio"><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
-                        <div class="form-group"><label>Ano do Relatório:</label><select id="anoRelatorio"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
+                        <div class="form-group"><label>Ano do Relatório:</label><select id="anoRelatorio"></option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label class="required">Produto:</label><select id="produto" required><option value="">Selecione...</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
+                        <div class="form-group">
+                            <label class="required">Produto:</label>
+                            <select id="produto" required>
+                                <option value="">Selecione...</option>
+                                <option value="Produto 1">Produto 1</option>
+                                <option value="Produto 2">Produto 2</option>
+                                <option value="Produto 3">Produto 3</option>
+                                <option value="Produto 4">Produto 4</option>
+                                <option value="Produto 5">Produto 5</option>
+                                <option value="Produto 6">Produto 6</option>
+                                <option value="Produto 7">Produto 7</option>
+                                <option value="Produto 8">Produto 8</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label>Processo/SEI:</label>
                             <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21" autocomplete="off">
@@ -174,11 +214,23 @@
                     </div>
                     <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..." autocomplete="off"></textarea></div>
                     <div class="form-row">
-                        <div class="form-group"><label>Status:</label><select id="status"><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
+                        <div class="form-group"><label class="required">Status:</label><select id="status" required><option value="">Selecione...</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
                         <div class="form-group"><label>Prioridade:</label><select id="prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div>
                     </div>
-                    <div class="form-row"><div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao" autocomplete="off"></div><div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite" autocomplete="off"></div></div>
-                    
+                    <div class="form-row">
+                        <div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao" autocomplete="off" onchange="calcularPrazos()"></div>
+                        <div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite" autocomplete="off" onchange="calcularPrazos()"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prazo Remanescente (dias):</label>
+                            <input type="number" id="prazoRemanescente" min="0" style="background:#f8f9fc; font-weight:bold; color:#667eea;" onchange="validarPrazoRemanescente()">
+                        </div>
+                        <div class="form-group">
+                            <label>Prazo Total (dias):</label>
+                            <input type="text" id="prazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;">
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Área Demandante:</label>
                         <select id="areaDemandante">
@@ -212,10 +264,50 @@
                 </form>
             </div>
 
-            <div><div class="stats-card"><div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div><div class="stats-grid" id="statsContainer"></div><button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button></div></div>
+            <div>
+                <div class="stats-card">
+                    <div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
+                    <div class="stats-grid" id="statsContainer"></div>
+                    <button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
+                </div>
+            </div>
         </div>
 
-        <div class="report-card"><div class="card-title"><i class="fas fa-table"></i><span>Relatório de Atividades</span> </div><div id="filtersContainer"></div><div class="table-container"><table id="relatorioTable"><thead><th>Processo/SEI</th><th>Produto</th><th>Projeto</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Área Demandante</th><th>Última Modificação</th><th>Observações</th><th>Engenheiro</th><th class="no-print">Ações</th></tr></thead><tbody id="relatorioBody"><tr><td colspan="11" style="text-align:center">Carregando...</td></tr></tbody></table></div></div>
+        <div class="report-card">
+            <div class="card-title">
+                <i class="fas fa-table"></i>
+                <span>Relatório de Atividades</span>
+            </div>
+            <div id="filtersContainer"></div>
+            <div class="table-container">
+                <table id="relatorioTable">
+                   <thead>
+    <tr>
+        <th><input type="checkbox" id="selecionarTodos" onchange="toggleTodos(this)"></th>
+        <th>Processo/SEI</th>
+        <th>Produto</th>
+        <th>Título</th>
+        <th>Descrição</th>
+        <th>Status</th>
+        <th>Área Demandante</th>
+        <th>Data Solicitação</th>
+        <th>Data Limite</th>
+        <th>Prazo Remanescente</th>
+        <th>Prazo Total</th>
+        <th>Última Modificação</th>
+        <th>Observações</th>
+        <th>Engenheiro</th>
+        <th class="no-print">Ações</th>
+    </tr>
+</thead>
+                    <tbody id="relatorioBody"><tr><td colspan="16" style="text-align:center">Carregando...</td></tr>
+                </tbody></table>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                <button onclick="gerarPDF()" class="btn btn-secondary" style="flex:1;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
+                <button onclick="excluirMultiplas()" id="btnExcluirMultiplas" class="btn btn-danger" style="flex:1; display:none;"><i class="fas fa-trash-alt"></i> Excluir Selecionados (<span id="contSelecionados">0</span>)</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -240,115 +332,210 @@
         let usuarioAtual = null;
         let sincronizando = false;
 
-        function atualizarStatusSincronizacao(status, mensagem) {
-            const syncStatus = document.getElementById('syncStatus');
-            if (!syncStatus) return;
+        // ============================================================
+        // FUNÇÃO PARA FORMATAR DATA - ACEITA MÚLTIPLOS FORMATOS
+        // ============================================================
+        function formatarDataISO(dataStr) {
+            if (!dataStr || dataStr.trim() === '') return null;
             
-            const dot = syncStatus.querySelector('.status-dot');
-            if (dot) {
-                dot.className = 'status-dot';
-                if (status === 'online') dot.classList.add('online');
-                else if (status === 'offline') dot.classList.add('offline');
-                else if (status === 'syncing') dot.classList.add('syncing');
+            // Remove aspas e espaços
+            dataStr = dataStr.trim().replace(/^"|"$/g, '');
+            
+            // Se já estiver no formato YYYY-MM-DD, retorna direto
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dataStr)) {
+                return dataStr;
             }
             
-            let texto = '';
-            switch(status) {
-                case 'online': texto = '✅ Sincronizado'; break;
-                case 'offline': texto = '⚠️ Offline (dados locais)'; break;
-                case 'syncing': texto = '⏳ Sincronizando...'; break;
-                default: texto = mensagem || 'Sincronizado';
-            }
-            syncStatus.innerHTML = `<span class="status-dot ${status}"></span> ${texto}`;
-            syncStatus.classList.toggle('sync-error', status === 'offline');
-        }
-
-        async function salvarNoFirebase(dados) {
-            try {
-                sincronizando = true;
-                atualizarStatusSincronizacao('syncing', 'Sincronizando...');
-                
-                await database.ref('sistema').set(dados);
-                atualizarStatusSincronizacao('online', 'Sincronizado');
-                return true;
-            } catch (error) {
-                console.error('Erro ao salvar no Firebase:', error);
-                atualizarStatusSincronizacao('offline', 'Erro ao sincronizar');
-                return false;
-            } finally {
-                sincronizando = false;
-            }
-        }
-
-        async function carregarDoFirebase() {
-            try {
-                atualizarStatusSincronizacao('syncing', 'Carregando...');
-                
-                const snapshot = await database.ref('sistema').once('value');
-                const dados = snapshot.val();
-                
-                if (dados) {
-                    const usuariosCarregados = dados.usuarios || {};
-                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
-                        login,
-                        {
-                            ...user,
-                            cpf: user.cpf ? atob(user.cpf) : ''
-                        }
-                    ]));
-                    atividades = dados.atividades || [];
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-                    atualizarStatusSincronizacao('online', 'Sincronizado');
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error('Erro ao carregar do Firebase:', error);
-                atualizarStatusSincronizacao('offline', 'Usando dados locais');
-                return false;
-            }
-        }
-
-        function salvarDados() {
-            const dadosParaSalvar = {
-                atividades: atividades,
-                usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
-                    login,
-                    {
-                        ...user,
-                        cpf: user.cpf ? btoa(user.cpf) : ''
+            let data = new Date(dataStr);
+            
+            // Se falhou, tenta formato dd/mm/yyyy
+            if (isNaN(data)) {
+                const partes = dataStr.split('/');
+                if (partes.length === 3) {
+                    const dia = parseInt(partes[0]);
+                    const mes = parseInt(partes[1]) - 1;
+                    const ano = parseInt(partes[2]);
+                    if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano)) {
+                        data = new Date(ano, mes, dia);
                     }
-                ]))
-            };
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
-            salvarNoFirebase(dadosParaSalvar);
-        }
-
-        async function carregarDados() {
-            const carregadoNuvem = await carregarDoFirebase();
-            if (carregadoNuvem) return true;
-            
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const dados = JSON.parse(saved);
-                    atividades = dados.atividades || [];
-                    const usuariosCarregados = dados.usuarios || {};
-                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
-                        login,
-                        {
-                            ...user,
-                            cpf: user.cpf ? atob(user.cpf) : ''
-                        }
-                    ]));
-                    return true;
-                } catch(e) {
-                    console.error('Erro ao carregar dados locais:', e);
-                    return false;
                 }
             }
-            return false;
+            
+            // Se falhou, tenta formato dd-mm-yyyy
+            if (isNaN(data)) {
+                const partes = dataStr.split('-');
+                if (partes.length === 3) {
+                    const dia = parseInt(partes[0]);
+                    const mes = parseInt(partes[1]) - 1;
+                    const ano = parseInt(partes[2]);
+                    if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano)) {
+                        data = new Date(ano, mes, dia);
+                    }
+                }
+            }
+            
+            // Se NÃO falhou, retorna a data no formato YYYY-MM-DD
+            if (!isNaN(data)) {
+                const ano = data.getFullYear();
+                const mes = String(data.getMonth() + 1).padStart(2, '0');
+                const dia = String(data.getDate()).padStart(2, '0');
+                return `${ano}-${mes}-${dia}`;
+            }
+            
+            return null;
+        }
+
+        // ============================================================
+        // FUNÇÃO PARA PADRONIZAR PRODUTOS (BASEADO NA ÁREA DEMANDANTE)
+        // ============================================================
+        function padronizarProduto(produto, areaDemandante) {
+            if (!produto || produto.trim() === '') return 'Produto 1';
+            const v = produto.trim().toUpperCase();
+            const isProduto4 = v.match(/PRODUTO\s*0?4/i);
+            if (isProduto4) {
+                const areaParaCidade = {
+                    'UL – Sobral': 'Sobral',
+                    'UL – Fortaleza': 'Fortaleza',
+                    'UL – Russas': 'Russas',
+                    'UL – Icó': 'Icó',
+                    'UL – Boa Viagem': 'Boa Viagem'
+                };
+                let cidadeEncontrada = null;
+                if (areaDemandante) {
+                    for (const [area, cidade] of Object.entries(areaParaCidade)) {
+                        if (areaDemandante.includes(area) || areaDemandante.includes(cidade)) {
+                            cidadeEncontrada = cidade;
+                            break;
+                        }
+                    }
+                    if (!cidadeEncontrada) {
+                        for (const [area, cidade] of Object.entries(areaParaCidade)) {
+                            if (areaDemandante.toUpperCase().includes(cidade.toUpperCase())) {
+                                cidadeEncontrada = cidade;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!cidadeEncontrada) {
+                    const cidades = ['Sobral', 'Fortaleza', 'Russas', 'Icó', 'Boa Viagem'];
+                    for (const cidade of cidades) {
+                        if (v.includes(cidade.toUpperCase())) {
+                            cidadeEncontrada = cidade;
+                            break;
+                        }
+                    }
+                }
+                if (cidadeEncontrada) {
+                    return `Produto 4 - ${cidadeEncontrada}`;
+                }
+                return 'Produto 4';
+            }
+            const match = v.match(/PRODUTO\s*0?(\d+)/i);
+            if (match) {
+                const num = parseInt(match[1]);
+                return `Produto ${num}`;
+            }
+            return produto;
+        }
+
+        // ============================================================
+        // FUNÇÕES DE PRAZO
+        // ============================================================
+        function calcularPrazos() {
+            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+            const dataLimite = document.getElementById('dataLimite').value;
+            const prazoRemanescenteInput = document.getElementById('prazoRemanescente');
+            const prazoTotalInput = document.getElementById('prazoTotal');
+            
+            if (dataSolicitacao && dataLimite) {
+                const inicio = new Date(dataSolicitacao);
+                const fim = new Date(dataLimite);
+                const diffTime = fim - inicio;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0) {
+                    prazoTotalInput.value = diffDays;
+                    prazoTotalInput.style.color = '#667eea';
+                    prazoRemanescenteInput.max = diffDays;
+                    if (!prazoRemanescenteInput.value) {
+                        prazoRemanescenteInput.value = diffDays;
+                    }
+                    validarPrazoRemanescente();
+                } else {
+                    prazoTotalInput.value = 'Expirado';
+                    prazoTotalInput.style.color = '#f56565';
+                    prazoRemanescenteInput.value = '';
+                    prazoRemanescenteInput.max = 0;
+                }
+            } else if (dataSolicitacao && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                prazoRemanescenteInput.value = '';
+                prazoRemanescenteInput.max = 0;
+            } else {
+                prazoTotalInput.value = '';
+                prazoRemanescenteInput.value = '';
+                prazoRemanescenteInput.max = 0;
+            }
+        }
+
+        function validarPrazoRemanescente() {
+            const prazoRemanescente = parseInt(document.getElementById('prazoRemanescente').value);
+            const prazoTotal = parseInt(document.getElementById('prazoTotal').value);
+            const input = document.getElementById('prazoRemanescente');
+            if (prazoTotal && !isNaN(prazoTotal) && prazoTotal > 0) {
+                if (prazoRemanescente > prazoTotal) {
+                    input.style.color = '#f56565';
+                    input.style.borderColor = '#f56565';
+                    alert('⚠️ O Prazo Remanescente não pode ser maior que o Prazo Total!');
+                    input.value = prazoTotal;
+                    input.style.color = '#667eea';
+                    input.style.borderColor = '#e1e5eb';
+                } else if (prazoRemanescente < 0) {
+                    input.style.color = '#f56565';
+                    input.style.borderColor = '#f56565';
+                    alert('⚠️ O Prazo Remanescente não pode ser negativo!');
+                    input.value = 0;
+                    input.style.color = '#667eea';
+                    input.style.borderColor = '#e1e5eb';
+                } else {
+                    input.style.color = '#667eea';
+                    input.style.borderColor = '#e1e5eb';
+                }
+            }
+        }
+
+        // ============================================================
+        // FUNÇÕES AUXILIARES
+        // ============================================================
+        function formatarDataHora(dataISO) {
+            if (!dataISO) return '-';
+            const data = new Date(dataISO);
+            return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '-';
+            const data = new Date(dataISO);
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function gerarUsername(nomeCompleto) {
+            if (!nomeCompleto) return 'sistema';
+            const partes = nomeCompleto.trim().split(' ');
+            const primeiroNome = partes[0] || 'usuario';
+            const ultimoNome = partes[partes.length - 1] || '';
+            let username = `${primeiroNome.toLowerCase()}_${ultimoNome.toLowerCase()}`;
+            username = username.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            username = username.replace(/[^a-z_]/g, '');
+            return username || 'sistema';
+        }
+
+        function gerarSenhaInicial(cpf) {
+            const cpfLimpo = cpf.replace(/\D/g, '');
+            const primeiros3 = cpfLimpo.substring(0, 3);
+            const ultimos2 = cpfLimpo.substring(cpfLimpo.length - 2);
+            return `cac${primeiros3}${ultimos2}`;
         }
 
         function maskCPF(cpf) {
@@ -387,32 +574,107 @@
             return true;
         }
 
-        function formatarDataHora(dataISO) {
-            const data = new Date(dataISO);
-            return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        // ============================================================
+        // FIREBASE
+        // ============================================================
+        function atualizarStatusSincronizacao(status, mensagem) {
+            const syncStatus = document.getElementById('syncStatus');
+            if (!syncStatus) return;
+            const dot = syncStatus.querySelector('.status-dot');
+            if (dot) {
+                dot.className = 'status-dot';
+                if (status === 'online') dot.classList.add('online');
+                else if (status === 'offline') dot.classList.add('offline');
+                else if (status === 'syncing') dot.classList.add('syncing');
+            }
+            let texto = '';
+            switch(status) {
+                case 'online': texto = '✅ Sincronizado'; break;
+                case 'offline': texto = '⚠️ Offline (dados locais)'; break;
+                case 'syncing': texto = '⏳ Sincronizando...'; break;
+                default: texto = mensagem || 'Sincronizado';
+            }
+            syncStatus.innerHTML = `<span class="status-dot ${status}"></span> ${texto}`;
+            syncStatus.classList.toggle('sync-error', status === 'offline');
         }
 
-        function gerarUsername(nomeCompleto) {
-            const partes = nomeCompleto.trim().split(' ');
-            const primeiroNome = partes[0];
-            const ultimoNome = partes[partes.length - 1];
-            let username = `${primeiroNome.toLowerCase()}_${ultimoNome.toLowerCase()}`;
-            username = username.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            username = username.replace(/[^a-z_]/g, '');
-            return username;
+        async function salvarNoFirebase(dados) {
+            try {
+                sincronizando = true;
+                atualizarStatusSincronizacao('syncing', 'Sincronizando...');
+                await database.ref('sistema').set(dados);
+                atualizarStatusSincronizacao('online', 'Sincronizado');
+                return true;
+            } catch (error) {
+                console.error('Erro ao salvar no Firebase:', error);
+                atualizarStatusSincronizacao('offline', 'Erro ao sincronizar');
+                return false;
+            } finally {
+                sincronizando = false;
+            }
         }
 
-        function gerarSenhaInicial(cpf) {
-            const cpfLimpo = cpf.replace(/\D/g, '');
-            const primeiros3 = cpfLimpo.substring(0, 3);
-            const ultimos2 = cpfLimpo.substring(cpfLimpo.length - 2);
-            return `cac${primeiros3}${ultimos2}`;
+        async function carregarDoFirebase() {
+            try {
+                atualizarStatusSincronizacao('syncing', 'Carregando...');
+                const snapshot = await database.ref('sistema').once('value');
+                const dados = snapshot.val();
+                if (dados) {
+                    const usuariosCarregados = dados.usuarios || {};
+                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
+                        login,
+                        { ...user, cpf: user.cpf ? atob(user.cpf) : '' }
+                    ]));
+                    atividades = dados.atividades || [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+                    atualizarStatusSincronizacao('online', 'Sincronizado');
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Erro ao carregar do Firebase:', error);
+                atualizarStatusSincronizacao('offline', 'Usando dados locais');
+                return false;
+            }
+        }
+
+        async function salvarDados() {
+            const dadosParaSalvar = {
+                atividades,
+                usuarios: Object.fromEntries(
+                    Object.entries(usuarios).map(([login, user]) => [
+                        login, { ...user, cpf: user.cpf ? btoa(user.cpf) : '' }
+                    ])
+                )
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
+            await salvarNoFirebase(dadosParaSalvar);
+        }
+
+        async function carregarDados() {
+            const carregadoNuvem = await carregarDoFirebase();
+            if (carregadoNuvem) return true;
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const dados = JSON.parse(saved);
+                    atividades = dados.atividades || [];
+                    const usuariosCarregados = dados.usuarios || {};
+                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
+                        login, { ...user, cpf: user.cpf ? atob(user.cpf) : '' }
+                    ]));
+                    return true;
+                } catch(e) {
+                    console.error('Erro ao carregar dados locais:', e);
+                    return false;
+                }
+            }
+            return false;
         }
 
         function criarDadosIniciais() {
             atividades = [];
             usuarios = {};
-            
             usuarios[LOGIN_GESTOR] = {
                 nome: 'Arnaldo Cunha',
                 tipo: 'chefe',
@@ -420,7 +682,6 @@
                 primeiroAcesso: true,
                 historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
             };
-
             usuarios['dev1'] = {
                 nome: 'Desenvolvedor',
                 tipo: 'chefe',
@@ -428,7 +689,6 @@
                 primeiroAcesso: false,
                 historicoLogins: [{ login: 'dev1', data: new Date().toISOString() }]
             };
-
             salvarDados();
         }
 
@@ -437,191 +697,121 @@
             return usuarios[username] && usuarios[username].primeiroAcesso === true;
         }
 
-        window.alterarLoginUsuario = function() {
+        // ============================================================
+        // CHECKBOXES
+        // ============================================================
+        function toggleTodos(checkbox) {
+            const checkboxes = document.querySelectorAll('.selecionar-item');
+            checkboxes.forEach(cb => { cb.checked = checkbox.checked; });
+            atualizarContadorSelecionados();
+        }
+
+        function toggleSelecionar(id) {
+            atualizarContadorSelecionados();
+            const total = document.querySelectorAll('.selecionar-item').length;
+            const selecionados = document.querySelectorAll('.selecionar-item:checked').length;
+            const selecionarTodos = document.getElementById('selecionarTodos');
+            if (selecionarTodos) {
+                selecionarTodos.checked = total > 0 && selecionados === total;
+            }
+        }
+
+        function atualizarContadorSelecionados() {
+            const checkboxes = document.querySelectorAll('.selecionar-item:checked');
+            const count = checkboxes.length;
+            const cont = document.getElementById('contSelecionados');
+            const btn = document.getElementById('btnExcluirMultiplas');
+            if (cont) cont.textContent = count;
+            if (btn) { btn.style.display = count > 0 ? 'flex' : 'none'; }
+        }
+
+        // ============================================================
+        // DESCRIÇÃO COMPLETA
+        // ============================================================
+        window.verDescricaoCompleta = function(descricao, titulo) {
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
             modalDiv.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
                         <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                        <h2><i class="fas fa-user-edit"></i> Alterar Login</h2>
+                        <h2><i class="fas fa-file-alt"></i> Descrição Completa</h2>
                     </div>
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label>Login atual:</label>
-                            <input type="text" value="${usuarioAtual.login}" disabled style="background:#f0f0f0;">
-                        </div>
-                        <div class="form-group">
-                            <label>Novo login:</label>
-                            <input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50" autocomplete="off">
-                        </div>
-                        <div class="info-badge">
-                            <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
-                            <p>• O login será usado para acessar o sistema</p>
-                            <p>• Permitido: letras minúsculas, números e underline (_)</p>
-                        </div>
+                        ${titulo ? `<h3 style="color:#667eea; margin-bottom:15px;">${titulo}</h3>` : ''}
+                        <div class="descricao-detalhada">${descricao || 'Descrição não disponível'}</div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                        <button class="btn btn-primary" onclick="salvarAlteracaoLogin()">Salvar</button>
+                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Fechar</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modalDiv);
         };
 
-        window.salvarAlteracaoLogin = function() {
-            const novoLogin = document.getElementById('novoLogin').value.trim().toLowerCase();
-            if (!novoLogin) { alert('Informe um login válido!'); return; }
-            if (!/^[a-z0-9_]+$/.test(novoLogin)) { alert('Login inválido!'); return; }
-            if (novoLogin === usuarioAtual.login) { alert('O novo login é igual ao atual!'); return; }
-            if (usuarios[novoLogin]) { alert(`Login "${novoLogin}" já existe!`); return; }
-            
-            const historicoAtual = usuarioAtual.historicoLogins || [];
-            historicoAtual.push({ login: novoLogin, data: new Date().toISOString() });
-            
-            const dadosUsuario = { ...usuarios[usuarioAtual.login] };
-            dadosUsuario.historicoLogins = historicoAtual;
-            
-            usuarios[novoLogin] = dadosUsuario;
-            delete usuarios[usuarioAtual.login];
-            
-            atividades = atividades.map(a => {
-                if (a.loginEng === usuarioAtual.login) return { ...a, loginEng: novoLogin };
-                return a;
-            });
-            
-            salvarDados();
-            usuarioAtual = { login: novoLogin, ...dadosUsuario };
-            
-            alert(`✅ Login alterado para: ${novoLogin}`);
-            document.querySelector('.modal').remove();
-            carregarInterface();
-            gerarRelatorioAtual();
-            if (usuarioAtual.tipo === 'chefe') criarFiltros();
-        };
-
-
-        window.abrirPainelAdmin = function() {
-            if (usuarioAtual.tipo !== 'chefe') { alert('Apenas o gestor pode acessar!'); return; }
-            
-            const modalDiv = document.createElement('div');
-            modalDiv.className = 'modal';
-            modalDiv.innerHTML = `<div class="modal-content modal-large"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2></div><div class="modal-body"><h3>➕ Adicionar Engenheiro</h3><div class="form-row"><div class="form-group"><label>Nome:</label><input type="text" id="novoNome" placeholder="Nome completo" autocomplete="off"></div><div class="form-group"><label>CPF:</label><input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11" autocomplete="off"></div></div><button class="btn btn-primary" onclick="adicionarEngenheiro()">Adicionar</button><h3 style="margin-top:25px;">📋 Lista de Engenheiros</h3><div class="table-container"><table class="user-table"><thead><th>Login</th><th>Nome</th><th>CPF</th><th>Histórico</th><th>Ações</th></tr></thead><tbody id="listaEngenheiros"></tbody></table></div></div></div>`;
-            document.body.appendChild(modalDiv);
-            carregarListaEngenheiros();
-        };
-
-        function carregarListaEngenheiros() {
-            const tbody = document.getElementById('listaEngenheiros');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            Object.keys(usuarios).forEach(login => {
-                const user = usuarios[login];
-                if (user.tipo === 'engenheiro') {
-                    let historicoHtml = '-';
-                    if (user.historicoLogins && user.historicoLogins.length > 0) {
-                        historicoHtml = '<div style="font-size:11px;">';
-                        user.historicoLogins.forEach(h => {
-                            historicoHtml += `<div>🔑 ${h.login} <small>(${formatarDataHora(h.data)})</small></div>`;
-                        });
-                        historicoHtml += '</div>';
-                    }
-                    
-                    const cpfExibido = user.cpf ? maskCPF(user.cpf) : '-';
-                    
-                    const row = tbody.insertRow();
-                    row.innerHTML = `<td>${login}<\/td><td>${user.nome}<\/td><td><span class="cpf-mask">${cpfExibido}<\/span><\/td><td>${historicoHtml}<\/td><td><button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i> Remover</button><\/td>`;
-                }
-            });
-        }
-
-        window.adicionarEngenheiro = function() {
-            const nome = document.getElementById('novoNome').value.trim();
-            const cpf = document.getElementById('novoCpf').value.trim();
-            if (!nome) { alert('Informe o nome!'); return; }
-            if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF inválido!'); return; }
-            const username = gerarUsername(nome);
-            if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; }
-            usuarios[username] = {
-                nome, tipo: 'engenheiro',
-                senha: gerarSenhaInicial(cpf),
-                primeiroAcesso: true,
-                cpf,
-                historicoLogins: [{ login: username, data: new Date().toISOString() }]
-            };
-            salvarDados();
-            alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${gerarSenhaInicial(cpf)}`);
-            document.getElementById('novoNome').value = '';
-            document.getElementById('novoCpf').value = '';
-            carregarListaEngenheiros();
-            if (usuarioAtual.tipo === 'chefe') criarFiltros();
-            gerarRelatorioAtual();
-        };
-
-        window.editarEngenheiro = function(login) {
-            const user = usuarios[login];
-            if (!user) return;
-            const modalDiv = document.createElement('div');
-            modalDiv.className = 'modal';
-            modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><button class="modal-close" onclick="this.closest('.modal').remove()">✕</button><h2>✏️ Editar Engenheiro</h2></div><div class="modal-body"><div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}" autocomplete="off"></div><div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11" autocomplete="off"></div><div id="editEngError" class="error"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button></div></div>`;
-            document.body.appendChild(modalDiv);
-        };
-
-        window.salvarEdicaoEngenheiro = function(login) {
-            const novoNome = document.getElementById('editNomeEng').value.trim();
-            const novoCpf = document.getElementById('editCpfEng').value.trim();
-            const errorDiv = document.getElementById('editEngError');
-            
-            if (!novoNome) { errorDiv.innerText = 'Nome não pode ficar vazio!'; return; }
-            if (!novoCpf || novoCpf.length !== 11 || !/^\d+$/.test(novoCpf)) {
-                errorDiv.innerText = 'CPF inválido!'; return;
-            }
-            
-            const novoUsername = gerarUsername(novoNome);
-            if (novoUsername !== login && usuarios[novoUsername]) {
-                errorDiv.innerText = `Usuário ${novoUsername} já existe!`;
+        // ============================================================
+        // EXCLUIR MÚLTIPLAS
+        // ============================================================
+        window.excluirMultiplas = async function () {
+            if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
+                alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem excluir atividades!');
                 return;
             }
-            
-            const novaSenha = gerarSenhaInicial(novoCpf);
-            const dataAtual = new Date().toISOString();
-            
-            if (novoUsername !== login) {
-                const historicoAtual = usuarios[login].historicoLogins || [];
-                historicoAtual.push({ login: novoUsername, data: dataAtual });
-                usuarios[novoUsername] = { ...usuarios[login], nome: novoNome, cpf: novoCpf, senha: novaSenha, primeiroAcesso: true, historicoLogins: historicoAtual };
-                delete usuarios[login];
-                atividades = atividades.map(a => { if (a.loginEng === login) return { ...a, loginEng: novoUsername, engenheiro: novoNome }; return a; });
-            } else {
-                usuarios[login].nome = novoNome;
-                usuarios[login].cpf = novoCpf;
-                usuarios[login].senha = novaSenha;
-                usuarios[login].primeiroAcesso = true;
-                atividades = atividades.map(a => { if (a.loginEng === login) return { ...a, engenheiro: novoNome }; return a; });
+            const ids = [...document.querySelectorAll('.selecionar-item:checked')].map(cb => String(cb.value));
+            if (ids.length === 0) {
+                alert('Nenhuma atividade selecionada!');
+                return;
             }
-            
-            salvarDados();
-            alert(`✅ Atualizado!\nNova senha: ${novaSenha}`);
-            document.querySelector('.modal').remove();
-            carregarListaEngenheiros();
-            if (usuarioAtual.tipo === 'chefe') criarFiltros();
-            gerarRelatorioAtual();
-        };
-
-        window.removerEngenheiro = function(login) {
-            if (confirm(`Remover ${usuarios[login].nome}?`)) {
-                atividades = atividades.filter(a => a.loginEng !== login);
-                delete usuarios[login];
-                salvarDados();
-                alert('Removido!');
-                carregarListaEngenheiros();
-                if (usuarioAtual.tipo === 'chefe') criarFiltros();
+            let lista = '';
+            ids.forEach(id => {
+                const atv = atividades.find(a => String(a.id) === id);
+                if (atv) {
+                    lista += `\n• ${atv.produto} - ${atv.descricao.substring(0,40)}...`;
+                }
+            });
+            if (!confirm(`⚠️ Tem certeza que deseja excluir ${ids.length} atividade(s)?\n\n${lista}\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            atividades = atividades.filter(a => !ids.includes(String(a.id)));
+            try {
+                await salvarDados();
+                alert(`🗑️ ${ids.length} atividade(s) excluída(s) com sucesso!`);
                 gerarRelatorioAtual();
+                if (usuarioAtual.tipo === 'chefe') { criarFiltros(); }
+            } catch (erro) {
+                console.error(erro);
+                alert("Erro ao salvar os dados.");
             }
         };
 
-        
+        window.recarregarDados = async function() {
+            if (!confirm('Deseja recarregar os dados do Firebase? Isso irá buscar a versão mais recente.')) return;
+            try {
+                const snapshot = await database.ref('sistema').once('value');
+                const dados = snapshot.val();
+                if (dados) {
+                    const usuariosCarregados = dados.usuarios || {};
+                    usuarios = Object.fromEntries(Object.entries(usuariosCarregados).map(([login, user]) => [
+                        login, { ...user, cpf: user.cpf ? atob(user.cpf) : '' }
+                    ]));
+                    atividades = dados.atividades || [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+                    alert('✅ Dados recarregados com sucesso!');
+                    gerarRelatorioAtual();
+                    if (usuarioAtual.tipo === 'chefe') criarFiltros();
+                } else {
+                    alert('❌ Nenhum dado encontrado no Firebase.');
+                }
+            } catch (error) {
+                alert('❌ Erro ao recarregar dados: ' + error.message);
+            }
+        };
+
+        window.logout = function() { location.reload(); };
+
+        // ============================================================
+        // LOGIN
+        // ============================================================
         function mostrarLogin() {
             hideLoadingAndShow();
             const loginDiv = document.createElement('div');
@@ -647,17 +837,14 @@
                 </div>
             `;
             document.body.appendChild(loginDiv);
-
             const loginInput = document.getElementById('userLogin');
             const senhaInput = document.getElementById('userSenha');
-            
             function handleEnterPress(event) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     window.efetuarLogin();
                 }
             }
-            
             if (loginInput) loginInput.addEventListener('keypress', handleEnterPress);
             if (senhaInput) senhaInput.addEventListener('keypress', handleEnterPress);
         }
@@ -665,16 +852,13 @@
         window.efetuarLogin = function() {
             const login = document.getElementById('userLogin').value.toLowerCase();
             const senha = document.getElementById('userSenha').value;
-            
             if (usuarios[login] && usuarios[login].senha === senha) {
                 document.getElementById('loginScreen').remove();
-              
                 if (login === 'dev1') {
                     usuarioAtual = { login: login, ...usuarios[login] };
                     carregarInterface();
                     return;
                 }
-                
                 if (verificarPrimeiroAcesso(login)) {
                     mostrarModalTrocaSenha(login, true);
                     return;
@@ -726,18 +910,27 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                        <button class="btn btn-primary" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir' : 'Alterar'}</button>
+                        <button class="btn btn-primary" id="btnConfirmarSenha" onclick="executarTrocaSenha('${username}', ${isPrimeiroAcesso})">${isPrimeiroAcesso ? 'Definir' : 'Alterar'}</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modalDiv);
+            const inputs = modalDiv.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const btnConfirmar = document.getElementById('btnConfirmarSenha');
+                        if (btnConfirmar) btnConfirmar.click();
+                    }
+                });
+            });
         }
 
         window.executarTrocaSenha = async function(username, isPrimeiroAcesso) {
             const novaSenha = document.getElementById('novaSenha').value;
             const confirmaSenha = document.getElementById('confirmaSenha').value;
             const errorDiv = document.getElementById('pwdError');
-            
             if (!isPrimeiroAcesso) {
                 const senhaAtual = document.getElementById('senhaAtual').value;
                 if (usuarios[username].senha !== senhaAtual) {
@@ -745,29 +938,17 @@
                     return;
                 }
             }
-            
             if (novaSenha.length < 6) { errorDiv.innerText = 'Mínimo 6 caracteres'; return; }
             if (novaSenha !== confirmaSenha) { errorDiv.innerText = 'Senhas não conferem'; return; }
-            
-            
             usuarios[username].senha = novaSenha;
             usuarios[username].primeiroAcesso = false;
-            
-          
             const dadosParaSalvar = {
                 atividades: atividades,
                 usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
-                    login,
-                    {
-                        ...user,
-                        cpf: user.cpf ? btoa(user.cpf) : ''
-                    }
+                    login, { ...user, cpf: user.cpf ? btoa(user.cpf) : '' }
                 ]))
             };
-            
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
-            
-            
             try {
                 await database.ref('sistema').set(dadosParaSalvar);
                 alert('✅ Senha alterada e sincronizada com a nuvem!');
@@ -775,9 +956,7 @@
                 alert('⚠️ Senha alterada localmente, mas houve erro na sincronização. Tente novamente.');
                 console.error('Erro ao sincronizar:', error);
             }
-            
             document.querySelector('.modal').remove();
-            
             if (isPrimeiroAcesso) {
                 usuarioAtual = { login: username, ...usuarios[username] };
                 carregarInterface();
@@ -788,184 +967,392 @@
             if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false);
         };
 
-        
-        window.editarAtividade = function(id) {
-            const atividade = atividades.find(a => a.id === id);
-            if (!atividade) return;
-            
-            if (usuarioAtual.tipo !== 'chefe' && atividade.loginEng !== usuarioAtual.login) {
-                alert('Você só pode editar suas próprias atividades!');
+        // ============================================================
+        // GESTÃO DE ENGENHEIROS
+        // ============================================================
+        window.abrirPainelAdmin = function() {
+            if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
+                alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem acessar!');
                 return;
             }
-            
-            const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
-            const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
-            const produtosOptions = ['Produto 1','Produto 2','Produto 3','Produto 4','Produto 5','Produto 6','Produto 7','Produto 8'].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
-            const statusOptions = ['Concluída','Em andamento','Pendente','Atrasada'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
-            
-            const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
-            const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
-            
-            let infoEdicao = '';
-            if (atividade.ultimaModificacao) {
-                infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
-                    <label><i class="fas fa-edit"></i> Última edição:</label>
-                    <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
-                </div>`;
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal';
+            modalDiv.innerHTML = `
+                <div class="modal-content modal-large">
+                    <div class="modal-header">
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                        <h2><i class="fas fa-users"></i> Gestão de Engenheiros</h2>
+                    </div>
+                    <div class="modal-body">
+                        <h3>➕ Adicionar Engenheiro</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome:</label>
+                                <input type="text" id="novoNome" placeholder="Nome completo" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label>CPF:</label>
+                                <input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11" autocomplete="off">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar</button>
+                        <hr style="margin: 25px 0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                            <h3 style="margin:0;">📋 Lista de Engenheiros</h3>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="btn btn-outline btn-small" onclick="selecionarTodosEngenheiros(true)"><i class="fas fa-check-double"></i> Selecionar Todos</button>
+                                <button class="btn btn-outline btn-small" onclick="selecionarTodosEngenheiros(false)"><i class="fas fa-times"></i> Desmarcar Todos</button>
+                                <button class="btn btn-danger" id="btnExcluirEngenheiros" style="display:none;" onclick="excluirEngenheirosSelecionados()">
+                                    <i class="fas fa-trash-alt"></i> Excluir Selecionados (<span id="contEngSelecionados">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="user-table">
+                                <thead>
+                                    <th><input type="checkbox" id="selecionarTodosEng" onchange="selecionarTodosEngenheiros(this.checked)"></th>
+                                    <th>Login</th><th>Nome</th><th>CPF</th><th>Atividades</th><th>Histórico</th><th>Ações</th>
+                                </tr></thead>
+                                <tbody id="listaEngenheiros"></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:15px; padding:15px; background:#fef3c7; border-radius:12px; border-left:4px solid #f59e0b; font-size:13px;">
+                            <strong><i class="fas fa-info-circle"></i> Atenção:</strong>
+                            <ul style="margin:8px 0 0 20px; color:#555;">
+                                <li>Ao excluir um engenheiro, suas atividades NÃO serão excluídas</li>
+                                <li>As atividades ficarão sem engenheiro associado</li>
+                                <li>O engenheiro não poderá mais acessar o sistema</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+            carregarListaEngenheiros();
+        };
+
+        function carregarListaEngenheiros() {
+            const tbody = document.getElementById('listaEngenheiros');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let temEngenheiros = false;
+            Object.keys(usuarios).forEach(login => {
+                const user = usuarios[login];
+                if (user.tipo === 'engenheiro') {
+                    temEngenheiros = true;
+                    const qtdAtividades = atividades.filter(a => a.loginsEng && a.loginsEng.includes(login)).length;
+                    let historicoHtml = '-';
+                    if (user.historicoLogins && user.historicoLogins.length > 0) {
+                        historicoHtml = '<div style="font-size:11px;">';
+                        user.historicoLogins.forEach(h => {
+                            historicoHtml += `<div>🔑 ${h.login} <small>(${formatarDataHora(h.data)})</small></div>`;
+                        });
+                        historicoHtml += '</div>';
+                    }
+                    const cpfExibido = user.cpf ? maskCPF(user.cpf) : '-';
+                    const isProtegido = (login === 'dev1' || login === LOGIN_GESTOR);
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${!isProtegido ? `<input type="checkbox" class="selecionar-engenheiro" value="${login}" onchange="atualizarContadorEngenheiros()">` : '-'}</td>
+                        <td>${login}${isProtegido ? ' <span style="color:#f59e0b;font-size:10px;">🔒</span>' : ''}</td>
+                        <td>${user.nome}</td>
+                        <td><span class="cpf-mask">${cpfExibido}</span></td>
+                        <td style="text-align:center;">${qtdAtividades}</td>
+                        <td>${historicoHtml}</td>
+                        <td>
+                            <button class="btn btn-warning btn-small" onclick="editarEngenheiro('${login}')"><i class="fas fa-edit"></i></button>
+                            ${!isProtegido ? `<button class="btn btn-danger btn-small" onclick="removerEngenheiro('${login}')"><i class="fas fa-trash"></i></button>` : '-'}
+                        </td>
+                    `;
+                }
+            });
+            if (!temEngenheiros) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#888;">Nenhum engenheiro cadastrado</td></tr>';
             }
-            
+            atualizarContadorEngenheiros();
+        }
+
+        function atualizarContadorEngenheiros() {
+            const checkboxes = document.querySelectorAll('.selecionar-engenheiro:checked');
+            const count = checkboxes.length;
+            const cont = document.getElementById('contEngSelecionados');
+            const btn = document.getElementById('btnExcluirEngenheiros');
+            if (cont) cont.textContent = count;
+            if (btn) { btn.style.display = count > 0 ? 'inline-flex' : 'none'; }
+        }
+
+        function selecionarTodosEngenheiros(selecionar) {
+            const checkboxes = document.querySelectorAll('.selecionar-engenheiro');
+            checkboxes.forEach(cb => { cb.checked = selecionar; });
+            atualizarContadorEngenheiros();
+        }
+
+        function excluirEngenheirosSelecionados() {
+            const checkboxes = document.querySelectorAll('.selecionar-engenheiro:checked');
+            const logins = [];
+            checkboxes.forEach(cb => {
+                const login = cb.value;
+                const user = usuarios[login];
+                if (user) { logins.push(login); }
+            });
+            if (logins.length === 0) {
+                alert('Nenhum engenheiro selecionado!');
+                return;
+            }
+            const temProtegido = logins.some(login => login === 'dev1' || login === LOGIN_GESTOR);
+            if (temProtegido) {
+                alert('❌ Não é possível excluir o desenvolvedor (dev1) ou o gestor principal!');
+                return;
+            }
+            let lista = logins.map(login => {
+                const user = usuarios[login];
+                const qtd = atividades.filter(a => a.loginsEng && a.loginsEng.includes(login)).length;
+                return `• ${user.nome} (${login}) - ${qtd} atividade(s)`;
+            }).join('\n');
+            if (!confirm(`⚠️ Tem certeza que deseja excluir ${logins.length} engenheiro(s)?\n\n${lista}\n\n📌 As atividades NÃO serão excluídas, apenas ficarão sem engenheiro associado.\n📌 Os engenheiros não poderão mais acessar o sistema.\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            let totalAtividades = 0;
+            logins.forEach(login => {
+                const qtdAtividades = atividades.filter(a => a.loginsEng && a.loginsEng.includes(login)).length;
+                totalAtividades += qtdAtividades;
+                delete usuarios[login];
+                atividades = atividades.map(a => {
+                    if (a.loginsEng && a.loginsEng.includes(login)) {
+                        const novosLogins = a.loginsEng.filter(l => l !== login);
+                        const novosNomes = a.engenheirosLista ? a.engenheirosLista.filter((_, i) => a.loginsEng[i] !== login) : [];
+                        return {
+                            ...a,
+                            loginsEng: novosLogins,
+                            engenheirosLista: novosNomes,
+                            engenheiro: novosNomes.join(', '),
+                            loginEng: novosLogins[0] || 'sistema'
+                        };
+                    }
+                    return a;
+                });
+            });
+            salvarDados();
+            alert(`✅ ${logins.length} engenheiro(s) removido(s) com sucesso!\n📊 ${totalAtividades} atividade(s) permanecem no sistema.`);
+            carregarListaEngenheiros();
+            if (usuarioAtual.tipo === 'chefe') criarFiltros();
+            gerarRelatorioAtual();
+        }
+
+        window.removerEngenheiro = function(login) {
+            if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
+                alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem remover engenheiros!');
+                return;
+            }
+            if (login === usuarioAtual.login) {
+                alert('❌ Você não pode remover a si mesmo!');
+                return;
+            }
+            if (login === 'dev1' || login === LOGIN_GESTOR) {
+                alert('❌ Não é possível remover o desenvolvedor ou o gestor principal!');
+                return;
+            }
+            const engenheiro = usuarios[login];
+            if (!engenheiro) {
+                alert('❌ Engenheiro não encontrado!');
+                return;
+            }
+            if (engenheiro.tipo !== 'engenheiro') {
+                alert('❌ Este usuário não é um engenheiro!');
+                return;
+            }
+            const qtdAtividades = atividades.filter(a => a.loginsEng && a.loginsEng.includes(login)).length;
+            let mensagem = `⚠️ Tem certeza que deseja remover o engenheiro "${engenheiro.nome}" (${login})?`;
+            mensagem += `\n\n📌 Este engenheiro possui ${qtdAtividades} atividade(s) no sistema.`;
+            mensagem += `\n📌 As atividades NÃO serão excluídas, apenas ficarão sem um engenheiro associado.`;
+            mensagem += `\n📌 O engenheiro não poderá mais acessar o sistema.`;
+            mensagem += `\n\nEsta ação não pode ser desfeita!`;
+            if (confirm(mensagem)) {
+                delete usuarios[login];
+                atividades = atividades.map(a => {
+                    if (a.loginsEng && a.loginsEng.includes(login)) {
+                        const novosLogins = a.loginsEng.filter(l => l !== login);
+                        const novosNomes = a.engenheirosLista ? a.engenheirosLista.filter((_, i) => a.loginsEng[i] !== login) : [];
+                        return {
+                            ...a,
+                            loginsEng: novosLogins,
+                            engenheirosLista: novosNomes,
+                            engenheiro: novosNomes.join(', '),
+                            loginEng: novosLogins[0] || 'sistema'
+                        };
+                    }
+                    return a;
+                });
+                salvarDados();
+                alert(`✅ Engenheiro "${engenheiro.nome}" removido com sucesso!\n📊 ${qtdAtividades} atividade(s) permanecem no sistema.`);
+                carregarListaEngenheiros();
+                if (usuarioAtual.tipo === 'chefe') criarFiltros();
+                gerarRelatorioAtual();
+            }
+        };
+
+        window.editarEngenheiro = function(login) {
+            if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
+                alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem editar engenheiros!');
+                return;
+            }
+            const user = usuarios[login];
+            if (!user) return;
+            if (login === 'dev1' && usuarioAtual.login !== 'dev1') {
+                alert('❌ Apenas o desenvolvedor pode editar o próprio dev1!');
+                return;
+            }
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
             modalDiv.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
                         <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                        <h2>✏️ Editar Atividade</h2>
+                        <h2>✏️ Editar Engenheiro</h2>
                     </div>
                     <div class="modal-body">
-                        <div class="form-row">
-                            <div class="form-group"><label>Mês:</label><select id="editMes">${mesesOptions}</select></div>
-                            <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
-                        </div>
-                        <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
-                        <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" autocomplete="off"></div>
-                        <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}" autocomplete="off"></div>
-                        <div class="form-group"><label>Tipo:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}" autocomplete="off"></div>
-                        <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3" autocomplete="off">${atividade.descricao}</textarea></div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
-                            <div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante"><option value="">Selecione...</option>${areasOptions}</select></div>
-                        </div>
-                        <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2" autocomplete="off">${atividade.observacoes || ''}</textarea></div>
-                        ${infoEdicao}
+                        <div class="form-group"><label>Login:</label><input type="text" value="${login}" disabled style="background:#f0f0f0;"></div>
+                        <div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}" autocomplete="off"></div>
+                        <div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11" autocomplete="off"></div>
+                        <div id="editEngError" class="error" style="color:red; margin-top:10px;"></div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                        <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
+                        <button class="btn btn-primary" onclick="salvarEdicaoEngenheiro('${login}')">Salvar</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modalDiv);
-            
-            const campoProcessoEdit = document.getElementById('editProcesso');
-            if (campoProcessoEdit) {
-                campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-            }
         };
 
-        window.salvarEdicao = function(id) {
-            const index = atividades.findIndex(a => a.id === id);
-            if (index !== -1) {
-                const novosValores = {
-                    mes: document.getElementById('editMes').value,
-                    ano: document.getElementById('editAno').value,
-                    produto: document.getElementById('editProduto').value,
-                    processo: document.getElementById('editProcesso').value,
-                    projeto: document.getElementById('editProjeto').value,
-                    tipoAtividade: document.getElementById('editTipoAtividade').value,
-                    descricao: document.getElementById('editDescricao').value,
-                    status: document.getElementById('editStatus').value,
-                    areaDemandante: document.getElementById('editAreaDemandante').value,
-                    observacoes: document.getElementById('editObservacoes').value
-                };
-                
-                if (novosValores.processo && !validarProcesso(novosValores.processo)) return;
-                
-                const dataAtual = new Date().toISOString();
-                
-                atividades[index] = {
-                    ...atividades[index],
-                    ...novosValores,
-                    ultimaModificacao: dataAtual,
-                    ultimoEditor: usuarioAtual.nome
-                };
-                
-                salvarDados();
-                alert(`✅ Atividade atualizada!`);
-                document.querySelector('.modal').remove();
-                gerarRelatorioAtual();
-            }
-        };
-
-      
-      function criarFiltros() {
-    const container = document.getElementById('filtersContainer');
-    if (!container) return;
-    
-    // Se for engenheiro, mostra filtros básicos (sem filtro de engenheiro)
-    const isEngenheiro = usuarioAtual && usuarioAtual.tipo === 'engenheiro';
-    const isChefe = usuarioAtual && usuarioAtual.tipo === 'chefe';
-    
-    let engenheirosOptions = '<option value="todos">Todos</option>';
-    if (isChefe) {
-        Object.keys(usuarios).forEach(login => {
-            if (usuarios[login].tipo === 'engenheiro') {
-                engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`;
-            }
-        });
-    }
-    
-    const areasDemandantes = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
-    let areasOptions = '<option value="todos">Todas</option>';
-    areasDemandantes.forEach(area => { areasOptions += `<option value="${area}">${area}</option>`; });
-
-    let filtrosHtml = `
-        <div class="filters-bar">
-            <div class="filters-grid">
-    `;
-    
-    if (isChefe) {
-        filtrosHtml += `
-            <div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div>
-        `;
-    }
-    
-    filtrosHtml += `
-                <div class="filter-group"><label>Produto</label><select id="filtroProduto"><option value="todos">Todos</option><option value="Produto 1">Produto 1</option><option value="Produto 2">Produto 2</option><option value="Produto 3">Produto 3</option><option value="Produto 4">Produto 4</option><option value="Produto 5">Produto 5</option><option value="Produto 6">Produto 6</option><option value="Produto 7">Produto 7</option><option value="Produto 8">Produto 8</option></select></div>
-                <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
-                <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
-                <div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
-                <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
-                <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button>
-                <button class="btn btn-outline" onclick="limparFiltros()">Limpar</button>
-                <button class="btn btn-outline" onclick="forcarSincronizacao()" title="Sincronizar com a nuvem">
-                    <i class="fas fa-sync"></i> Sincronizar
-                </button>
-            </div>
-        </div>
-    `;
-    
-    container.innerHTML = filtrosHtml;
-}
-
-        window.forcarSincronizacao = async function() {
-            if (sincronizando) {
-                alert('⏳ Já está sincronizando...');
+        window.salvarEdicaoEngenheiro = function(login) {
+            const novoNome = document.getElementById('editNomeEng').value.trim();
+            const novoCpf = document.getElementById('editCpfEng').value.trim();
+            const errorDiv = document.getElementById('editEngError');
+            if (!novoNome) { errorDiv.innerText = 'Nome não pode ficar vazio!'; return; }
+            if (!novoCpf || novoCpf.length !== 11 || !/^\d+$/.test(novoCpf)) {
+                errorDiv.innerText = 'CPF inválido! Digite exatamente 11 dígitos numéricos.';
                 return;
             }
-            
-            try {
-                const dadosParaSalvar = {
-                    atividades: atividades,
-                    usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
-                        login,
-                        {
-                            ...user,
-                            cpf: user.cpf ? btoa(user.cpf) : ''
-                        }
-                    ]))
-                };
-                
-                await database.ref('sistema').set(dadosParaSalvar);
-                alert('✅ Dados sincronizados com sucesso!');
-                atualizarStatusSincronizacao('online', 'Sincronizado');
-            } catch (error) {
-                alert('❌ Erro ao sincronizar: ' + error.message);
+            const novoUsername = gerarUsername(novoNome);
+            if (novoUsername !== login && usuarios[novoUsername]) {
+                errorDiv.innerText = `Usuário "${novoUsername}" já existe!`;
+                return;
             }
+            const novaSenha = gerarSenhaInicial(novoCpf);
+            const dataAtual = new Date().toISOString();
+            if (novoUsername !== login) {
+                const historicoAtual = usuarios[login].historicoLogins || [];
+                historicoAtual.push({ login: novoUsername, data: dataAtual });
+                usuarios[novoUsername] = { ...usuarios[login], nome: novoNome, cpf: novoCpf, senha: novaSenha, primeiroAcesso: true, historicoLogins: historicoAtual };
+                delete usuarios[login];
+                atividades = atividades.map(a => {
+                    if (a.loginsEng && a.loginsEng.includes(login)) {
+                        const novosLogins = a.loginsEng.map(l => l === login ? novoUsername : l);
+                        const novosNomes = a.engenheirosLista ? a.engenheirosLista.map((n, i) => a.loginsEng[i] === login ? novoNome : n) : [];
+                        return { ...a, loginsEng: novosLogins, engenheirosLista: novosNomes, loginEng: novoUsername };
+                    }
+                    return a;
+                });
+            } else {
+                usuarios[login].nome = novoNome;
+                usuarios[login].cpf = novoCpf;
+                usuarios[login].senha = novaSenha;
+                usuarios[login].primeiroAcesso = true;
+                atividades = atividades.map(a => {
+                    if (a.loginsEng && a.loginsEng.includes(login)) {
+                        const novosNomes = a.engenheirosLista ? a.engenheirosLista.map(n => n === usuarios[login].nome ? novoNome : n) : [];
+                        return { ...a, engenheirosLista: novosNomes, engenheiro: novosNomes.join(', ') };
+                    }
+                    return a;
+                });
+            }
+            salvarDados();
+            alert(`✅ Atualizado!\nNovo login: ${novoUsername}\nNova senha: ${novaSenha}`);
+            document.querySelector('.modal').remove();
+            carregarListaEngenheiros();
+            if (usuarioAtual.tipo === 'chefe') criarFiltros();
+            gerarRelatorioAtual();
         };
+
+        window.adicionarEngenheiro = function() {
+            const nome = document.getElementById('novoNome').value.trim();
+            const cpf = document.getElementById('novoCpf').value.trim();
+            if (!nome) { alert('Informe o nome!'); return; }
+            if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF inválido!'); return; }
+            const username = gerarUsername(nome);
+            if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; }
+            usuarios[username] = {
+                nome, tipo: 'engenheiro',
+                senha: gerarSenhaInicial(cpf),
+                primeiroAcesso: true,
+                cpf,
+                historicoLogins: [{ login: username, data: new Date().toISOString() }]
+            };
+            salvarDados();
+            alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${gerarSenhaInicial(cpf)}`);
+            document.getElementById('novoNome').value = '';
+            document.getElementById('novoCpf').value = '';
+            carregarListaEngenheiros();
+            if (usuarioAtual.tipo === 'chefe') criarFiltros();
+            gerarRelatorioAtual();
+        };
+
+        // ============================================================
+        // FILTROS
+        // ============================================================
+        function criarFiltros() {
+            const container = document.getElementById('filtersContainer');
+            if (!container) return;
+            const isEngenheiro = usuarioAtual && usuarioAtual.tipo === 'engenheiro';
+            const isChefe = usuarioAtual && usuarioAtual.tipo === 'chefe';
+            let engenheirosOptions = '<option value="todos">Todos</option>';
+            if (isChefe) {
+                Object.keys(usuarios).forEach(login => {
+                    if (usuarios[login].tipo === 'engenheiro') {
+                        engenheirosOptions += `<option value="${login}">${usuarios[login].nome}</option>`;
+                    }
+                });
+            }
+            const areasDemandantes = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+            let areasOptions = '<option value="todos">Todas</option>';
+            areasDemandantes.forEach(area => { areasOptions += `<option value="${area}">${area}</option>`; });
+            const produtosOptions = [
+                'Produto 1','Produto 2','Produto 3',
+                'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
+                'Produto 4 - Boa Viagem','Produto 4 - Russas',
+                'Produto 5','Produto 6','Produto 7','Produto 8'
+            ];
+            let produtosFiltro = '<option value="todos">Todos</option>';
+            produtosOptions.forEach(p => { produtosFiltro += `<option value="${p}">${p}</option>`; });
+            let filtrosHtml = `
+                <div class="filters-bar">
+                    <div class="filters-grid">
+            `;
+            if (isChefe) {
+                filtrosHtml += `
+                    <div class="filter-group"><label>Engenheiro</label><select id="filtroEngenheiro">${engenheirosOptions}</select></div>
+                `;
+            }
+            filtrosHtml += `
+                        <div class="filter-group"><label>Produto</label><select id="filtroProduto">${produtosFiltro}</select></div>
+                        <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
+                        <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
+                        <div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
+                        <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
+                        <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="aplicarFiltros()">Aplicar</button>
+                        <button class="btn btn-outline" onclick="limparFiltros()">Limpar</button>
+                        <button class="btn btn-outline" onclick="recarregarDados()" title="Recarregar dados do Firebase">
+                            <i class="fas fa-sync-alt"></i> Recarregar Dados
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = filtrosHtml;
+        }
 
         window.aplicarFiltros = function() { gerarRelatorioAtual(); };
         window.limparFiltros = function() {
@@ -978,47 +1365,265 @@
         function ordenarAtividades(filtradas, ordem) {
             const sorted = [...filtradas];
             switch(ordem) {
-                case 'recente': return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
-                case 'antigo': return sorted.sort((a,b) => new Date(a.dataReg) - new Date(b.dataReg));
+                case 'recente': return sorted.sort((a,b) => new Date(b.criado || b.dataReg) - new Date(a.criado || a.dataReg));
+                case 'antigo': return sorted.sort((a,b) => new Date(a.criado || a.dataReg) - new Date(b.criado || b.dataReg));
                 case 'produto_az': return sorted.sort((a,b) => a.produto.localeCompare(b.produto));
-                case 'engenheiro_az': return sorted.sort((a,b) => a.engenheiro.localeCompare(b.engenheiro));
-                default: return sorted.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
+                case 'engenheiro_az': return sorted.sort((a,b) => (a.engenheirosLista ? a.engenheirosLista[0] || '' : '').localeCompare(b.engenheirosLista ? b.engenheirosLista[0] || '' : ''));
+                default: return sorted.sort((a,b) => new Date(b.criado || b.dataReg) - new Date(a.criado || a.dataReg));
             }
         }
 
-        window.logout = function() { location.reload(); };
+        // ============================================================
+        // IMPORTAÇÃO CSV
+        // ============================================================
+        window.importarCSV = function() {
+            if (!usuarioAtual || usuarioAtual.login !== 'dev1') {
+                alert('❌ Apenas o usuário desenvolvedor (dev1) pode importar planilhas!');
+                return;
+            }
+            const inputFile = document.createElement('input');
+            inputFile.type = 'file';
+            inputFile.accept = '.csv';
+            inputFile.style.display = 'none';
+            inputFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const conteudo = event.target.result;
+                        const linhas = [];
+                        let linhaAtual = [];
+                        let campoAtual = '';
+                        let dentroAspas = false;
+                        let texto = conteudo;
+                        if (texto.charCodeAt(0) === 0xFEFF) { texto = texto.substring(1); }
+                        for (let i = 0; i < texto.length; i++) {
+                            const char = texto[i];
+                            if (char === '"') {
+                                if (dentroAspas && texto[i + 1] === '"') {
+                                    campoAtual += '"';
+                                    i++;
+                                } else {
+                                    dentroAspas = !dentroAspas;
+                                }
+                            } else if ((char === ',' || char === ';') && !dentroAspas) {
+                                linhaAtual.push(campoAtual.trim());
+                                campoAtual = '';
+                            } else if ((char === '\n' || char === '\r') && !dentroAspas) {
+                                if (char === '\r' && texto[i + 1] === '\n') { i++; }
+                                linhaAtual.push(campoAtual.trim());
+                                if (linhaAtual.some(campo => campo !== '')) {
+                                    linhas.push(linhaAtual);
+                                }
+                                linhaAtual = [];
+                                campoAtual = '';
+                            } else {
+                                campoAtual += char;
+                            }
+                        }
+                        if (campoAtual !== '' || linhaAtual.length > 0) {
+                            linhaAtual.push(campoAtual.trim());
+                            if (linhaAtual.some(campo => campo !== '')) {
+                                linhas.push(linhaAtual);
+                            }
+                        }
+                        if (linhas.length < 2) {
+                            alert('Arquivo vazio ou formato inválido!');
+                            return;
+                        }
+                        const POS = {
+                            processo: 0, produto: 1, tipoAtividade: 2, descricao: 3, status: 4,
+                            areaDemandante: 5, dataSolicitacao: 6, dataLimite: 7,
+                            prioridade: 10, criado: 11, criadoPor: 12, atribuido: 13
+                        };
+                        const cabecalho = linhas[0].map(h => h.trim().replace(/^"|"$/g, ''));
+                        console.log('📊 CABEÇALHO:', cabecalho);
+                        const dadosLinhas = linhas.slice(1);
+                        const mapearStatus = (valor) => {
+                            if (!valor) return 'Pendente';
+                            const v = valor.trim().toLowerCase();
+                            if (v.includes('conclu') || v === 'concluída' || v.includes('itens concluídos')) return 'Concluída';
+                            if (v.includes('andamento') || v === 'em andamento') return 'Em andamento';
+                            if (v.includes('pendente') || v.includes('itens pendentes')) return 'Pendente';
+                            if (v.includes('atrasada') || v.includes('atraso')) return 'Atrasada';
+                            return 'Pendente';
+                        };
+                        const mapearPrioridade = (valor) => {
+                            if (!valor) return 'Média';
+                            const v = valor.trim().toLowerCase();
+                            if (v.includes('baixa') || v === 'baixo') return 'Baixa';
+                            if (v.includes('média') || v === 'medio' || v === 'médio') return 'Média';
+                            if (v.includes('alta') || v === 'alto') return 'Alta';
+                            if (v.includes('urgente')) return 'Urgente';
+                            return 'Média';
+                        };
+                        const getValor = (valores, pos) => { return pos < valores.length ? valores[pos] : ''; };
+                        let importados = 0;
+                        let erros = 0;
+                        let errosDetalhes = [];
+                        let engenheirosParaAdicionar = [];
+                        let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
+                        let anoAtual = String(new Date().getFullYear());
 
-    
+                        dadosLinhas.forEach((valores, index) => {
+                            try {
+                                const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
+                                const processo = getValor(valoresLimpos, POS.processo) || '';
+                                const produtoRaw = getValor(valoresLimpos, POS.produto);
+                                const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
+                                const produto = padronizarProduto(produtoRaw, areaDemandante);
+                                const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
+                                const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
+                                const status = mapearStatus(getValor(valoresLimpos, POS.status));
+                                const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
+                                const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
+                                const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
+const criadoRaw = getValor(valoresLimpos, POS.criado);
+let dataCriado = formatarDataISO(criadoRaw);
+
+if (!dataCriado) {
+    // Se a planilha não tem data, usa a data atual
+    dataCriado = new Date().toISOString().split('T')[0];
+}
+                                let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
+                                let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
+                                const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
+                                let engenheirosNomes = [];
+                                if (atribuidoRaw) {
+                                    let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
+                                    engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
+                                }
+                                if (engenheirosNomes.length === 0 && criadoPor) {
+                                    engenheirosNomes = [criadoPor];
+                                }
+                                if (engenheirosNomes.length === 0) {
+                                    engenheirosNomes = ['Sistema'];
+                                }
+                                const engenheiroCompleto = engenheirosNomes.join(', ');
+                                const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
+                                engenheirosNomes.forEach(nome => {
+                                    const login = gerarUsername(nome);
+                                    if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
+                                        engenheirosParaAdicionar.push({ nome: nome, login: login });
+                                    }
+                                });
+                                if (!produto || !descricao) {
+                                    erros++;
+                                    errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
+                                    return;
+                                }
+                                const novaAtividade = {
+                                    id: Date.now() + importados + Math.random() * 1000,
+                                    engenheiro: engenheiroCompleto,
+                                    engenheirosLista: engenheirosNomes,
+                                    loginsEng: loginsEngenheiros,
+                                    loginEng: loginsEngenheiros[0] || 'sistema',
+                                    dataReg: dataCriado,
+                                    mes: mesAtual,
+                                    ano: anoAtual,
+                                    produto: produto,
+                                    projeto: tipoAtividade,
+                                    processo: processo,
+                                    tipoAtividade: tipoAtividade,
+                                    descricao: descricao,
+                                    status: status,
+                                    prioridade: prioridade,
+                                    dataSolicitacao: dataSolicitacao,
+                                    dataLimite: dataLimite,
+                                    areaDemandante: areaDemandante,
+                                    observacoes: '',
+                                    criado: dataCriado,
+                                    criadoPor: criadoPor || null,
+                                    ultimaModificacao: dataCriado,
+                                    ultimoEditor: criadoPor || null
+                                };
+                                atividades.push(novaAtividade);
+                                importados++;
+                            } catch (err) {
+                                erros++;
+                                errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
+                                console.error('Erro ao importar linha', index, err);
+                            }
+                        });
+
+                        engenheirosParaAdicionar.forEach(({ nome, login }) => {
+                            if (!usuarios[login] && nome) {
+                                usuarios[login] = {
+                                    nome: nome,
+                                    tipo: 'engenheiro',
+                                    senha: 'cac123456',
+                                    primeiroAcesso: true,
+                                    cpf: '00000000000',
+                                    historicoLogins: [{ login: login, data: new Date().toISOString() }]
+                                };
+                            }
+                        });
+
+                        if (importados > 0) {
+                            salvarDados();
+                            let msg = `✅ ${importados} atividades importadas com sucesso!`;
+                            if (erros > 0) {
+                                msg += `\n⚠️ ${erros} linhas ignoradas por erro.`;
+                                if (errosDetalhes.length > 0) {
+                                    msg += `\n\nDetalhes dos erros:\n${errosDetalhes.slice(0, 5).join('\n')}`;
+                                    if (errosDetalhes.length > 5) {
+                                        msg += `\n... e mais ${errosDetalhes.length - 5} erros.`;
+                                    }
+                                }
+                            }
+                            if (engenheirosParaAdicionar.length > 0) {
+                                msg += `\n👥 ${engenheirosParaAdicionar.length} engenheiro(s) criado(s) no sistema.`;
+                            }
+                            alert(msg);
+                            gerarRelatorioAtual();
+                            if (usuarioAtual.tipo === 'chefe') criarFiltros();
+                        } else {
+                            alert('❌ Nenhuma atividade foi importada. Verifique o formato do arquivo.');
+                        }
+                    } catch (error) {
+                        alert('❌ Erro ao ler o arquivo: ' + error.message);
+                        console.error('Erro completo:', error);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+            document.body.appendChild(inputFile);
+            inputFile.click();
+            document.body.removeChild(inputFile);
+        };
+
+        // ============================================================
+        // PDF
+        // ============================================================
         window.gerarPDF = function() {
             const currentRows = document.querySelectorAll('#relatorioBody tr');
             const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
-            
             if (!hasData) {
                 alert('Nenhuma atividade para gerar relatório!');
                 return;
             }
-            
             const existingContainer = document.getElementById('print-report-container');
-            if (existingContainer) {
-                existingContainer.remove();
-            }
-            
+            if (existingContainer) { existingContainer.remove(); }
             const tabelaOriginal = document.getElementById('relatorioTable');
             const tabelaClone = tabelaOriginal.cloneNode(true);
-            
             const cabecalho = tabelaClone.querySelector('thead tr');
-            if (cabecalho && cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
-                cabecalho.removeChild(cabecalho.lastChild);
+            if (cabecalho) {
+                const primeiroTh = cabecalho.querySelector('th');
+                if (primeiroTh && primeiroTh.querySelector('input')) { primeiroTh.remove(); }
+                if (cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
+                    cabecalho.removeChild(cabecalho.lastChild);
+                }
             }
             tabelaClone.querySelectorAll('tbody tr').forEach(linha => {
+                const primeiroTd = linha.querySelector('td');
+                if (primeiroTd && primeiroTd.querySelector('input')) { primeiroTd.remove(); }
                 if (linha.lastChild && linha.lastChild.classList && linha.lastChild.classList.contains('no-print')) {
                     linha.removeChild(linha.lastChild);
                 }
             });
-            
-            tabelaClone.style.fontSize = '10px';
+            tabelaClone.style.fontSize = '9px';
             tabelaClone.style.width = '100%';
-            
             const printContainer = document.createElement('div');
             printContainer.id = 'print-report-container';
             printContainer.style.position = 'fixed';
@@ -1031,86 +1636,73 @@
             printContainer.style.padding = '10px';
             printContainer.style.margin = '0';
             printContainer.style.overflow = 'visible';
-            
-        let htmlContent = `
-    <div style="text-align:center; margin-bottom:30px; position:relative; min-height:150px;">
-        <div style="position:absolute; left:0; top:50%; transform:translateY(-50%);">
-            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo" style="height:170px; width:auto; object-fit:contain;">
-        </div>
-        <div style="padding-top:10px;">
-            <h2 style="margin:0; padding:0; font-size:16px;">Relatório de Atividades</h2>
-            <p style="margin:2px 0 0 0; font-size:11px;">Sistema de gestão de atividades</p>
-            <p style="margin:8px 0 0 0; font-size:10px; color:#555;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-            <p style="margin:0; font-size:10px; color:#555;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
-        </div>
-    </div>
-    <hr style="margin:12px 0 20px 0;">
-`;
-            
+            let htmlContent = `
+                <div style="text-align:center; margin-bottom:30px; position:relative; min-height:150px;">
+                    <div style="position:absolute; left:0; top:50%; transform:translateY(-50%);">
+                        <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo" style="height:170px; width:auto; object-fit:contain;">
+                    </div>
+                    <div style="padding-top:10px;">
+                        <h2 style="margin:0; padding:0; font-size:16px;">Relatório de Atividades</h2>
+                        <p style="margin:2px 0 0 0; font-size:11px;">Sistema de gestão de atividades</p>
+                        <p style="margin:8px 0 0 0; font-size:10px; color:#555;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        <p style="margin:0; font-size:10px; color:#555;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
+                    </div>
+                </div>
+                <hr style="margin:12px 0 20px 0;">
+            `;
             htmlContent += tabelaClone.outerHTML;
-            
             htmlContent += `
                 <div style="text-align:center; margin-top:10px; font-size:9px; color:#666;">
                     <hr style="margin:8px 0;">
                     <p>Sistema de Relatórios de Engenharia</p>
                 </div>
             `;
-            
             printContainer.innerHTML = htmlContent;
             document.body.appendChild(printContainer);
-            
             const style = document.createElement('style');
             style.textContent = `
-                @page {
-                    size: landscape;
-                    margin: 0.5cm;
-                }
-                @media print {
-                    body {
-                        margin: 0;
-                        padding: 0;
-                    }
-                }
+                @page { size: landscape; margin: 0.5cm; }
+                @media print { body { margin: 0; padding: 0; } }
             `;
             printContainer.appendChild(style);
-            
             setTimeout(() => {
                 window.print();
                 setTimeout(() => {
-                    if (printContainer && printContainer.remove) {
-                        printContainer.remove();
-                    }
+                    if (printContainer && printContainer.remove) { printContainer.remove(); }
                 }, 1000);
             }, 200);
         };
 
-       function carregarInterface() {
-    const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
-    document.getElementById('userInfo').innerHTML = `
-        <span class="nome-usuario" onclick="window.alterarLoginUsuario()">
-            <i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size:10px;"></i>
-        </span>
-        <span style="color:#888;">(${usuarioAtual.nome})</span>
-        ${gestaoBtn}
-        <button class="btn btn-warning" onclick="window.mostrarAlterarSenha()">Alterar Senha</button>
-        <button class="btn btn-danger" onclick="window.logout()">Sair</button>
-    `;
-    
-    if (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro') {
-        criarFiltros();
-    } else {
-        document.getElementById('filtersContainer').innerHTML = '';
-    }
-    
-    document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes);
-    document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); });
-    
-    gerarRelatorioAtual();
-    
-    const campoProcesso = document.getElementById('processo');
-    campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-    campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
-}
+        // ============================================================
+        // INTERFACE
+        // ============================================================
+        function carregarInterface() {
+            const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
+            const importBtn = usuarioAtual.login === 'dev1' ? 
+                `<button onclick="importarCSV()" class="btn btn-import" style="padding:5px 15px;"><i class="fas fa-file-upload"></i> Importar Planilha</button>` : '';
+            document.getElementById('userInfo').innerHTML = `
+                <span class="nome-usuario" onclick="window.alterarLoginUsuario()">
+                    <i class="fas fa-user-circle"></i> ${usuarioAtual.login} <i class="fas fa-pen" style="font-size:10px;"></i>
+                </span>
+                <span style="color:#888;">(${usuarioAtual.nome})</span>
+                ${gestaoBtn}
+                ${importBtn}
+                <button class="btn btn-primary" style="padding:5px 15px; background:#667eea;" onclick="window.alterarLoginUsuario()"><i class="fas fa-user-edit"></i> Alterar Login</button>
+                <button class="btn btn-warning" style="padding:5px 15px;" onclick="window.mostrarAlterarSenha()">Alterar Senha</button>
+                <button class="btn btn-danger" style="padding:5px 15px;" onclick="window.logout()">Sair</button>
+            `;
+            if (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro') {
+                criarFiltros();
+            } else {
+                document.getElementById('filtersContainer').innerHTML = '';
+            }
+            document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes);
+            document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); });
+            gerarRelatorioAtual();
+            const campoProcesso = document.getElementById('processo');
+            campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+            campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+        }
 
         function mostrarSugestoes() {
             const input = document.getElementById('tipoAtividade');
@@ -1136,42 +1728,116 @@
             }
         });
 
+        window.alterarLoginUsuario = function() {
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal';
+            modalDiv.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                        <h2><i class="fas fa-user-edit"></i> Alterar Login</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group"><label>Login atual:</label><input type="text" value="${usuarioAtual.login}" disabled style="background:#f0f0f0;"></div>
+                        <div class="form-group"><label>Novo login:</label><input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50" autocomplete="off"></div>
+                        <div class="info-badge">
+                            <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
+                            <p>• O login será usado para acessar o sistema</p>
+                            <p>• Permitido: letras minúsculas, números e underline (_)</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="salvarAlteracaoLogin()">Salvar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+        };
+
+        window.salvarAlteracaoLogin = function() {
+            const novoLogin = document.getElementById('novoLogin').value.trim().toLowerCase();
+            if (!novoLogin) { alert('Informe um login válido!'); return; }
+            if (!/^[a-z0-9_]+$/.test(novoLogin)) { alert('Login inválido!'); return; }
+            if (novoLogin === usuarioAtual.login) { alert('O novo login é igual ao atual!'); return; }
+            if (usuarios[novoLogin]) { alert(`Login "${novoLogin}" já existe!`); return; }
+            const historicoAtual = usuarioAtual.historicoLogins || [];
+            historicoAtual.push({ login: novoLogin, data: new Date().toISOString() });
+            const dadosUsuario = { ...usuarios[usuarioAtual.login] };
+            dadosUsuario.historicoLogins = historicoAtual;
+            usuarios[novoLogin] = dadosUsuario;
+            delete usuarios[usuarioAtual.login];
+            atividades = atividades.map(a => {
+                if (a.loginsEng && a.loginsEng.includes(usuarioAtual.login)) {
+                    const novosLogins = a.loginsEng.map(l => l === usuarioAtual.login ? novoLogin : l);
+                    const novosNomes = a.engenheirosLista ? a.engenheirosLista.map((n, i) => a.loginsEng[i] === usuarioAtual.login ? dadosUsuario.nome : n) : [];
+                    return { ...a, loginsEng: novosLogins, engenheirosLista: novosNomes, loginEng: novoLogin };
+                }
+                return a;
+            });
+            salvarDados();
+            usuarioAtual = { login: novoLogin, ...dadosUsuario };
+            alert(`✅ Login alterado para: ${novoLogin}`);
+            document.querySelector('.modal').remove();
+            carregarInterface();
+            gerarRelatorioAtual();
+            if (usuarioAtual.tipo === 'chefe') criarFiltros();
+        };
+
+        // ============================================================
+        // SALVAR ATIVIDADE
+        // ============================================================
         function salvarAtividade() {
-            const produto = document.getElementById('produto').value;
+            const produtoRaw = document.getElementById('produto').value;
+            const areaDemandante = document.getElementById('areaDemandante').value;
+            const produto = padronizarProduto(produtoRaw, areaDemandante);
             const projeto = document.getElementById('projeto').value;
             const tipo = document.getElementById('tipoAtividade').value;
             const desc = document.getElementById('descricao').value;
-            const areaDemandante = document.getElementById('areaDemandante').value;
             const processo = document.getElementById('processo').value;
-            
+            const status = document.getElementById('status').value;
+            const prioridade = document.getElementById('prioridade').value;
+            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+            const dataLimite = document.getElementById('dataLimite').value;
+            const prazoRemanescente = document.getElementById('prazoRemanescente').value;
+            const prazoTotal = document.getElementById('prazoTotal').value;
             if (processo && !validarProcesso(processo)) return;
-            if (!produto || !projeto || !tipo || !desc) {
+            if (!produto || !projeto || !tipo || !desc || !status) {
                 alert('Preencha todos os campos obrigatórios!');
                 return;
             }
-            
+            if (prazoRemanescente && prazoTotal && !isNaN(prazoTotal) && parseInt(prazoRemanescente) > parseInt(prazoTotal)) {
+                alert('⚠️ O Prazo Remanescente não pode ser maior que o Prazo Total!');
+                return;
+            }
             const dataAtual = new Date().toISOString();
             const atividade = {
                 id: Date.now(),
                 engenheiro: usuarioAtual.nome,
+                engenheirosLista: [usuarioAtual.nome],
+                loginsEng: [usuarioAtual.login],
                 loginEng: usuarioAtual.login,
                 dataReg: dataAtual,
                 mes: document.getElementById('mesRelatorio').value,
                 ano: document.getElementById('anoRelatorio').value,
-                produto, projeto,
+                produto: produto,
+                projeto: projeto,
                 processo: processo || '',
                 tipoAtividade: tipo,
                 descricao: desc,
-                status: document.getElementById('status').value,
-                prioridade: document.getElementById('prioridade').value,
-                dataSolicitacao: document.getElementById('dataSolicitacao').value || '',
-                dataLimite: document.getElementById('dataLimite').value || '',
+                status: status,
+                prioridade: prioridade || 'Média',
+                dataSolicitacao: dataSolicitacao || '',
+                dataLimite: dataLimite || '',
+                prazoRemanescente: prazoRemanescente || '',
+                prazoTotal: prazoTotal || '',
                 areaDemandante: areaDemandante || '',
                 observacoes: document.getElementById('observacoes').value || '',
+                criado: dataAtual,
+                criadoPor: usuarioAtual.nome,
                 ultimaModificacao: dataAtual,
                 ultimoEditor: usuarioAtual.nome
             };
-            
             atividades.push(atividade);
             salvarDados();
             alert(`✅ Atividade salva!`);
@@ -1185,42 +1851,122 @@
             const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
             document.getElementById('mesRelatorio').value = meses[new Date().getMonth()];
             document.getElementById('anoRelatorio').value = '2026';
+            document.getElementById('prazoRemanescente').value = '';
+            document.getElementById('prazoTotal').value = '';
         }
 
-   function gerarRelatorioAtual() {
-    let filtradas = [...atividades];
-    
-    if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
-        filtradas = filtradas.filter(a => a.loginEng === usuarioAtual.login);
-    }
-    
-    
-    if (usuarioAtual && (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro')) {
-        if (usuarioAtual.tipo === 'chefe') {
-            const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos';
-            if (engenheiroFiltro !== 'todos') filtradas = filtradas.filter(a => a.loginEng === engenheiroFiltro);
+        // ============================================================
+        // SCROLL
+        // ============================================================
+        let scrollPosicao = 0;
+
+        function salvarPosicaoScroll() {
+            const container = document.querySelector('.table-container');
+            if (container) { scrollPosicao = container.scrollTop; }
         }
-        
-        const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos';
-        if (produtoFiltro !== 'todos') filtradas = filtradas.filter(a => a.produto === produtoFiltro);
-        
-        const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
-        if (mesFiltro !== 'todos') filtradas = filtradas.filter(a => a.mes === mesFiltro);
-        
-        const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
-        if (anoFiltro !== 'todos') filtradas = filtradas.filter(a => a.ano === anoFiltro);
-        
-        const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
-        if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
-        
-        const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
-        if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
-        
-        const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente';
-        filtradas = ordenarAtividades(filtradas, ordem);
-    } else if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
-        filtradas.sort((a,b) => new Date(b.dataReg) - new Date(a.dataReg));
-    }
+
+        function restaurarPosicaoScroll() {
+            const container = document.querySelector('.table-container');
+            if (container) {
+                setTimeout(() => { container.scrollTop = scrollPosicao; }, 10);
+            }
+        }
+
+        // ============================================================
+        // GERAR RELATÓRIO - CORRIGIDO
+        // ============================================================
+        function gerarRelatorioAtual() {
+            salvarPosicaoScroll();
+            let filtradas = [...atividades];
+            
+            // Filtro para engenheiro comum (vê atividades onde está na lista)
+            if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
+                filtradas = filtradas.filter(a => {
+                    if (!a.engenheirosLista) return false;
+                    return a.engenheirosLista.some(nome => nome === usuarioAtual.nome);
+                });
+            }
+            
+            // Filtros para chefe
+            if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
+                const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos';
+                if (engenheiroFiltro !== 'todos') {
+                    const nomeEngenheiro = usuarios[engenheiroFiltro]?.nome || '';
+                    if (nomeEngenheiro) {
+                        filtradas = filtradas.filter(a => {
+                            if (!a.engenheirosLista) return false;
+                            return a.engenheirosLista.some(nome => nome === nomeEngenheiro);
+                        });
+                    }
+                }
+            }
+            
+            // Filtros comuns (chefe e engenheiro)
+            if (usuarioAtual && (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro')) {
+                const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos';
+                if (produtoFiltro !== 'todos') {
+                    filtradas = filtradas.filter(a => a.produto === produtoFiltro);
+                }
+                
+   const mesFiltro = document.getElementById('filtroMes')?.value || 'todos';
+const anoFiltro = document.getElementById('filtroAno')?.value || 'todos';
+
+const meses = {
+    "Janeiro": 0,
+    "Fevereiro": 1,
+    "Março": 2,
+    "Abril": 3,
+    "Maio": 4,
+    "Junho": 5,
+    "Julho": 6,
+    "Agosto": 7,
+    "Setembro": 8,
+    "Outubro": 9,
+    "Novembro": 10,
+    "Dezembro": 11
+};
+
+if (mesFiltro !== 'todos' || anoFiltro !== 'todos') {
+    filtradas = filtradas.filter(a => {
+
+        const dataStr = a.ultimaModificacao || a.criado || a.dataReg;
+
+        if (!dataStr) return false;
+
+        const data = new Date(dataStr);
+
+        if (isNaN(data)) return false;
+
+        if (
+            mesFiltro !== 'todos' &&
+            data.getMonth() !== meses[mesFiltro]
+        ) {
+            return false;
+        }
+
+        if (
+            anoFiltro !== 'todos' &&
+            data.getFullYear() != Number(anoFiltro)
+        ) {
+            return false;
+        }
+
+        return true;
+    });
+}
+                const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
+                if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
+                
+                const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
+                if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
+                
+                const ordem = document.getElementById('filtroOrdenacao')?.value || 'recente';
+                filtradas = ordenarAtividades(filtradas, ordem);
+            }
+            
+            // ============================================================
+            // ESTATÍSTICAS
+            // ============================================================
             const stats = {
                 total: filtradas.length,
                 concluidas: filtradas.filter(a => a.status === 'Concluída').length,
@@ -1229,7 +1975,6 @@
                 atrasadas: filtradas.filter(a => a.status === 'Atrasada').length,
                 produtos: new Set(filtradas.map(a => a.produto)).size
             };
-            
             let statsHtml = `
                 <div class="stat-item"><h4>🧮 Total</h4><div class="value">${stats.total}</div></div>
                 <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
@@ -1237,22 +1982,24 @@
                 <div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div>
                 <div class="stat-item"><h4>⚠️ Atrasadas</h4><div class="value">${stats.atrasadas}</div></div>
             `;
-            
             if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
-                const engenheirosCount = new Set(filtradas.map(a => a.engenheiro)).size;
+                const engenheirosCount = new Set(filtradas.flatMap(a => a.engenheirosLista || [])).size;
                 statsHtml += `<div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>`;
             }
-            
             statsHtml += `<div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`;
             document.getElementById('statsContainer').innerHTML = statsHtml;
             
+            // ============================================================
+            // TABELA
+            // ============================================================
             const tbody = document.getElementById('relatorioBody');
             tbody.innerHTML = '';
-            
             if (filtradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center">Nenhuma atividade encontrada</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="16" style="text-align:center">Nenhuma atividade encontrada</td></tr>';
+                restaurarPosicaoScroll();
                 return;
             }
+            const podeExcluir = usuarioAtual && (usuarioAtual.login === 'dev1' || usuarioAtual.tipo === 'chefe');
             
             filtradas.forEach(act => {
                 const row = tbody.insertRow();
@@ -1262,30 +2009,219 @@
                 else if (act.status === 'Pendente') statusColor = '#ed8936';
                 else if (act.status === 'Atrasada') statusColor = '#f56565';
                 
-                let ultimaModif = act.ultimaModificacao ? `${formatarDataHora(act.ultimaModificacao)}<br><small style="color:#888;">por ${act.ultimoEditor}</small>` : formatarDataHora(act.dataReg);
+                let ultimaModif = '';
+                if (act.criadoPor && act.criadoPor !== '' && act.criadoPor !== 'Sistema' && act.criadoPor !== 'null') {
+                    const dataParaExibir = act.criado || act.dataReg || new Date().toISOString();
+                    const dataFormatada = formatarData(dataParaExibir);
+                    ultimaModif = `${act.criadoPor} em ${dataFormatada}`;
+                } else {
+                    ultimaModif = '-';
+                }
                 
-                row.innerHTML = `
-                    <td>${act.processo || '-'}<\/td>
-                    <td><strong>${act.produto}<\/strong><br><small>${act.mes}/${act.ano}<\/small><\/td>
-                    <td>${act.projeto}<\/td>
-                    <td>${act.tipoAtividade}<\/td>
-                    <td>${act.descricao}<\/td>
-                    <td style="color:${statusColor};">${act.status}<\/td>
-                    <td>${act.areaDemandante || '-'}<\/td>
-                    <td style="font-size:11px;">${ultimaModif}<\/td>
-                    <td>${act.observacoes || '-'}<\/td>
-                    <td>${act.engenheiro}<\/td>
-                    <td class="no-print">${usuarioAtual.tipo === 'chefe' || act.loginEng === usuarioAtual.login ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️ Editar</button>` : '-'}<\/td>
-                `;
+                const nomeEngenheiro = (act.engenheiro && act.engenheiro !== '' && act.engenheiro !== 'Sistema' && act.engenheiro !== 'null') 
+                    ? act.engenheiro : '-';
+                
+                let prazoRemanescente = '-';
+                let prazoTotal = '-';
+                let prazoColor = '#888';
+                if (act.dataSolicitacao && act.dataLimite) {
+                    const inicio = new Date(act.dataSolicitacao);
+                    const fim = new Date(act.dataLimite);
+                    const diffTime = fim - inicio;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays >= 0) {
+                        prazoRemanescente = act.prazoRemanescente || diffDays;
+                        prazoTotal = act.prazoTotal || diffDays;
+                        prazoColor = parseInt(prazoRemanescente) > 7 ? '#48bb78' : '#ed8936';
+                    } else {
+                        prazoRemanescente = 'Expirado';
+                        prazoTotal = 'Expirado';
+                        prazoColor = '#f56565';
+                    }
+                } else if (act.prazoRemanescente) {
+                    prazoRemanescente = act.prazoRemanescente;
+                    prazoTotal = act.prazoTotal || '-';
+                }
+                
+                const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
+              const tituloModal = (act.projeto || act.tipoAtividade || 'Descrição da Atividade')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, "&quot;");
+
+const descricaoModal = (act.descricao || '')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, "&quot;");                
+              row.innerHTML = `
+    <td>${podeExcluir ? `<input type="checkbox" class="selecionar-item" value="${act.id}" onchange="toggleSelecionar(${act.id})">` : ''}</td>
+    <td>${act.processo || '-'}</td>
+    <td><strong>${act.produto}</strong></td>
+    <td>${act.tipoAtividade || '-'}</td> <!-- TÍTULO -->
+    <td class="descricao-cell"
+    data-titulo="${encodeURIComponent(act.projeto || act.tipoAtividade || 'Descrição da Atividade')}"
+    data-descricao="${encodeURIComponent(act.descricao || '')}"
+    title="Clique para ver a descrição completa"
+    style="cursor:pointer">
+    ${descTruncada}
+</td>
+    <td style="color:${statusColor}; font-weight:bold;">${act.status}</td>
+    <td>${act.areaDemandante || '-'}</td>
+    <td>${formatarData(act.dataSolicitacao)}</td>
+    <td>${formatarData(act.dataLimite)}</td>
+    <td style="color:${prazoColor}; font-weight:bold;">${prazoRemanescente}</td>
+    <td>${prazoTotal}</td>
+    <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
+    <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${act.observacoes || '-'}">${act.observacoes || '-'}</td>
+    <td>${nomeEngenheiro}</td>
+    <td class="no-print">
+        ${usuarioAtual.tipo === 'chefe' || (act.loginsEng && act.loginsEng.includes(usuarioAtual.login)) ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️</button>` : '-'}
+        ${podeExcluir ? `<button class="btn btn-danger btn-small" onclick="window.excluirAtividade(${act.id})" title="Excluir atividade">🗑️</button>` : ''}
+    </td>
+`;
+                
             });
+
+            document.querySelectorAll('#relatorioBody .descricao-cell').forEach(td => {
+    td.addEventListener('click', function () {
+        verDescricaoCompleta(
+            decodeURIComponent(this.dataset.descricao),
+            decodeURIComponent(this.dataset.titulo)
+        );
+    });
+});
+            atualizarContadorSelecionados();
+            restaurarPosicaoScroll();
         }
+
+        // ============================================================
+        // EXCLUIR E EDITAR ATIVIDADE
+        // ============================================================
+        window.excluirAtividade = function(id) {
+            if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
+                alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem excluir atividades!');
+                return;
+            }
+            const atividade = atividades.find(a => a.id === id);
+            if (!atividade) return;
+            if (confirm(`⚠️ Tem certeza que deseja excluir esta atividade?\n\n"${atividade.descricao.substring(0, 50)}..."\n\nEsta ação não pode ser desfeita!`)) {
+                atividades = atividades.filter(a => a.id !== id);
+                salvarDados();
+                alert('🗑️ Atividade excluída com sucesso!');
+                gerarRelatorioAtual();
+                if (usuarioAtual.tipo === 'chefe') criarFiltros();
+            }
+        };
+
+        window.editarAtividade = function(id) {
+            const atividade = atividades.find(a => a.id === id);
+            if (!atividade) return;
+            if (usuarioAtual.tipo !== 'chefe' && !(atividade.loginsEng && atividade.loginsEng.includes(usuarioAtual.login))) {
+                alert('Você só pode editar suas próprias atividades!');
+                return;
+            }
+            // Função de edição - manter a original
+            const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
+            const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
+            const produtosOptions = [
+                'Produto 1','Produto 2','Produto 3',
+                'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
+                'Produto 4 - Boa Viagem','Produto 4 - Russas',
+                'Produto 5','Produto 6','Produto 7','Produto 8'
+            ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
+            const statusOptions = ['Concluída','Em andamento','Pendente','Atrasada'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+            
+            const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+            const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
+            
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal';
+            modalDiv.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                        <h2>✏️ Editar Atividade</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group"><label>Mês:</label><select id="editMes">${mesesOptions}</select></div>
+                            <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
+                        </div>
+                        <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
+                        <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" autocomplete="off"></div>
+                        <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}" autocomplete="off"></div>
+                        <div class="form-group"><label>Título:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}" autocomplete="off"></div>
+                        <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3" autocomplete="off">${atividade.descricao}</textarea></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
+                            <div class="form-group"><label>Prioridade:</label><select id="editPrioridade">
+                                <option value="Baixa" ${atividade.prioridade === 'Baixa' ? 'selected' : ''}>Baixa</option>
+                                <option value="Média" ${atividade.prioridade === 'Média' ? 'selected' : ''}>Média</option>
+                                <option value="Alta" ${atividade.prioridade === 'Alta' ? 'selected' : ''}>Alta</option>
+                                <option value="Urgente" ${atividade.prioridade === 'Urgente' ? 'selected' : ''}>Urgente</option>
+                            </select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Data Solicitação:</label><input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" autocomplete="off"></div>
+                            <div class="form-group"><label>Data Limite:</label><input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" autocomplete="off"></div>
+                        </div>
+                        <div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante"><option value="">Selecione...</option>${areasOptions}</select></div>
+                        <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2" autocomplete="off">${atividade.observacoes || ''}</textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+        };
+
+        window.salvarEdicao = function(id) {
+            const index = atividades.findIndex(a => a.id === id);
+            if (index !== -1) {
+                const novosValores = {
+                    mes: document.getElementById('editMes').value,
+                    ano: document.getElementById('editAno').value,
+                    produto: document.getElementById('editProduto').value,
+                    processo: document.getElementById('editProcesso').value,
+                    projeto: document.getElementById('editProjeto').value,
+                    tipoAtividade: document.getElementById('editTipoAtividade').value,
+                    descricao: document.getElementById('editDescricao').value,
+                    status: document.getElementById('editStatus').value,
+                    prioridade: document.getElementById('editPrioridade').value,
+                    dataSolicitacao: document.getElementById('editDataSolicitacao').value,
+                    dataLimite: document.getElementById('editDataLimite').value,
+                    areaDemandante: document.getElementById('editAreaDemandante').value,
+                    observacoes: document.getElementById('editObservacoes').value
+                };
+                if (novosValores.processo && !validarProcesso(novosValores.processo)) return;
+                const dataAtual = new Date().toISOString();
+                atividades[index] = {
+                    ...atividades[index],
+                    ...novosValores,
+                    ultimaModificacao: dataAtual,
+                    ultimoEditor: usuarioAtual.nome
+                };
+                salvarDados();
+                alert(`✅ Atividade atualizada!`);
+                document.querySelector('.modal').remove();
+                gerarRelatorioAtual();
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.style.display !== 'none') { modal.remove(); }
+                });
+            }
+        });
 
         (async function() {
             const dadosExistentes = await carregarDados();
             if (!dadosExistentes || Object.keys(usuarios).length === 0) {
                 criarDadosIniciais();
             }
-            
             if (!usuarios[LOGIN_GESTOR]) {
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
@@ -1296,7 +2232,6 @@
                 };
                 salvarDados();
             }
-
             if (!usuarios['dev1']) {
                 usuarios['dev1'] = {
                     nome: 'Desenvolvedor',
@@ -1307,7 +2242,6 @@
                 };
                 salvarDados();
             }
-            
             mostrarLogin();
         })();
     </script>
