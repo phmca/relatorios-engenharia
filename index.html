@@ -491,7 +491,6 @@
                 }
             }
             
-            // PRIORIDADE 2: Se tem Data de Entrega e Data Limite
             if (dataEntrega && dataLimite) {
                 const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
                 if (diffDays !== null) {
@@ -526,7 +525,6 @@
                 }
             }
             
-            // PRIORIDADE 4: Se tem Data Solicitação mas não Data Limite
             if (dataSolicitacao && !dataLimite) {
                 prazoTotalInput.value = 'Sem prazo definido';
                 prazoTotalInput.style.color = '#888';
@@ -1570,21 +1568,21 @@
                         }
                         
                         const POS = {
-                            processo: 0,
-                            produto: 1,
-                            tipoAtividade: 2,
-                            descricao: 3,
-                            status: 4,
-                            areaDemandante: 5,
-                            dataSolicitacao: 6,
-                            dataLimite: 7,
-                            dataEntrega: 8,
-                            prazoTotal: 9,
-                            prioridade: 10,
-                            criado: 11,
-                            criadoPor: 12,
-                            atribuido: 13
-                        };
+    processo: 0,
+    produto: 1,
+    tipoAtividade: 2,
+    descricao: 3,
+    status: 4,
+    areaDemandante: 5,
+    dataSolicitacao: 6,
+    dataLimite: 7,
+    dataEntrega: 8,
+    prazoTotal: 9,
+    prioridade: 10,     
+    criado: 11,
+    criadoPor: 12,
+    atribuido: 14   
+};
                         
                         const cabecalho = linhas[0].map(h => h.trim().replace(/^"|"$/g, ''));
                         console.log('📊 CABEÇALHO:', cabecalho);
@@ -1830,19 +1828,17 @@
             tabelaClone.style.width = '100%';
             const printContainer = document.createElement('div');
             printContainer.id = 'print-report-container';
-            printContainer.style.position = 'fixed';
-            printContainer.style.top = '0';
-            printContainer.style.left = '0';
-            printContainer.style.width = '100%';
-            printContainer.style.height = 'auto';
-            printContainer.style.backgroundColor = 'white';
-            printContainer.style.zIndex = '99999';
-            printContainer.style.padding = '10px';
-            printContainer.style.margin = '0';
-            printContainer.style.overflow = 'visible';
+           printContainer.style.position = 'absolute';
+printContainer.style.top = '0';
+printContainer.style.left = '0';
+printContainer.style.width = '100%';
+printContainer.style.background = '#fff';
+printContainer.style.padding = '0';
+printContainer.style.margin = '0';
+printContainer.style.boxSizing = 'border-box';
             let htmlContent = `
-                <div style="text-align:center; margin-bottom:30px; position:relative; min-height:150px;">
-                    <div style="position:absolute; left:0; top:50%; transform:translateY(-50%);">
+                <div style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:12px;">
+                    <div style="position:absolute;left:0;top:0;">
                         <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo" style="height:170px; width:auto; object-fit:contain;">
                     </div>
                     <div style="padding-top:10px;">
@@ -1864,10 +1860,48 @@
             printContainer.innerHTML = htmlContent;
             document.body.appendChild(printContainer);
             const style = document.createElement('style');
-            style.textContent = `
-                @page { size: landscape; margin: 0.5cm; }
-                @media print { body { margin: 0; padding: 0; } }
-            `;
+           style.textContent = `
+@page{
+    size: landscape;
+    margin:0.5cm;
+}
+
+@media print{
+
+    html,
+    body{
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    body > *:not(#print-report-container){
+        display:none !important;
+    }
+
+    #print-report-container{
+        display:block !important;
+        position:static !important;
+        margin:0 !important;
+        padding:0 !important;
+        width:100% !important;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        page-break-before:auto !important;
+        margin-top:0 !important;
+    }
+
+    thead{
+        display:table-header-group;
+    }
+
+    tr{
+        page-break-inside:avoid;
+    }
+}
+`;
             printContainer.appendChild(style);
             setTimeout(() => {
                 window.print();
@@ -2148,7 +2182,7 @@
             let statsHtml = `
                 <div class="stat-item"><h4>📊 Total</h4><div class="value">${stats.total}</div></div>
                 <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
-                <div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div>
+                <div class="stat-item"><h4>⚙️ Em andamento</h4><div class="value">${stats.andamento}</div></div>
                 <div class="stat-item"><h4>🔍 Em análise</h4><div class="value">${stats.emAnalise}</div></div>
                 <div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>
                 <div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>
