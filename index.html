@@ -468,75 +468,71 @@
             }
         }
 
-        function calcularPrazoTotal() {
-            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
-            const dataLimite = document.getElementById('dataLimite').value;
-            const dataEntrega = document.getElementById('dataEntrega').value;
-            const status = document.getElementById('status').value;
-            const prazoTotalInput = document.getElementById('prazoTotal');
-            
-            // PRIORIDADE 1: Calcular diferença entre Data Limite e Data Solicitação
-            if (dataSolicitacao && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-                if (diffDays !== null && diffDays >= 0) {
-                    prazoTotalInput.value = diffDays;
-                    prazoTotalInput.style.color = '#48bb78';
-                    prazoTotalInput.style.background = '#f0fff4';
-                    return;
-                } else if (diffDays !== null && diffDays < 0) {
-                    prazoTotalInput.value = 'Expirado';
-                    prazoTotalInput.style.color = '#f56565';
-                    prazoTotalInput.style.background = '#fff5f5';
-                    return;
-                }
-            }
-            
-            if (dataEntrega && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-                if (diffDays !== null) {
-                    if (diffDays >= 0) {
-                        prazoTotalInput.value = diffDays;
-                        prazoTotalInput.style.color = '#48bb78';
-                        prazoTotalInput.style.background = '#f0fff4';
-                    } else {
-                        prazoTotalInput.value = 'Atrasado';
-                        prazoTotalInput.style.color = '#f56565';
-                        prazoTotalInput.style.background = '#fff5f5';
-                    }
-                    return;
-                }
-            }
-            
-            // PRIORIDADE 3: Se está Concluída mas não tem Data de Entrega
-            if (status === 'Concluída' && !dataEntrega && dataLimite) {
-                const hoje = new Date().toISOString().split('T')[0];
-                const diffDays = calcularDiferencaDias(hoje, dataLimite);
-                if (diffDays !== null) {
-                    if (diffDays >= 0) {
-                        prazoTotalInput.value = diffDays;
-                        prazoTotalInput.style.color = '#48bb78';
-                        prazoTotalInput.style.background = '#f0fff4';
-                    } else {
-                        prazoTotalInput.value = 'Atrasado';
-                        prazoTotalInput.style.color = '#f56565';
-                        prazoTotalInput.style.background = '#fff5f5';
-                    }
-                    return;
-                }
-            }
-            
-            if (dataSolicitacao && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                prazoTotalInput.style.background = '#f8f9fc';
-                return;
-            }
-            
-            prazoTotalInput.value = '';
-            prazoTotalInput.style.color = '#667eea';
-            prazoTotalInput.style.background = '#f0f0f0';
+       function calcularPrazoTotal() {
+    const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+    const dataLimite = document.getElementById('dataLimite').value;
+    const dataEntrega = document.getElementById('dataEntrega').value;
+    const status = document.getElementById('status').value;
+    const prazoTotalInput = document.getElementById('prazoTotal');
+    
+    // PRIORIDADE 1: Se está CONCLUÍDA, calcular diferença entre Data de Entrega e Data Limite
+    if (status === 'Concluída' && dataEntrega && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
         }
-
+    }
+    
+    // PRIORIDADE 2: Se está CONCLUÍDA mas não tem Data de Entrega, usar data atual
+    if (status === 'Concluída' && !dataEntrega && dataLimite) {
+        const hoje = new Date().toISOString().split('T')[0];
+        const diffDays = calcularDiferencaDias(hoje, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 3: Se NÃO está CONCLUÍDA, calcular diferença entre Data Limite e Data Solicitação
+    if (dataSolicitacao && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#667eea' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0f0f0' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 4: Tem Data de Entrega e Data Limite (mas não está Concluída)
+    if (dataEntrega && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 5: Tem Data Solicitação mas não tem Data Limite
+    if (dataSolicitacao && !dataLimite) {
+        prazoTotalInput.value = 0;
+        prazoTotalInput.style.color = '#888';
+        prazoTotalInput.style.background = '#f8f9fc';
+        return;
+    }
+    
+    // Padrão: vazio
+    prazoTotalInput.value = '';
+    prazoTotalInput.style.color = '#667eea';
+    prazoTotalInput.style.background = '#f0f0f0';
+}
         function formatarDataISO(dataStr) {
             if (!dataStr || dataStr.trim() === '') return null;
             dataStr = dataStr.trim().replace(/^"|"$/g, '');
@@ -1618,118 +1614,127 @@
                         let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
                         let anoAtual = String(new Date().getFullYear());
 
-                        dadosLinhas.forEach((valores, index) => {
-                            try {
-                                const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
-                                
-                                const processo = getValor(valoresLimpos, POS.processo) || '';
-                                const produtoRaw = getValor(valoresLimpos, POS.produto);
-                                const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
-                                const produto = padronizarProduto(produtoRaw, areaDemandante);
-                                
-                                const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
-                                const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
-                                const status = mapearStatus(getValor(valoresLimpos, POS.status));
-                                const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
-                                const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
-                                const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
-                                
-                                const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
-                                let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
-                                
-                                let prazoTotal = '';
-                                
-                                if (dataEntrega && dataLimite) {
-                                    const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Atrasado') : '';
-                                } 
-                                else if (status === 'Concluída' && !dataEntrega && dataLimite) {
-                                    const hoje = new Date().toISOString().split('T')[0];
-                                    const diffDays = calcularDiferencaDias(hoje, dataLimite);
-                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Atrasado') : '';
-                                } 
-                                else if (dataSolicitacao && dataLimite) {
-                                    const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Expirado') : '';
-                                } else {
-                                    prazoTotal = '';
-                                }
-                                
-                                const criadoRaw = getValor(valoresLimpos, POS.criado);
-                                let dataCriado = formatarDataISO(criadoRaw);
-                                if (!dataCriado) {
-                                    dataCriado = new Date().toISOString().split('T')[0];
-                                }
-                                
-                                let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
-                                let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
-                                
-                                const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
-                                let engenheirosNomes = [];
-                                if (atribuidoRaw) {
-                                    let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
-                                    engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
-                                }
-                                if (engenheirosNomes.length === 0 && criadoPor) {
-                                    engenheirosNomes = [criadoPor];
-                                }
-                                if (engenheirosNomes.length === 0) {
-                                    engenheirosNomes = ['Sistema'];
-                                }
-                                
-                                const engenheiroCompleto = engenheirosNomes.join(', ');
-                                const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
-                                
-                                engenheirosNomes.forEach(nome => {
-                                    const login = gerarUsername(nome);
-                                    if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
-                                        engenheirosParaAdicionar.push({ nome: nome, login: login });
-                                    }
-                                });
-                                
-                                if (!produto || !descricao) {
-                                    erros++;
-                                    errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
-                                    return;
-                                }
-                                
-                                const novaAtividade = {
-                                    id: Date.now() + importados + Math.random() * 1000,
-                                    engenheiro: engenheiroCompleto,
-                                    engenheirosLista: engenheirosNomes,
-                                    loginsEng: loginsEngenheiros,
-                                    loginEng: loginsEngenheiros[0] || 'sistema',
-                                    dataReg: dataCriado,
-                                    mes: mesAtual,
-                                    ano: anoAtual,
-                                    produto: produto,
-                                    projeto: tipoAtividade,
-                                    processo: processo,
-                                    tipoAtividade: tipoAtividade,
-                                    descricao: descricao,
-                                    status: status,
-                                    prioridade: prioridade,
-                                    dataSolicitacao: dataSolicitacao,
-                                    dataLimite: dataLimite,
-                                    dataEntrega: dataEntrega,
-                                    prazoTotal: prazoTotal,
-                                    areaDemandante: areaDemandante,
-                                    observacoes: '',
-                                    criado: dataCriado,
-                                    criadoPor: criadoPor || null,
-                                    ultimaModificacao: dataCriado,
-                                    ultimoEditor: criadoPor || null
-                                };
-                                
-                                atividades.push(novaAtividade);
-                                importados++;
-                                
-                            } catch (err) {
-                                erros++;
-                                errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
-                                console.error('Erro ao importar linha', index, err);
-                            }
-                        });
+                dadosLinhas.forEach((valores, index) => {
+    try {
+        const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
+        
+        const processo = getValor(valoresLimpos, POS.processo) || '';
+        const produtoRaw = getValor(valoresLimpos, POS.produto);
+        const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
+        const produto = padronizarProduto(produtoRaw, areaDemandante);
+        
+        const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
+        const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
+        
+        // 🔥 PEGA O STATUS DA PLANILHA
+        let status = mapearStatus(getValor(valoresLimpos, POS.status));
+        
+        const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
+        const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
+        const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
+        
+        // 🔥 PEGA A DATA DE ENTREGA
+        const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
+        let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
+        
+        // 🔥 SE TEM DATA DE ENTREGA, FORÇA STATUS COMO "Concluída"
+        if (dataEntrega) {
+            status = 'Concluída';
+        }
+        
+        let prazoTotal = '';
+        
+        if (dataEntrega && dataLimite) {
+            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+        } 
+        else if (status === 'Concluída' && !dataEntrega && dataLimite) {
+            const hoje = new Date().toISOString().split('T')[0];
+            const diffDays = calcularDiferencaDias(hoje, dataLimite);
+            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+        } 
+        else if (dataSolicitacao && dataLimite) {
+            const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+        } else {
+            prazoTotal = 0;
+        }
+        
+        const criadoRaw = getValor(valoresLimpos, POS.criado);
+        let dataCriado = formatarDataISO(criadoRaw);
+        if (!dataCriado) {
+            dataCriado = new Date().toISOString().split('T')[0];
+        }
+        
+        let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
+        let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
+        
+        const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
+        let engenheirosNomes = [];
+        if (atribuidoRaw) {
+            let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
+            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
+        }
+        if (engenheirosNomes.length === 0 && criadoPor) {
+            engenheirosNomes = [criadoPor];
+        }
+        if (engenheirosNomes.length === 0) {
+            engenheirosNomes = ['Sistema'];
+        }
+        
+        const engenheiroCompleto = engenheirosNomes.join(', ');
+        const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
+        
+        engenheirosNomes.forEach(nome => {
+            const login = gerarUsername(nome);
+            if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
+                engenheirosParaAdicionar.push({ nome: nome, login: login });
+            }
+        });
+        
+        if (!produto || !descricao) {
+            erros++;
+            errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
+            return;
+        }
+        
+        const novaAtividade = {
+            id: Date.now() + importados + Math.random() * 1000,
+            engenheiro: engenheiroCompleto,
+            engenheirosLista: engenheirosNomes,
+            loginsEng: loginsEngenheiros,
+            loginEng: loginsEngenheiros[0] || 'sistema',
+            dataReg: dataCriado,
+            mes: mesAtual,
+            ano: anoAtual,
+            produto: produto,
+            projeto: tipoAtividade,
+            processo: processo,
+            tipoAtividade: tipoAtividade,
+            descricao: descricao,
+            status: status,  // ← Agora definido corretamente
+            prioridade: prioridade,
+            dataSolicitacao: dataSolicitacao,
+            dataLimite: dataLimite,
+            dataEntrega: dataEntrega,
+            prazoTotal: prazoTotal,
+            areaDemandante: areaDemandante,
+            observacoes: '',
+            criado: dataCriado,
+            criadoPor: criadoPor || null,
+            ultimaModificacao: dataCriado,
+            ultimoEditor: criadoPor || null
+        };
+        
+        atividades.push(novaAtividade);
+        importados++;
+        
+    } catch (err) {
+        erros++;
+        errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
+        console.error('Erro ao importar linha', index, err);
+    }
+});
 
                         engenheirosParaAdicionar.forEach(({ nome, login }) => {
                             if (!usuarios[login] && nome) {
@@ -2264,50 +2269,48 @@ window.gerarPDF = function() {
                 const nomeEngenheiro = (act.engenheiro && act.engenheiro !== '' && act.engenheiro !== 'Sistema' && act.engenheiro !== 'null') 
                     ? act.engenheiro : '-';
                 
-                let prazoTotal = '-';
-                let prazoColor = '#888';
+                let prazoTotal = 0;
+let prazoColor = '#888';
 
-                if (act.dataEntrega && act.dataLimite) {
-                    const diffDays = calcularDiferencaDias(act.dataEntrega, act.dataLimite);
-                    if (diffDays !== null) {
-                        if (diffDays >= 0) {
-                            prazoTotal = diffDays;
-                            prazoColor = '#48bb78';
-                        } else {
-                            prazoTotal = 'Atrasado';
-                            prazoColor = '#f56565';
-                        }
-                    }
-                } 
-                else if (act.status === 'Concluída' && !act.dataEntrega && act.dataLimite) {
-                    const hoje = new Date().toISOString().split('T')[0];
-                    const diffDays = calcularDiferencaDias(hoje, act.dataLimite);
-                    if (diffDays !== null) {
-                        if (diffDays >= 0) {
-                            prazoTotal = diffDays;
-                            prazoColor = '#48bb78';
-                        } else {
-                            prazoTotal = 'Atrasado';
-                            prazoColor = '#f56565';
-                        }
-                    }
-                } 
-                else if (act.dataLimite) {
-                    const hoje = new Date();
-                    hoje.setHours(0, 0, 0, 0);
-                    const limite = new Date(act.dataLimite);
-                    limite.setHours(0, 0, 0, 0);
-                    let dias = Math.floor((limite - hoje) / (1000 * 60 * 60 * 24));
-                    dias = Math.max(0, dias);
-                    prazoTotal = dias;
-                    if (dias > 7) {
-                        prazoColor = '#48bb78';
-                    } else if (dias > 0) {
-                        prazoColor = '#ed8936';
-                    } else {
-                        prazoColor = '#f56565';
-                    }
-                }
+// PRIORIDADE 1: Se está CONCLUÍDA, calcular diferença entre Data de Entrega e Data Limite
+if (act.status === 'Concluída' && act.dataEntrega && act.dataLimite) {
+    const diffDays = calcularDiferencaDias(act.dataEntrega, act.dataLimite);
+    if (diffDays !== null) {
+        prazoTotal = diffDays >= 0 ? diffDays : 0;
+        prazoColor = diffDays >= 0 ? '#48bb78' : '#f56565';
+    }
+} 
+// PRIORIDADE 2: Se está CONCLUÍDA mas não tem Data de Entrega, usar data atual
+else if (act.status === 'Concluída' && !act.dataEntrega && act.dataLimite) {
+    const hoje = new Date().toISOString().split('T')[0];
+    const diffDays = calcularDiferencaDias(hoje, act.dataLimite);
+    if (diffDays !== null) {
+        prazoTotal = diffDays >= 0 ? diffDays : 0;
+        prazoColor = diffDays >= 0 ? '#48bb78' : '#f56565';
+    }
+}
+// PRIORIDADE 3: Se NÃO está CONCLUÍDA, calcular diferença entre Data Limite e Data Solicitação
+else if (act.dataSolicitacao && act.dataLimite) {
+    const diffDays = calcularDiferencaDias(act.dataSolicitacao, act.dataLimite);
+    if (diffDays !== null) {
+        prazoTotal = diffDays >= 0 ? diffDays : 0;
+        prazoColor = diffDays >= 0 ? '#667eea' : '#f56565';
+    }
+}
+// PRIORIDADE 4: Tem Data de Entrega e Data Limite (mas não está Concluída)
+else if (act.dataEntrega && act.dataLimite) {
+    const diffDays = calcularDiferencaDias(act.dataEntrega, act.dataLimite);
+    if (diffDays !== null) {
+        prazoTotal = diffDays >= 0 ? diffDays : 0;
+        prazoColor = diffDays >= 0 ? '#48bb78' : '#f56565';
+    }
+}
+// PRIORIDADE 5: Tem Data Solicitação mas não tem Data Limite
+else if (act.dataSolicitacao && !act.dataLimite) {
+    prazoTotal = 0;
+    prazoColor = '#888';
+}
+                
                 const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
                 
                 // Cores para prioridade
@@ -2330,7 +2333,7 @@ window.gerarPDF = function() {
                     <td>${formatarData(act.dataSolicitacao)}</td>
                     <td>${formatarData(act.dataLimite)}</td>
                     <td>${act.dataEntrega ? formatarData(act.dataEntrega) : '-'}</td>
-                    <td style="color:${prazoColor}; font-weight:bold;">${prazoTotal}</td>
+                    <td style="color:${prazoColor}; font-weight:bold; text-align:center;">${prazoTotal}</td>
                     <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
                     <td>
                         <span style="display:inline-block; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; ${prioridadeColor}">
@@ -2525,75 +2528,71 @@ window.gerarPDF = function() {
         };
 
         function calcularPrazoTotalEdicao() {
-            const dataSolicitacao = document.getElementById('editDataSolicitacao')?.value;
-            const dataLimite = document.getElementById('editDataLimite')?.value;
-            const dataEntrega = document.getElementById('editDataEntrega')?.value;
-            const status = document.getElementById('editStatus')?.value;
-            const prazoTotalInput = document.getElementById('editPrazoTotal');
-            
-            if (!prazoTotalInput) return;
-            
-            // PRIORIDADE 1: Calcular diferença entre Data Limite e Data Solicitação
-            if (dataSolicitacao && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-                if (diffDays !== null && diffDays >= 0) {
-                    prazoTotalInput.value = diffDays;
-                    prazoTotalInput.style.color = '#48bb78';
-                    prazoTotalInput.style.background = '#f0fff4';
-                    return;
-                } else if (diffDays !== null && diffDays < 0) {
-                    prazoTotalInput.value = 'Expirado';
-                    prazoTotalInput.style.color = '#f56565';
-                    prazoTotalInput.style.background = '#fff5f5';
-                    return;
-                }
-            }
-            
-            if (dataEntrega && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-                if (diffDays !== null) {
-                    if (diffDays >= 0) {
-                        prazoTotalInput.value = diffDays;
-                        prazoTotalInput.style.color = '#48bb78';
-                        prazoTotalInput.style.background = '#f0fff4';
-                    } else {
-                        prazoTotalInput.value = 'Atrasado';
-                        prazoTotalInput.style.color = '#f56565';
-                        prazoTotalInput.style.background = '#fff5f5';
-                    }
-                    return;
-                }
-            }
-            
-            if (status === 'Concluída' && !dataEntrega && dataLimite) {
-                const hoje = new Date().toISOString().split('T')[0];
-                const diffDays = calcularDiferencaDias(hoje, dataLimite);
-                if (diffDays !== null) {
-                    if (diffDays >= 0) {
-                        prazoTotalInput.value = diffDays;
-                        prazoTotalInput.style.color = '#48bb78';
-                        prazoTotalInput.style.background = '#f0fff4';
-                    } else {
-                        prazoTotalInput.value = 'Atrasado';
-                        prazoTotalInput.style.color = '#f56565';
-                        prazoTotalInput.style.background = '#fff5f5';
-                    }
-                    return;
-                }
-            }
-            
-            if (dataSolicitacao && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                prazoTotalInput.style.background = '#f8f9fc';
-                return;
-            }
-            
-            prazoTotalInput.value = '';
-            prazoTotalInput.style.color = '#667eea';
-            prazoTotalInput.style.background = '#f0f0f0';
+    const dataSolicitacao = document.getElementById('editDataSolicitacao')?.value;
+    const dataLimite = document.getElementById('editDataLimite')?.value;
+    const dataEntrega = document.getElementById('editDataEntrega')?.value;
+    const status = document.getElementById('editStatus')?.value;
+    const prazoTotalInput = document.getElementById('editPrazoTotal');
+    
+    if (!prazoTotalInput) return;
+    
+    // PRIORIDADE 1: Se está CONCLUÍDA, calcular diferença entre Data de Entrega e Data Limite
+    if (status === 'Concluída' && dataEntrega && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
         }
-
+    }
+    
+    // PRIORIDADE 2: Se está CONCLUÍDA mas não tem Data de Entrega, usar data atual
+    if (status === 'Concluída' && !dataEntrega && dataLimite) {
+        const hoje = new Date().toISOString().split('T')[0];
+        const diffDays = calcularDiferencaDias(hoje, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 3: Se NÃO está CONCLUÍDA, calcular diferença entre Data Limite e Data Solicitação
+    if (dataSolicitacao && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#667eea' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0f0f0' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 4: Tem Data de Entrega e Data Limite (mas não está Concluída)
+    if (dataEntrega && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+        if (diffDays !== null) {
+            prazoTotalInput.value = diffDays >= 0 ? diffDays : 0;
+            prazoTotalInput.style.color = diffDays >= 0 ? '#48bb78' : '#f56565';
+            prazoTotalInput.style.background = diffDays >= 0 ? '#f0fff4' : '#fff5f5';
+            return;
+        }
+    }
+    
+    // PRIORIDADE 5: Tem Data Solicitação mas não tem Data Limite
+    if (dataSolicitacao && !dataLimite) {
+        prazoTotalInput.value = 0;
+        prazoTotalInput.style.color = '#888';
+        prazoTotalInput.style.background = '#f8f9fc';
+        return;
+    }
+    
+    prazoTotalInput.value = '';
+    prazoTotalInput.style.color = '#667eea';
+    prazoTotalInput.style.background = '#f0f0f0';
+}
         window.salvarEdicao = function(id) {
             const index = atividades.findIndex(a => a.id === id);
             if (index !== -1) {
