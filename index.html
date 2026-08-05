@@ -404,64 +404,74 @@
             return diffDays;
         }
 
-        function calcularPrazoTotal() {
-            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
-            const dataLimite = document.getElementById('dataLimite').value;
-            const dataEntrega = document.getElementById('dataEntrega').value;
-            const status = document.getElementById('status').value;
-            const prazoTotalInput = document.getElementById('prazoTotal');
-            
-            if (dataEntrega && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-                if (diffDays >= 0) {
-                    prazoTotalInput.value = diffDays;
-                    prazoTotalInput.style.color = '#48bb78';
-                } else {
-                    prazoTotalInput.value = 'Atrasado';
-                    prazoTotalInput.style.color = '#f56565';
-                }
-                return;
-            }
-            
-            if (status === 'Concluída' && !dataEntrega && dataLimite) {
-                const hoje = new Date().toISOString().split('T')[0];
-                const diffDays = calcularDiferencaDias(hoje, dataLimite);
-                if (diffDays >= 0) {
-                    prazoTotalInput.value = diffDays;
-                    prazoTotalInput.style.color = '#48bb78';
-                } else {
-                    prazoTotalInput.value = 'Atrasado';
-                    prazoTotalInput.style.color = '#f56565';
-                }
-                return;
-            }
-            
-            if (dataSolicitacao) {
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
-                const solicitacao = new Date(dataSolicitacao);
-                solicitacao.setHours(0, 0, 0, 0);
-                const dias = Math.max(0, Math.floor((hoje - solicitacao) / (1000 * 60 * 60 * 24)));
-                prazoTotalInput.value = dias;
-                prazoTotalInput.style.color = '#667eea';
-                return;
-            }
-            
-            if (dataEntrega && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                return;
-            }
-            
-            if (dataSolicitacao && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                return;
-            }
-            
-            prazoTotalInput.value = '';
-            prazoTotalInput.style.color = '#667eea';
+       function calcularPrazoTotal() {
+    const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+    const dataLimite = document.getElementById('dataLimite').value;
+    const dataEntrega = document.getElementById('dataEntrega').value;
+    const status = document.getElementById('status').value;
+    const prazoTotalInput = document.getElementById('prazoTotal');
+    
+   
+    if (dataSolicitacao && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+        if (diffDays !== null && diffDays >= 0) {
+            prazoTotalInput.value = diffDays;
+            prazoTotalInput.style.color = '#48bb78';
+            prazoTotalInput.style.background = '#f0fff4';
+            return;
+        } else if (diffDays !== null && diffDays < 0) {
+            prazoTotalInput.value = 'Expirado';
+            prazoTotalInput.style.color = '#f56565';
+            prazoTotalInput.style.background = '#fff5f5';
+            return;
         }
+    }
+
+    if (dataEntrega && dataLimite) {
+        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+        if (diffDays !== null) {
+            if (diffDays >= 0) {
+                prazoTotalInput.value = diffDays;
+                prazoTotalInput.style.color = '#48bb78';
+                prazoTotalInput.style.background = '#f0fff4';
+            } else {
+                prazoTotalInput.value = 'Atrasado';
+                prazoTotalInput.style.color = '#f56565';
+                prazoTotalInput.style.background = '#fff5f5';
+            }
+            return;
+        }
+    }
+
+    if (status === 'Concluída' && !dataEntrega && dataLimite) {
+        const hoje = new Date().toISOString().split('T')[0];
+        const diffDays = calcularDiferencaDias(hoje, dataLimite);
+        if (diffDays !== null) {
+            if (diffDays >= 0) {
+                prazoTotalInput.value = diffDays;
+                prazoTotalInput.style.color = '#48bb78';
+                prazoTotalInput.style.background = '#f0fff4';
+            } else {
+                prazoTotalInput.value = 'Atrasado';
+                prazoTotalInput.style.color = '#f56565';
+                prazoTotalInput.style.background = '#fff5f5';
+            }
+            return;
+        }
+    }
+    
+    if (dataSolicitacao && !dataLimite) {
+        prazoTotalInput.value = 'Sem prazo definido';
+        prazoTotalInput.style.color = '#888';
+        prazoTotalInput.style.background = '#f8f9fc';
+        return;
+    }
+    
+    // Se nada foi preenchido
+    prazoTotalInput.value = '';
+    prazoTotalInput.style.color = '#667eea';
+    prazoTotalInput.style.background = '#f0f0f0';
+}
 
         function formatarDataISO(dataStr) {
             if (!dataStr || dataStr.trim() === '') return null;
