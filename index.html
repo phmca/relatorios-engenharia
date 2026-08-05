@@ -25,8 +25,8 @@
         .user-area { display: flex; align-items: center; gap: 20px; background: #f8f9fc; padding: 8px 20px; border-radius: 50px; flex-wrap: wrap; }
         .user-area span { font-weight: 500; color: #333; cursor: pointer; transition: color 0.3s; display: flex; align-items: center; gap: 6px; }
         .user-area span:hover { color: #667eea; }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .form-card, .report-card, .stats-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; align-items: start; }
+        .form-card, .report-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; }
         .form-card:hover, .report-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         .card-title { font-size: 1.3rem; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eef2f7; display: flex; align-items: center; gap: 10px; }
         .card-title i { color: #667eea; }
@@ -50,10 +50,10 @@
         .btn-outline:hover { background: #f8f9fc; border-color: #667eea; color: #667eea; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-small { padding: 5px 10px; font-size: 11px; margin: 2px; border-radius: 8px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-item { background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #eef2f7; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-        .stat-item h4 { font-size: 0.75rem; color: #888; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .stat-item .value { font-size: 1.8rem; font-weight: 700; color: #667eea; line-height: 1.2; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-item { background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%); padding: 10px 8px; border-radius: 12px; text-align: center; border: 1px solid #eef2f7; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+        .stat-item h4 { font-size: 0.6rem; color: #888; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-item .value { font-size: 1.3rem; font-weight: 700; color: #667eea; line-height: 1.2; }
         .table-container { overflow-x: auto; margin-top: 20px; max-height: 600px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eef2f7; }
@@ -102,10 +102,6 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin: 15px 0; justify-content: flex-start; }
         .checkbox-group input { width: 16px; height: 16px; margin: 0; }
         .checkbox-group label { color: #666; font-size: 0.8rem; margin: 0; }
-        .suggestions-list { position: absolute; background: white; border: 1px solid #e1e5eb; border-radius: 12px; max-height: 150px; overflow-y: auto; z-index: 100; width: calc(100% - 30px); margin-top: -10px; }
-        .suggestions-list div { padding: 10px 15px; cursor: pointer; }
-        .suggestions-list div:hover { background: #f0f4ff; }
-        .suggestions { position: relative; }
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eef2f7; }
         .nome-usuario { cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 5px; }
@@ -146,11 +142,70 @@
             line-height: 1.6;
             border-left: 4px solid #667eea;
         }
-        
-        @media (max-width: 768px) { 
-            .main-layout { grid-template-columns: 1fr; } 
-            .modern-header { flex-direction: column; text-align: center; } 
-            .modal-large { width: 95%; } 
+
+.dashboard-card {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card .card-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.dashboard-card .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card .stat-item {
+    background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+    padding: 15px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid #eef2f7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.dashboard-card .stat-item h4 {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dashboard-card .stat-item .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1.2;
+}
+
+.dashboard-card .btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    width: 100%;
+    margin-top: auto;
+}
+
+.dashboard-card .btn i {
+    font-size: 14px;
+}
+
+        @media (max-width: 768px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .main-layout .dashboard-card .stats-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))}
+            .modern-header { flex-direction: column; text-align: center; }
+            .modal-large { width: 95%; }
             .user-area { justify-content: center; }
             .logo-area { flex-direction: column; }
         }
@@ -238,7 +293,10 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group suggestions"><label class="required">Título:</label><input type="text" id="tipoAtividade" required><div id="suggestionsList" class="suggestions-list" style="display: none;"></div></div>
+                        <div class="form-group">
+                            <label class="required">Título:</label>
+                            <input type="text" id="tipoAtividade" required>
+                        </div>
                     </div>
                     <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..."></textarea></div>
                     <div class="form-row">
@@ -250,7 +308,7 @@
                                 <option value="Em análise">Em análise</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>Prioridade:</label>
+                        <div class="form-group"><label class="required">Prioridade:</label>
                             <select id="prioridade">
                                 <option value="Baixa">Baixa</option>
                                 <option value="Média">Média</option>
@@ -312,12 +370,11 @@
                 </form>
             </div>
 
-            <div>
-                <div class="stats-card">
-                    <div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
-                    <div class="stats-grid" id="statsContainer"></div>
-                    <button onclick="gerarPDF()" class="btn btn-secondary" style="width: 100%;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
-                </div>
+            <!-- Dashboard ao lado do formulário - compacto e alinhado com o topo -->
+            <div class="form-card dashboard-card">
+                <div class="card-title"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
+                <div class="stats-grid" id="statsContainer"></div>
+                <button onclick="gerarPDF()" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
             </div>
         </div>
 
@@ -343,7 +400,7 @@
                             <th>Data de Efetiva Conclusão</th>
                             <th>Prazo Total</th>
                             <th>Criado por</th>
-                            <th>Observações</th>
+                            <th>Prioridade</th>
                             <th>Engenheiro</th>
                             <th class="no-print">Ações</th>
                         </tr>
@@ -394,84 +451,93 @@
         }
 
         function calcularDiferencaDias(dataInicio, dataFim) {
-            if (!dataInicio || !dataFim) return 0;
-            const inicio = new Date(dataInicio);
-            inicio.setHours(0, 0, 0, 0);
-            const fim = new Date(dataFim);
-            fim.setHours(0, 0, 0, 0);
-            const diffTime = fim.getTime() - inicio.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays;
-        }
-
-       function calcularPrazoTotal() {
-    const dataSolicitacao = document.getElementById('dataSolicitacao').value;
-    const dataLimite = document.getElementById('dataLimite').value;
-    const dataEntrega = document.getElementById('dataEntrega').value;
-    const status = document.getElementById('status').value;
-    const prazoTotalInput = document.getElementById('prazoTotal');
-    
-   
-    if (dataSolicitacao && dataLimite) {
-        const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-        if (diffDays !== null && diffDays >= 0) {
-            prazoTotalInput.value = diffDays;
-            prazoTotalInput.style.color = '#48bb78';
-            prazoTotalInput.style.background = '#f0fff4';
-            return;
-        } else if (diffDays !== null && diffDays < 0) {
-            prazoTotalInput.value = 'Expirado';
-            prazoTotalInput.style.color = '#f56565';
-            prazoTotalInput.style.background = '#fff5f5';
-            return;
-        }
-    }
-
-    if (dataEntrega && dataLimite) {
-        const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-        if (diffDays !== null) {
-            if (diffDays >= 0) {
-                prazoTotalInput.value = diffDays;
-                prazoTotalInput.style.color = '#48bb78';
-                prazoTotalInput.style.background = '#f0fff4';
-            } else {
-                prazoTotalInput.value = 'Atrasado';
-                prazoTotalInput.style.color = '#f56565';
-                prazoTotalInput.style.background = '#fff5f5';
+            if (!dataInicio || !dataFim) return null;
+            try {
+                const inicio = new Date(dataInicio);
+                inicio.setHours(0, 0, 0, 0);
+                const fim = new Date(dataFim);
+                fim.setHours(0, 0, 0, 0);
+                
+                if (isNaN(inicio) || isNaN(fim)) return null;
+                
+                const diffTime = fim.getTime() - inicio.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
+            } catch (e) {
+                return null;
             }
-            return;
         }
-    }
 
-    if (status === 'Concluída' && !dataEntrega && dataLimite) {
-        const hoje = new Date().toISOString().split('T')[0];
-        const diffDays = calcularDiferencaDias(hoje, dataLimite);
-        if (diffDays !== null) {
-            if (diffDays >= 0) {
-                prazoTotalInput.value = diffDays;
-                prazoTotalInput.style.color = '#48bb78';
-                prazoTotalInput.style.background = '#f0fff4';
-            } else {
-                prazoTotalInput.value = 'Atrasado';
-                prazoTotalInput.style.color = '#f56565';
-                prazoTotalInput.style.background = '#fff5f5';
+        function calcularPrazoTotal() {
+            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+            const dataLimite = document.getElementById('dataLimite').value;
+            const dataEntrega = document.getElementById('dataEntrega').value;
+            const status = document.getElementById('status').value;
+            const prazoTotalInput = document.getElementById('prazoTotal');
+            
+            // PRIORIDADE 1: Calcular diferença entre Data Limite e Data Solicitação
+            if (dataSolicitacao && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+                if (diffDays !== null && diffDays >= 0) {
+                    prazoTotalInput.value = diffDays;
+                    prazoTotalInput.style.color = '#48bb78';
+                    prazoTotalInput.style.background = '#f0fff4';
+                    return;
+                } else if (diffDays !== null && diffDays < 0) {
+                    prazoTotalInput.value = 'Expirado';
+                    prazoTotalInput.style.color = '#f56565';
+                    prazoTotalInput.style.background = '#fff5f5';
+                    return;
+                }
             }
-            return;
+            
+            // PRIORIDADE 2: Se tem Data de Entrega e Data Limite
+            if (dataEntrega && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                if (diffDays !== null) {
+                    if (diffDays >= 0) {
+                        prazoTotalInput.value = diffDays;
+                        prazoTotalInput.style.color = '#48bb78';
+                        prazoTotalInput.style.background = '#f0fff4';
+                    } else {
+                        prazoTotalInput.value = 'Atrasado';
+                        prazoTotalInput.style.color = '#f56565';
+                        prazoTotalInput.style.background = '#fff5f5';
+                    }
+                    return;
+                }
+            }
+            
+            // PRIORIDADE 3: Se está Concluída mas não tem Data de Entrega
+            if (status === 'Concluída' && !dataEntrega && dataLimite) {
+                const hoje = new Date().toISOString().split('T')[0];
+                const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                if (diffDays !== null) {
+                    if (diffDays >= 0) {
+                        prazoTotalInput.value = diffDays;
+                        prazoTotalInput.style.color = '#48bb78';
+                        prazoTotalInput.style.background = '#f0fff4';
+                    } else {
+                        prazoTotalInput.value = 'Atrasado';
+                        prazoTotalInput.style.color = '#f56565';
+                        prazoTotalInput.style.background = '#fff5f5';
+                    }
+                    return;
+                }
+            }
+            
+            // PRIORIDADE 4: Se tem Data Solicitação mas não Data Limite
+            if (dataSolicitacao && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                prazoTotalInput.style.background = '#f8f9fc';
+                return;
+            }
+            
+            prazoTotalInput.value = '';
+            prazoTotalInput.style.color = '#667eea';
+            prazoTotalInput.style.background = '#f0f0f0';
         }
-    }
-    
-    if (dataSolicitacao && !dataLimite) {
-        prazoTotalInput.value = 'Sem prazo definido';
-        prazoTotalInput.style.color = '#888';
-        prazoTotalInput.style.background = '#f8f9fc';
-        return;
-    }
-    
-    // Se nada foi preenchido
-    prazoTotalInput.value = '';
-    prazoTotalInput.style.color = '#667eea';
-    prazoTotalInput.style.background = '#f0f0f0';
-}
 
         function formatarDataISO(dataStr) {
             if (!dataStr || dataStr.trim() === '') return null;
@@ -1393,6 +1459,10 @@
             let statusFiltro = '<option value="todos">Todos</option>';
             statusOptions.forEach(s => { statusFiltro += `<option value="${s}">${s}</option>`; });
             
+            const prioridadeOptions = ['Baixa','Média','Alta','Urgente'];
+            let prioridadeFiltro = '<option value="todos">Todas</option>';
+            prioridadeOptions.forEach(p => { prioridadeFiltro += `<option value="${p}">${p}</option>`; });
+            
             let filtrosHtml = `
                 <div class="filters-bar">
                     <div class="filters-grid">
@@ -1407,6 +1477,7 @@
                         <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
                         <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
                         <div class="filter-group"><label>Status</label><select id="filtroStatus">${statusFiltro}</select></div>
+                        <div class="filter-group"><label>Prioridade</label><select id="filtroPrioridade">${prioridadeFiltro}</select></div>
                         <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
                         <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
                     </div>
@@ -1424,7 +1495,7 @@
 
         window.aplicarFiltros = function() { gerarRelatorioAtual(); };
         window.limparFiltros = function() {
-            ['filtroEngenheiro','filtroProduto','filtroMes','filtroAno','filtroStatus','filtroAreaDemandante','filtroOrdenacao'].forEach(id => {
+            ['filtroEngenheiro','filtroProduto','filtroMes','filtroAno','filtroStatus','filtroPrioridade','filtroAreaDemandante','filtroOrdenacao'].forEach(id => {
                 if (document.getElementById(id)) document.getElementById(id).value = 'todos';
             });
             gerarRelatorioAtual();
@@ -1831,16 +1902,17 @@
             const campoProcesso = document.getElementById('processo');
             campoProcesso.addEventListener('input', function() { aplicarMascaraProcesso(this); });
             campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+            
+            // Quando o status mudar para "Concluída" no formulário, preencher a data de entrega
+            document.getElementById('status').addEventListener('change', function() {
+                if (this.value === 'Concluída') {
+                    const dataEntrega = document.getElementById('dataEntrega');
+                    const hoje = new Date().toISOString().split('T')[0];
+                    dataEntrega.value = hoje;
+                    calcularPrazoTotal();
+                }
+            });
         }
-
-        
-       
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.suggestions')) {
-                const div = document.getElementById('suggestionsList');
-                if (div) div.style.display = 'none';
-            }
-        });
 
         window.alterarLoginUsuario = function() {
             const modalDiv = document.createElement('div');
@@ -2040,6 +2112,11 @@
                 const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
                 if (statusFiltro !== 'todos') filtradas = filtradas.filter(a => a.status === statusFiltro);
                 
+                const prioridadeFiltro = document.getElementById('filtroPrioridade')?.value || 'todos';
+                if (prioridadeFiltro !== 'todos') {
+                    filtradas = filtradas.filter(a => a.prioridade === prioridadeFiltro);
+                }
+                
                 const areaFiltro = document.getElementById('filtroAreaDemandante')?.value || 'todos';
                 if (areaFiltro !== 'todos') filtradas = filtradas.filter(a => a.areaDemandante === areaFiltro);
                 
@@ -2055,19 +2132,28 @@
                 produtos: new Set(filtradas.map(a => a.produto)).size
             };
             
+            // Estatísticas de engenheiros
+            const engenheirosSet = new Set();
+            filtradas.forEach(a => {
+                if (a.engenheirosLista) {
+                    a.engenheirosLista.forEach(nome => {
+                        if (nome && nome !== '' && nome !== 'Sistema' && nome !== 'null') {
+                            engenheirosSet.add(nome);
+                        }
+                    });
+                }
+            });
+            const engenheirosCount = engenheirosSet.size;
+            
             let statsHtml = `
-                <div class="stat-item"><h4>🧮 Total</h4><div class="value">${stats.total}</div></div>
+                <div class="stat-item"><h4>📊 Total</h4><div class="value">${stats.total}</div></div>
                 <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
                 <div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div>
                 <div class="stat-item"><h4>🔍 Em análise</h4><div class="value">${stats.emAnalise}</div></div>
+                <div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>
+                <div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>
             `;
             
-            if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
-                const engenheirosCount = new Set(filtradas.flatMap(a => a.engenheirosLista || [])).size;
-                statsHtml += `<div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>`;
-            }
-            
-            statsHtml += `<div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`;
             document.getElementById('statsContainer').innerHTML = statsHtml;
             
             const tbody = document.getElementById('relatorioBody');
@@ -2145,6 +2231,15 @@
                 }
                 const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
                 
+                // Cores para prioridade
+                const prioridadeColors = {
+                    'Urgente': 'background:#fee2e2; color:#dc2626;',
+                    'Alta': 'background:#fef3c7; color:#d97706;',
+                    'Média': 'background:#dbeafe; color:#2563eb;',
+                    'Baixa': 'background:#f3f4f6; color:#6b7280;'
+                };
+                const prioridadeColor = prioridadeColors[act.prioridade] || prioridadeColors['Média'];
+                
                 row.innerHTML = `
                     <td>${podeExcluir ? `<input type="checkbox" class="selecionar-item" value="${act.id}" onchange="toggleSelecionar(${act.id})">` : ''}</td>
                     <td>${act.processo || '-'}</td>
@@ -2158,7 +2253,11 @@
                     <td>${act.dataEntrega ? formatarData(act.dataEntrega) : '-'}</td>
                     <td style="color:${prazoColor}; font-weight:bold;">${prazoTotal}</td>
                     <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
-                    <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${act.observacoes || '-'}">${act.observacoes || '-'}</td>
+                    <td>
+                        <span style="display:inline-block; padding:2px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; ${prioridadeColor}">
+                            ${act.prioridade || 'Média'}
+                        </span>
+                    </td>
                     <td>${nomeEngenheiro}</td>
                     <td class="no-print">
                         ${usuarioAtual.tipo === 'chefe' || (act.loginsEng && act.loginsEng.includes(usuarioAtual.login)) ? `<button class="btn btn-warning btn-small" onclick="window.editarAtividade(${act.id})">✏️</button>` : '-'}
@@ -2190,161 +2289,161 @@
             }
         };
 
-       window.editarAtividade = function(id) {
-    const atividade = atividades.find(a => a.id === id);
-    if (!atividade) return;
-    if (usuarioAtual.tipo !== 'chefe' && !(atividade.loginsEng && atividade.loginsEng.includes(usuarioAtual.login))) {
-        alert('Você só pode editar suas próprias atividades!');
-        return;
-    }
-    
-    const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
-    const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
-    
-    const produtosOptions = [
-        'Produto 1','Produto 2','Produto 3',
-        'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
-        'Produto 4 - Boa Viagem','Produto 4 - Russas',
-        'Produto 5','Produto 6','Produto 7','Produto 8'
-    ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
-    
-    const statusOptions = ['Concluída','Em andamento','Em análise'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
-    const prioridadeOptions = ['Baixa','Média','Alta','Urgente'].map(p => `<option value="${p}" ${atividade.prioridade === p ? 'selected' : ''}>${p}</option>`).join('');
-    
-    const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
-    const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
-    
-    let infoEdicao = '';
-    if (atividade.ultimaModificacao) {
-        const isDev = usuarioAtual && usuarioAtual.login === 'dev1';
-        if (!isDev) {
-            infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
-                <label><i class="fas fa-edit"></i> Última edição:</label>
-                <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
-            </div>`;
-        }
-    }
-    
-    const modalDiv = document.createElement('div');
-    modalDiv.className = 'modal';
-    modalDiv.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                <h2>✏️ Editar Atividade</h2>
-            </div>
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required">Mês do Relatório:</label>
-                        <select id="editMes" required>${mesesOptions}</select>
+        window.editarAtividade = function(id) {
+            const atividade = atividades.find(a => a.id === id);
+            if (!atividade) return;
+            if (usuarioAtual.tipo !== 'chefe' && !(atividade.loginsEng && atividade.loginsEng.includes(usuarioAtual.login))) {
+                alert('Você só pode editar suas próprias atividades!');
+                return;
+            }
+            
+            const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
+            const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
+            
+            const produtosOptions = [
+                'Produto 1','Produto 2','Produto 3',
+                'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
+                'Produto 4 - Boa Viagem','Produto 4 - Russas',
+                'Produto 5','Produto 6','Produto 7','Produto 8'
+            ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
+            
+            const statusOptions = ['Concluída','Em andamento','Em análise'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+            const prioridadeOptions = ['Baixa','Média','Alta','Urgente'].map(p => `<option value="${p}" ${atividade.prioridade === p ? 'selected' : ''}>${p}</option>`).join('');
+            
+            const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+            const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
+            
+            let infoEdicao = '';
+            if (atividade.ultimaModificacao) {
+                const isDev = usuarioAtual && usuarioAtual.login === 'dev1';
+                if (!isDev) {
+                    infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
+                        <label><i class="fas fa-edit"></i> Última edição:</label>
+                        <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
+                    </div>`;
+                }
+            }
+            
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal';
+            modalDiv.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                        <h2>✏️ Editar Atividade</h2>
                     </div>
-                    <div class="form-group">
-                        <label class="required">Ano do Relatório:</label>
-                        <select id="editAno" required>${anosOptions}</select>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="required">Mês do Relatório:</label>
+                                <select id="editMes" required>${mesesOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Ano do Relatório:</label>
+                                <select id="editAno" required>${anosOptions}</select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="required">Produto:</label>
+                                <select id="editProduto" required>${produtosOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>Processo/SEI:</label>
+                                <input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Título:</label>
+                            <input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade || ''}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Atividade/Descrição:</label>
+                            <textarea id="editDescricao" rows="3" required>${atividade.descricao || ''}</textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="required">Status:</label>
+                                <select id="editStatus" required>${statusOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>Prioridade:</label>
+                                <select id="editPrioridade">${prioridadeOptions}</select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="required">Data Solicitação:</label>
+                                <input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" required onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Data Limite:</label>
+                                <input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" required onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data de Efetiva Entrega:</label>
+                                <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                            <div class="form-group">
+                                <label>Prazo Total (dias):</label>
+                                <input type="text" id="editPrazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;" value="${atividade.prazoTotal || ''}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Área Demandante:</label>
+                            <select id="editAreaDemandante" required>
+                                <option value="">Selecione uma área...</option>
+                                ${areasOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Observações:</label>
+                            <textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea>
+                        </div>
+                        
+                        ${infoEdicao}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
                     </div>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required">Produto:</label>
-                        <select id="editProduto" required>${produtosOptions}</select>
-                    </div>
-                    <div class="form-group">
-                        <label>Processo/SEI:</label>
-                        <input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="required">Título:</label>
-                    <input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade || ''}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="required">Atividade/Descrição:</label>
-                    <textarea id="editDescricao" rows="3" required>${atividade.descricao || ''}</textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required">Status:</label>
-                        <select id="editStatus" required>${statusOptions}</select>
-                    </div>
-                    <div class="form-group">
-                        <label>Prioridade:</label>
-                        <select id="editPrioridade">${prioridadeOptions}</select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required">Data Solicitação:</label>
-                        <input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" required onchange="calcularPrazoTotalEdicao()">
-                    </div>
-                    <div class="form-group">
-                        <label class="required">Data Limite:</label>
-                        <input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" required onchange="calcularPrazoTotalEdicao()">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Data de Efetiva Entrega:</label>
-                        <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
-                    </div>
-                    <div class="form-group">
-                        <label>Prazo Total (dias):</label>
-                        <input type="text" id="editPrazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;" value="${atividade.prazoTotal || ''}">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="required">Área Demandante:</label>
-                    <select id="editAreaDemandante" required>
-                        <option value="">Selecione uma área...</option>
-                        ${areasOptions}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Observações:</label>
-                    <textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea>
-                </div>
-                
-                ${infoEdicao}
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modalDiv);
-    
-    const campoProcessoEdit = document.getElementById('editProcesso');
-    if (campoProcessoEdit) {
-        campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-        campoProcessoEdit.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
-    }
-    
-    document.getElementById('editDataEntrega').addEventListener('change', calcularPrazoTotalEdicao);
-    document.getElementById('editDataSolicitacao').addEventListener('change', calcularPrazoTotalEdicao);
-    document.getElementById('editDataLimite').addEventListener('change', calcularPrazoTotalEdicao);
-    document.getElementById('editStatus').addEventListener('change', calcularPrazoTotalEdicao);
-    
-    // 🔥 NOVO: Quando o status mudar para "Concluída" no modal, preencher a data de entrega com o dia atual
-    document.getElementById('editStatus').addEventListener('change', function() {
-        if (this.value === 'Concluída') {
-            const dataEntrega = document.getElementById('editDataEntrega');
-            const hoje = new Date().toISOString().split('T')[0];
-            dataEntrega.value = hoje;
-            calcularPrazoTotalEdicao();
-        }
-    });
-    
-    setTimeout(calcularPrazoTotalEdicao, 100);
-};
+            `;
+            document.body.appendChild(modalDiv);
+            
+            const campoProcessoEdit = document.getElementById('editProcesso');
+            if (campoProcessoEdit) {
+                campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+                campoProcessoEdit.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+            }
+            
+            document.getElementById('editDataEntrega').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editDataSolicitacao').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editDataLimite').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editStatus').addEventListener('change', calcularPrazoTotalEdicao);
+            
+            // 🔥 Quando o status mudar para "Concluída" no modal, preencher a data de entrega com o dia atual
+            document.getElementById('editStatus').addEventListener('change', function() {
+                if (this.value === 'Concluída') {
+                    const dataEntrega = document.getElementById('editDataEntrega');
+                    const hoje = new Date().toISOString().split('T')[0];
+                    dataEntrega.value = hoje;
+                    calcularPrazoTotalEdicao();
+                }
+            });
+            
+            setTimeout(calcularPrazoTotalEdicao, 100);
+        };
 
         function calcularPrazoTotalEdicao() {
             const dataSolicitacao = document.getElementById('editDataSolicitacao')?.value;
@@ -2355,18 +2454,36 @@
             
             if (!prazoTotalInput) return;
             
+            // PRIORIDADE 1: Calcular diferença entre Data Limite e Data Solicitação
+            if (dataSolicitacao && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+                if (diffDays !== null && diffDays >= 0) {
+                    prazoTotalInput.value = diffDays;
+                    prazoTotalInput.style.color = '#48bb78';
+                    prazoTotalInput.style.background = '#f0fff4';
+                    return;
+                } else if (diffDays !== null && diffDays < 0) {
+                    prazoTotalInput.value = 'Expirado';
+                    prazoTotalInput.style.color = '#f56565';
+                    prazoTotalInput.style.background = '#fff5f5';
+                    return;
+                }
+            }
+            
             if (dataEntrega && dataLimite) {
                 const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
                 if (diffDays !== null) {
                     if (diffDays >= 0) {
                         prazoTotalInput.value = diffDays;
                         prazoTotalInput.style.color = '#48bb78';
+                        prazoTotalInput.style.background = '#f0fff4';
                     } else {
                         prazoTotalInput.value = 'Atrasado';
                         prazoTotalInput.style.color = '#f56565';
+                        prazoTotalInput.style.background = '#fff5f5';
                     }
+                    return;
                 }
-                return;
             }
             
             if (status === 'Concluída' && !dataEntrega && dataLimite) {
@@ -2376,42 +2493,26 @@
                     if (diffDays >= 0) {
                         prazoTotalInput.value = diffDays;
                         prazoTotalInput.style.color = '#48bb78';
+                        prazoTotalInput.style.background = '#f0fff4';
                     } else {
                         prazoTotalInput.value = 'Atrasado';
                         prazoTotalInput.style.color = '#f56565';
+                        prazoTotalInput.style.background = '#fff5f5';
                     }
+                    return;
                 }
-                return;
-            }
-            
-            if (dataSolicitacao && dataLimite) {
-                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-                if (diffDays !== null) {
-                    if (diffDays >= 0) {
-                        prazoTotalInput.value = diffDays;
-                        prazoTotalInput.style.color = '#667eea';
-                    } else {
-                        prazoTotalInput.value = 'Expirado';
-                        prazoTotalInput.style.color = '#f56565';
-                    }
-                }
-                return;
-            }
-            
-            if (dataEntrega && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                return;
             }
             
             if (dataSolicitacao && !dataLimite) {
                 prazoTotalInput.value = 'Sem prazo definido';
                 prazoTotalInput.style.color = '#888';
+                prazoTotalInput.style.background = '#f8f9fc';
                 return;
             }
             
             prazoTotalInput.value = '';
             prazoTotalInput.style.color = '#667eea';
+            prazoTotalInput.style.background = '#f0f0f0';
         }
 
         window.salvarEdicao = function(id) {
