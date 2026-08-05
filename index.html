@@ -1776,141 +1776,186 @@
             inputFile.click();
             document.body.removeChild(inputFile);
         };
+window.gerarPDF = function() {
+    const currentRows = document.querySelectorAll('#relatorioBody tr');
+    const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
+    if (!hasData) {
+        alert('Nenhuma atividade para gerar relatório!');
+        return;
+    }
+    
+    const existingContainer = document.getElementById('print-report-container');
+    if (existingContainer) { existingContainer.remove(); }
+    
+    // Cria uma tabela limpa para impressão
+    let htmlContent = `
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    font-family: 'Poppins', Arial, sans-serif; 
+                    padding: 15px; 
+                    background: white;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 3px solid #667eea;
+                }
+                .header img {
+                    height: 50px;
+                    width: auto;
+                    margin-bottom: 5px;
+                }
+                .header h1 {
+                    font-size: 18px;
+                    color: #333;
+                    margin: 0;
+                }
+                .header p {
+                    font-size: 10px;
+                    color: #666;
+                    margin: 2px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 7.5px;
+                    margin-top: 5px;
+                }
+                th, td {
+                    border: 1px solid #ccc;
+                    padding: 3px 4px;
+                    text-align: left;
+                    vertical-align: middle;
+                    word-wrap: break-word;
+                    max-width: 120px;
+                }
+                th {
+                    background: #f0f0f0;
+                    font-weight: 600;
+                    white-space: nowrap;
+                }
+                tr:nth-child(even) {
+                    background: #fafafa;
+                }
+                .status-concluida { color: #48bb78; font-weight: bold; }
+                .status-andamento { color: #4299e1; font-weight: bold; }
+                .status-analise { color: #ed8936; font-weight: bold; }
+                .footer {
+                    text-align: center;
+                    margin-top: 10px;
+                    padding-top: 8px;
+                    border-top: 1px solid #ddd;
+                    font-size: 8px;
+                    color: #999;
+                }
+                @page {
+                    size: landscape;
+                    margin: 0.5cm;
+                }
+                @media print {
+                    body { padding: 10px; }
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; }
+                    thead { display: table-header-group; }
+                }
+            </style>
+        </head>
+        <body>
+    `;
 
-        window.gerarPDF = function() {
-            const currentRows = document.querySelectorAll('#relatorioBody tr');
-            const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
-            if (!hasData) {
-                alert('Nenhuma atividade para gerar relatório!');
-                return;
+    // Cabeçalho
+    htmlContent += `
+        <div class="header">
+            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo">
+            <h1>Relatório de Atividades</h1>
+            <p>Sistema de Gestão de Atividades</p>
+            <p style="font-size:9px; color:#888;">
+                Gerado em: ${new Date().toLocaleString('pt-BR')} | 
+                Usuário: ${usuarioAtual.nome} (${usuarioAtual.login})
+            </p>
+        </div>
+    `;
+
+    // Tabela
+    htmlContent += `<table><thead><tr>`;
+    
+    // Cabeçalho da tabela (sem checkbox e sem ações)
+    const cabecalhoOriginal = document.querySelector('#relatorioTable thead tr');
+    if (cabecalhoOriginal) {
+        const ths = cabecalhoOriginal.querySelectorAll('th');
+        ths.forEach((th, index) => {
+            // Pula checkbox e ações
+            if (index === 0 || th.classList.contains('no-print')) return;
+            if (th.textContent.trim().toUpperCase() === 'DESCRIÇÃO') return;
+            htmlContent += `<th>${th.textContent.trim()}</th>`;
+        });
+    }
+    htmlContent += `</tr></thead><tbody>`;
+
+    // Dados
+    const linhas = document.querySelectorAll('#relatorioBody tr');
+    linhas.forEach(linha => {
+        if (linha.textContent.includes('Nenhuma atividade')) return;
+        
+        htmlContent += `<tr>`;
+        const tds = linha.querySelectorAll('td');
+        tds.forEach((td, index) => {
+            // Pula checkbox, descrição e ações
+            if (index === 0) return;
+            if (index === 4) return; // Descrição
+            if (td.classList.contains('no-print')) return;
+            
+            let conteudo = td.textContent.trim();
+            
+            // Ajusta cores de status
+            if (index === 5) { // Status
+                const statusClass = {
+                    'Concluída': 'status-concluida',
+                    'Em andamento': 'status-andamento',
+                    'Em análise': 'status-analise'
+                }[conteudo] || '';
+                htmlContent += `<td class="${statusClass}">${conteudo}</td>`;
+            } else {
+                htmlContent += `<td>${conteudo}</td>`;
             }
-            const existingContainer = document.getElementById('print-report-container');
-            if (existingContainer) { existingContainer.remove(); }
-            const tabelaOriginal = document.getElementById('relatorioTable');
-            const tabelaClone = tabelaOriginal.cloneNode(true);
-            const cabecalho = tabelaClone.querySelector("thead tr");
+        });
+        htmlContent += `</tr>`;
+    });
 
-            let indiceDescricao = -1;
+    htmlContent += `</tbody></table>`;
 
-            if (cabecalho) {
-                const primeiroTh = cabecalho.querySelector("th");
-                if (primeiroTh && primeiroTh.querySelector("input")) {
-                    primeiroTh.remove();
-                }
-                const ultima = cabecalho.lastElementChild;
-                if (ultima && ultima.classList.contains("no-print")) {
-                    ultima.remove();
-                }
-                cabecalho.querySelectorAll("th").forEach((th, i) => {
-                    if (th.textContent.trim().toUpperCase() === "DESCRIÇÃO") {
-                        indiceDescricao = i;
-                    }
-                });
-                if (indiceDescricao >= 0) {
-                    cabecalho.children[indiceDescricao].remove();
-                }
-            }
+    // Rodapé
+    htmlContent += `
+        <div class="footer">
+            Sistema de Relatórios de Engenharia
+        </div>
+    `;
 
-            tabelaClone.querySelectorAll("tbody tr").forEach(linha => {
-                const primeiroTd = linha.querySelector("td");
-                if (primeiroTd && primeiroTd.querySelector("input")) {
-                    primeiroTd.remove();
-                }
-                const ultima = linha.lastElementChild;
-                if (ultima && ultima.classList.contains("no-print")) {
-                    ultima.remove();
-                }
-                if (indiceDescricao >= 0 && linha.children[indiceDescricao]) {
-                    linha.children[indiceDescricao].remove();
-                }
-            });
-            tabelaClone.style.fontSize = '9px';
-            tabelaClone.style.width = '100%';
-            const printContainer = document.createElement('div');
-            printContainer.id = 'print-report-container';
-           printContainer.style.position = 'absolute';
-printContainer.style.top = '0';
-printContainer.style.left = '0';
-printContainer.style.width = '100%';
-printContainer.style.background = '#fff';
-printContainer.style.padding = '0';
-printContainer.style.margin = '0';
-printContainer.style.boxSizing = 'border-box';
-            let htmlContent = `
-                <div style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:12px;">
-                    <div style="position:absolute;left:0;top:0;">
-                        <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo" style="height:170px; width:auto; object-fit:contain;">
-                    </div>
-                    <div style="padding-top:10px;">
-                        <h2 style="margin:0; padding:0; font-size:16px;">Relatório de Atividades</h2>
-                        <p style="margin:2px 0 0 0; font-size:11px;">Sistema de gestão de atividades</p>
-                        <p style="margin:8px 0 0 0; font-size:10px; color:#555;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-                        <p style="margin:0; font-size:10px; color:#555;"><strong>Usuário:</strong> ${usuarioAtual.nome} (${usuarioAtual.login})</p>
-                    </div>
-                </div>
-                <hr style="margin:12px 0 20px 0;">
-            `;
-            htmlContent += tabelaClone.outerHTML;
-            htmlContent += `
-                <div style="text-align:center; margin-top:10px; font-size:9px; color:#666;">
-                    <hr style="margin:8px 0;">
-                    <p>Sistema de Relatórios de Engenharia</p>
-                </div>
-            `;
-            printContainer.innerHTML = htmlContent;
-            document.body.appendChild(printContainer);
-            const style = document.createElement('style');
-           style.textContent = `
-@page{
-    size: landscape;
-    margin:0.5cm;
-}
+    htmlContent += `</body></html>`;
 
-@media print{
-
-    html,
-    body{
-        margin:0 !important;
-        padding:0 !important;
+    // Abre em nova janela para impressão
+    const janela = window.open('', '_blank');
+    if (!janela) {
+        alert('Por favor, permita pop-ups para esta página.');
+        return;
     }
-
-    body > *:not(#print-report-container){
-        display:none !important;
-    }
-
-    #print-report-container{
-        display:block !important;
-        position:static !important;
-        margin:0 !important;
-        padding:0 !important;
-        width:100% !important;
-    }
-
-    table{
-        width:100%;
-        border-collapse:collapse;
-        page-break-before:auto !important;
-        margin-top:0 !important;
-    }
-
-    thead{
-        display:table-header-group;
-    }
-
-    tr{
-        page-break-inside:avoid;
-    }
-}
-`;
-            printContainer.appendChild(style);
-            setTimeout(() => {
-                window.print();
-                setTimeout(() => {
-                    if (printContainer && printContainer.remove) { printContainer.remove(); }
-                }, 1000);
-            }, 200);
-        };
-
+    
+    janela.document.write(htmlContent);
+    janela.document.close();
+    
+    // Aguarda carregamento e imprime
+    janela.onload = function() {
+        setTimeout(function() {
+            janela.focus();
+            janela.print();
+        }, 500);
+    };
+};
         function carregarInterface() {
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             const importBtn = usuarioAtual.login === 'dev1' ? 
