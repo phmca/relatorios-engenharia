@@ -185,8 +185,33 @@
                 <div class="card-title"><i class="fas fa-plus-circle"></i><span>Registrar Atividade</span></div>
                 <form id="activityForm">
                     <div class="form-row">
-                        <div class="form-group"><label>Mês do Relatório:</label><select id="mesRelatorio"><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
-                        <div class="form-group"><label>Ano do Relatório:</label><select id="anoRelatorio"></option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
+                        <div class="form-group">
+                            <label class="required">Mês do Relatório:</label>
+                            <select id="mesRelatorio" required>
+                                <option value="Janeiro">Janeiro</option>
+                                <option value="Fevereiro">Fevereiro</option>
+                                <option value="Março">Março</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Maio">Maio</option>
+                                <option value="Junho">Junho</option>
+                                <option value="Julho">Julho</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Setembro">Setembro</option>
+                                <option value="Outubro">Outubro</option>
+                                <option value="Novembro">Novembro</option>
+                                <option value="Dezembro">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">Ano do Relatório:</label>
+                            <select id="anoRelatorio" required>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -196,7 +221,11 @@
                                 <option value="Produto 1">Produto 1</option>
                                 <option value="Produto 2">Produto 2</option>
                                 <option value="Produto 3">Produto 3</option>
-                                <option value="Produto 4">Produto 4</option>
+                                <option value="Produto 4 - Sobral">Produto 4 - Sobral</option>
+                                <option value="Produto 4 - Fortaleza">Produto 4 - Fortaleza</option>
+                                <option value="Produto 4 - Icó">Produto 4 - Icó</option>
+                                <option value="Produto 4 - Boa Viagem">Produto 4 - Boa Viagem</option>
+                                <option value="Produto 4 - Russas">Produto 4 - Russas</option>
                                 <option value="Produto 5">Produto 5</option>
                                 <option value="Produto 6">Produto 6</option>
                                 <option value="Produto 7">Produto 7</option>
@@ -205,26 +234,45 @@
                         </div>
                         <div class="form-group">
                             <label>Processo/SEI:</label>
-                            <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21" autocomplete="off">
+                            <input type="text" id="processo" placeholder="_____/______/____-__" maxlength="21">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label class="required">Projeto/Empreendimento:</label><input type="text" id="projeto" required autocomplete="off"></div>
-                        <div class="form-group suggestions"><label class="required">Tipo de Atividade:</label><input type="text" id="tipoAtividade" required autocomplete="off"><div id="suggestionsList" class="suggestions-list" style="display: none;"></div></div>
+                        <div class="form-group suggestions"><label class="required">Título:</label><input type="text" id="tipoAtividade" required><div id="suggestionsList" class="suggestions-list" style="display: none;"></div></div>
                     </div>
-                    <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..." autocomplete="off"></textarea></div>
+                    <div class="form-group"><label class="required">Atividade/Descrição:</label><textarea id="descricao" required rows="3" placeholder="Descreva a atividade realizada..."></textarea></div>
                     <div class="form-row">
-                        <div class="form-group"><label class="required">Status:</label><select id="status" required><option value="">Selecione...</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
-                        <div class="form-group"><label>Prioridade:</label><select id="prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data Solicitação:</label><input type="date" id="dataSolicitacao" autocomplete="off" onchange="calcularPrazos()"></div>
-                        <div class="form-group"><label>Data Limite:</label><input type="date" id="dataLimite" autocomplete="off" onchange="calcularPrazos()"></div>
+                        <div class="form-group"><label class="required">Status:</label>
+                            <select id="status" required>
+                                <option value="">Selecione...</option>
+                                <option value="Concluída">Concluída</option>
+                                <option value="Em andamento">Em andamento</option>
+                                <option value="Em análise">Em análise</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Prioridade:</label>
+                            <select id="prioridade">
+                                <option value="Baixa">Baixa</option>
+                                <option value="Média">Média</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Urgente">Urgente</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Prazo Remanescente (dias):</label>
-                            <input type="number" id="prazoRemanescente" min="0" style="background:#f8f9fc; font-weight:bold; color:#667eea;" onchange="validarPrazoRemanescente()">
+                            <label class="required">Data Solicitação:</label>
+                            <input type="date" id="dataSolicitacao" required onchange="calcularPrazoTotal()">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">Data Limite:</label>
+                            <input type="date" id="dataLimite" required onchange="calcularPrazoTotal()">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data de Entrega:</label>
+                            <input type="date" id="dataEntrega" onchange="calcularPrazoTotal()">
                         </div>
                         <div class="form-group">
                             <label>Prazo Total (dias):</label>
@@ -232,8 +280,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Área Demandante:</label>
-                        <select id="areaDemandante">
+                        <label class="required">Área Demandante:</label>
+                        <select id="areaDemandante" required>
                             <option value="">Selecione uma área...</option>
                             <option value="SRE – Superintendência">SRE – Superintendência</option>
                             <option value="NAA – Núcleo de Apoio Administrativo">NAA – Núcleo de Apoio Administrativo</option>
@@ -259,7 +307,7 @@
                         </select>
                     </div>
                     
-                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..." autocomplete="off"></textarea></div>
+                    <div class="form-group"><label>Observações:</label><textarea id="observacoes" rows="2" placeholder="Informações adicionais..."></textarea></div>
                     <div class="btn-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Atividade</button><button type="button" class="btn btn-outline" onclick="limparFormulario()"><i class="fas fa-eraser"></i> Limpar</button></div>
                 </form>
             </div>
@@ -281,27 +329,28 @@
             <div id="filtersContainer"></div>
             <div class="table-container">
                 <table id="relatorioTable">
-                   <thead>
-    <tr>
-        <th><input type="checkbox" id="selecionarTodos" onchange="toggleTodos(this)"></th>
-        <th>Processo/SEI</th>
-        <th>Produto</th>
-        <th>Título</th>
-        <th>Descrição</th>
-        <th>Status</th>
-        <th>Área Demandante</th>
-        <th>Data Solicitação</th>
-        <th>Data Limite</th>
-        <th>Prazo Remanescente</th>
-        <th>Prazo Total</th>
-        <th>Última Modificação</th>
-        <th>Observações</th>
-        <th>Engenheiro</th>
-        <th class="no-print">Ações</th>
-    </tr>
-</thead>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selecionarTodos" onchange="toggleTodos(this)"></th>
+                            <th>Processo/SEI</th>
+                            <th>Produto</th>
+                            <th>Título</th>
+                            <th>Descrição</th>
+                            <th>Status</th>
+                            <th>Área Demandante</th>
+                            <th>Data Solicitação</th>
+                            <th>Data Limite</th>
+                            <th>Data de Efetiva Conclusão</th>
+                            <th>Prazo Total</th>
+                            <th>Criado por</th>
+                            <th>Observações</th>
+                            <th>Engenheiro</th>
+                            <th class="no-print">Ações</th>
+                        </tr>
+                    </thead>
                     <tbody id="relatorioBody"><tr><td colspan="16" style="text-align:center">Carregando...</td></tr>
-                </tbody></table>
+                    </tbody>
+                </table>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
                 <button onclick="gerarPDF()" class="btn btn-secondary" style="flex:1;"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
@@ -324,19 +373,7 @@
         const database = firebase.database();
 
         const STORAGE_KEY = 'engenharia_relatorios_v9';
-       const SENHA_GESTOR_OFUSCADA = '\x1e\x14\x16\x1b\x15\x1a\x13\x18\x16\x0e\x2f\x14\x1a\x13\x16';
-
-function desofuscarSenha(senhaOfuscada) {
-    let resultado = '';
-    for (let i = 0; i < senhaOfuscada.length; i++) {
-        resultado += String.fromCharCode(senhaOfuscada.charCodeAt(i) ^ 0x5A);
-    }
-    return resultado;
-}
-
-function getSenhaGestor() {
-    return desofuscarSenha(SENHA_GESTOR_OFUSCADA);
-}
+        const SENHA_GESTOR_OFUSCADA = '\x1e\x14\x16\x1b\x15\x1a\x13\x18\x16\x0e\x2f\x14\x1a\x13\x16';
         const LOGIN_GESTOR = 'arnaldo_cunha';
         
         let atividades = [];
@@ -344,34 +381,95 @@ function getSenhaGestor() {
         let usuarioAtual = null;
         let sincronizando = false;
 
-        // ============================================================
-        // FUNÇÃO PARA DECODIFICAR SENHAS
-        // ============================================================
-        function decodificarSenha(senhaCodificada) {
-            try {
-                return atob(senhaCodificada);
-            } catch {
-                return senhaCodificada;
+        function desofuscarSenha(senhaOfuscada) {
+            let resultado = '';
+            for (let i = 0; i < senhaOfuscada.length; i++) {
+                resultado += String.fromCharCode(senhaOfuscada.charCodeAt(i) ^ 0x5A);
             }
+            return resultado;
         }
 
-        // ============================================================
-        // FUNÇÃO PARA FORMATAR DATA - ACEITA MÚLTIPLOS FORMATOS
-        // ============================================================
+        function getSenhaGestor() {
+            return desofuscarSenha(SENHA_GESTOR_OFUSCADA);
+        }
+
+        function calcularDiferencaDias(dataInicio, dataFim) {
+            if (!dataInicio || !dataFim) return 0;
+            const inicio = new Date(dataInicio);
+            inicio.setHours(0, 0, 0, 0);
+            const fim = new Date(dataFim);
+            fim.setHours(0, 0, 0, 0);
+            const diffTime = fim.getTime() - inicio.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function calcularPrazoTotal() {
+            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
+            const dataLimite = document.getElementById('dataLimite').value;
+            const dataEntrega = document.getElementById('dataEntrega').value;
+            const status = document.getElementById('status').value;
+            const prazoTotalInput = document.getElementById('prazoTotal');
+            
+            if (dataEntrega && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                if (diffDays >= 0) {
+                    prazoTotalInput.value = diffDays;
+                    prazoTotalInput.style.color = '#48bb78';
+                } else {
+                    prazoTotalInput.value = 'Atrasado';
+                    prazoTotalInput.style.color = '#f56565';
+                }
+                return;
+            }
+            
+            if (status === 'Concluída' && !dataEntrega && dataLimite) {
+                const hoje = new Date().toISOString().split('T')[0];
+                const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                if (diffDays >= 0) {
+                    prazoTotalInput.value = diffDays;
+                    prazoTotalInput.style.color = '#48bb78';
+                } else {
+                    prazoTotalInput.value = 'Atrasado';
+                    prazoTotalInput.style.color = '#f56565';
+                }
+                return;
+            }
+            
+            if (dataSolicitacao) {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                const solicitacao = new Date(dataSolicitacao);
+                solicitacao.setHours(0, 0, 0, 0);
+                const dias = Math.max(0, Math.floor((hoje - solicitacao) / (1000 * 60 * 60 * 24)));
+                prazoTotalInput.value = dias;
+                prazoTotalInput.style.color = '#667eea';
+                return;
+            }
+            
+            if (dataEntrega && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                return;
+            }
+            
+            if (dataSolicitacao && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                return;
+            }
+            
+            prazoTotalInput.value = '';
+            prazoTotalInput.style.color = '#667eea';
+        }
+
         function formatarDataISO(dataStr) {
             if (!dataStr || dataStr.trim() === '') return null;
-            
-            // Remove aspas e espaços
             dataStr = dataStr.trim().replace(/^"|"$/g, '');
-            
-            // Se já estiver no formato YYYY-MM-DD, retorna direto
             if (/^\d{4}-\d{2}-\d{2}$/.test(dataStr)) {
                 return dataStr;
             }
-            
             let data = new Date(dataStr);
-            
-            // Se falhou, tenta formato dd/mm/yyyy
             if (isNaN(data)) {
                 const partes = dataStr.split('/');
                 if (partes.length === 3) {
@@ -383,8 +481,6 @@ function getSenhaGestor() {
                     }
                 }
             }
-            
-            // Se falhou, tenta formato dd-mm-yyyy
             if (isNaN(data)) {
                 const partes = dataStr.split('-');
                 if (partes.length === 3) {
@@ -396,21 +492,15 @@ function getSenhaGestor() {
                     }
                 }
             }
-            
-            // Se NÃO falhou, retorna a data no formato YYYY-MM-DD
             if (!isNaN(data)) {
                 const ano = data.getFullYear();
                 const mes = String(data.getMonth() + 1).padStart(2, '0');
                 const dia = String(data.getDate()).padStart(2, '0');
                 return `${ano}-${mes}-${dia}`;
             }
-            
             return null;
         }
 
-        // ============================================================
-        // FUNÇÃO PARA PADRONIZAR PRODUTOS (BASEADO NA ÁREA DEMANDANTE)
-        // ============================================================
         function padronizarProduto(produto, areaDemandante) {
             if (!produto || produto.trim() === '') return 'Produto 1';
             const v = produto.trim().toUpperCase();
@@ -462,84 +552,33 @@ function getSenhaGestor() {
             return produto;
         }
 
-        // ============================================================
-        // FUNÇÕES DE PRAZO
-        // ============================================================
-        function calcularPrazos() {
-            const dataSolicitacao = document.getElementById('dataSolicitacao').value;
-            const dataLimite = document.getElementById('dataLimite').value;
-            const prazoRemanescenteInput = document.getElementById('prazoRemanescente');
-            const prazoTotalInput = document.getElementById('prazoTotal');
-            
-            if (dataSolicitacao && dataLimite) {
-                const inicio = new Date(dataSolicitacao);
-                const fim = new Date(dataLimite);
-                const diffTime = fim - inicio;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays >= 0) {
-                    prazoTotalInput.value = diffDays;
-                    prazoTotalInput.style.color = '#667eea';
-                    prazoRemanescenteInput.max = diffDays;
-                    if (!prazoRemanescenteInput.value) {
-                        prazoRemanescenteInput.value = diffDays;
-                    }
-                    validarPrazoRemanescente();
-                } else {
-                    prazoTotalInput.value = 'Expirado';
-                    prazoTotalInput.style.color = '#f56565';
-                    prazoRemanescenteInput.value = '';
-                    prazoRemanescenteInput.max = 0;
+        function parseDataLocal(dataISO) {
+            if (!dataISO) return null;
+            const match = String(dataISO).match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                const [, ano, mes, dia] = match;
+                const restoHorario = String(dataISO).slice(10);
+                const horaMatch = restoHorario.match(/^T(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (horaMatch) {
+                    const [, h, m, s] = horaMatch;
+                    return new Date(Number(ano), Number(mes) - 1, Number(dia), Number(h), Number(m), Number(s || 0));
                 }
-            } else if (dataSolicitacao && !dataLimite) {
-                prazoTotalInput.value = 'Sem prazo definido';
-                prazoTotalInput.style.color = '#888';
-                prazoRemanescenteInput.value = '';
-                prazoRemanescenteInput.max = 0;
-            } else {
-                prazoTotalInput.value = '';
-                prazoRemanescenteInput.value = '';
-                prazoRemanescenteInput.max = 0;
+                return new Date(Number(ano), Number(mes) - 1, Number(dia));
             }
+            return new Date(dataISO);
         }
 
-        function validarPrazoRemanescente() {
-            const prazoRemanescente = parseInt(document.getElementById('prazoRemanescente').value);
-            const prazoTotal = parseInt(document.getElementById('prazoTotal').value);
-            const input = document.getElementById('prazoRemanescente');
-            if (prazoTotal && !isNaN(prazoTotal) && prazoTotal > 0) {
-                if (prazoRemanescente > prazoTotal) {
-                    input.style.color = '#f56565';
-                    input.style.borderColor = '#f56565';
-                    alert('⚠️ O Prazo Remanescente não pode ser maior que o Prazo Total!');
-                    input.value = prazoTotal;
-                    input.style.color = '#667eea';
-                    input.style.borderColor = '#e1e5eb';
-                } else if (prazoRemanescente < 0) {
-                    input.style.color = '#f56565';
-                    input.style.borderColor = '#f56565';
-                    alert('⚠️ O Prazo Remanescente não pode ser negativo!');
-                    input.value = 0;
-                    input.style.color = '#667eea';
-                    input.style.borderColor = '#e1e5eb';
-                } else {
-                    input.style.color = '#667eea';
-                    input.style.borderColor = '#e1e5eb';
-                }
-            }
-        }
-
-        // ============================================================
-        // FUNÇÕES AUXILIARES
-        // ============================================================
         function formatarDataHora(dataISO) {
             if (!dataISO) return '-';
-            const data = new Date(dataISO);
+            const data = parseDataLocal(dataISO);
+            if (!data || isNaN(data)) return '-';
             return data.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
         function formatarData(dataISO) {
             if (!dataISO) return '-';
-            const data = new Date(dataISO);
+            const data = parseDataLocal(dataISO);
+            if (!data || isNaN(data)) return '-';
             return data.toLocaleDateString('pt-BR');
         }
 
@@ -597,9 +636,6 @@ function getSenhaGestor() {
             return true;
         }
 
-        // ============================================================
-        // FIREBASE
-        // ============================================================
         function atualizarStatusSincronizacao(status, mensagem) {
             const syncStatus = document.getElementById('syncStatus');
             if (!syncStatus) return;
@@ -701,7 +737,7 @@ function getSenhaGestor() {
             usuarios[LOGIN_GESTOR] = {
                 nome: 'Arnaldo Cunha',
                 tipo: 'chefe',
-                senha: decodificarSenha(SENHA_GESTOR_PADRAO),
+                senha: getSenhaGestor(),
                 primeiroAcesso: true,
                 historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
             };
@@ -720,9 +756,6 @@ function getSenhaGestor() {
             return usuarios[username] && usuarios[username].primeiroAcesso === true;
         }
 
-        // ============================================================
-        // CHECKBOXES
-        // ============================================================
         function toggleTodos(checkbox) {
             const checkboxes = document.querySelectorAll('.selecionar-item');
             checkboxes.forEach(cb => { cb.checked = checkbox.checked; });
@@ -748,13 +781,10 @@ function getSenhaGestor() {
             if (btn) { btn.style.display = count > 0 ? 'flex' : 'none'; }
         }
 
-        // ============================================================
-        // DESCRIÇÃO COMPLETA
-        // ============================================================
         window.verDescricaoCompleta = function(id) {
             const atv = atividades.find(a => String(a.id) === String(id));
             const descricao = atv ? atv.descricao : '';
-            const titulo = atv ? (atv.projeto || atv.tipoAtividade || 'Descrição da Atividade') : '';
+            const titulo = atv ? (atv.tipoAtividade || 'Descrição da Atividade') : '';
 
             const escapeHtml = (str) => String(str || '')
                 .replace(/&/g, '&amp;')
@@ -781,9 +811,6 @@ function getSenhaGestor() {
             document.body.appendChild(modalDiv);
         };
 
-        // ============================================================
-        // EXCLUIR MÚLTIPLAS
-        // ============================================================
         window.excluirMultiplas = async function () {
             if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
                 alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem excluir atividades!');
@@ -810,6 +837,9 @@ function getSenhaGestor() {
                 alert(`🗑️ ${ids.length} atividade(s) excluída(s) com sucesso!`);
                 gerarRelatorioAtual();
                 if (usuarioAtual.tipo === 'chefe') { criarFiltros(); }
+                document.getElementById('contSelecionados').textContent = '0';
+                document.getElementById('btnExcluirMultiplas').style.display = 'none';
+                document.getElementById('selecionarTodos').checked = false;
             } catch (erro) {
                 console.error(erro);
                 alert("Erro ao salvar os dados.");
@@ -841,9 +871,6 @@ function getSenhaGestor() {
 
         window.logout = function() { location.reload(); };
 
-        // ============================================================
-        // LOGIN
-        // ============================================================
         function mostrarLogin() {
             hideLoadingAndShow();
             const loginDiv = document.createElement('div');
@@ -853,8 +880,8 @@ function getSenhaGestor() {
                 <div class="login-card">
                     <h2>🔐 Login</h2>
                     <p class="login-subtitle">Acesse o sistema</p>
-                    <input type="text" id="userLogin" class="login-input" placeholder="Usuário" autocomplete="off">
-                    <input type="password" id="userSenha" class="login-input" placeholder="Senha" autocomplete="off">
+                    <input type="text" id="userLogin" class="login-input" placeholder="Usuário">
+                    <input type="password" id="userSenha" class="login-input" placeholder="Senha">
                     <div class="checkbox-group">
                         <input type="checkbox" id="showLoginSenha" onchange="togglePassword('userSenha', 'showLoginSenha')">
                         <label>Mostrar senha</label>
@@ -915,7 +942,7 @@ function getSenhaGestor() {
                         ${!isPrimeiroAcesso ? `
                             <div class="form-group">
                                 <label>Senha atual:</label>
-                                <input type="password" id="senhaAtual" placeholder="Senha atual" autocomplete="off">
+                                <input type="password" id="senhaAtual" placeholder="Senha atual">
                                 <div class="checkbox-group">
                                     <input type="checkbox" id="showSenhaAtual" onchange="togglePassword('senhaAtual', 'showSenhaAtual')">
                                     <label>Mostrar</label>
@@ -924,7 +951,7 @@ function getSenhaGestor() {
                         ` : ''}
                         <div class="form-group">
                             <label>Nova senha (mínimo 6):</label>
-                            <input type="password" id="novaSenha" placeholder="Nova senha" autocomplete="off">
+                            <input type="password" id="novaSenha" placeholder="Nova senha">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="showNovaSenha" onchange="togglePassword('novaSenha', 'showNovaSenha')">
                                 <label>Mostrar</label>
@@ -932,7 +959,7 @@ function getSenhaGestor() {
                         </div>
                         <div class="form-group">
                             <label>Confirmar:</label>
-                            <input type="password" id="confirmaSenha" placeholder="Confirmar" autocomplete="off">
+                            <input type="password" id="confirmaSenha" placeholder="Confirmar">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="showConfirmaSenha" onchange="togglePassword('confirmaSenha', 'showConfirmaSenha')">
                                 <label>Mostrar</label>
@@ -999,9 +1026,6 @@ function getSenhaGestor() {
             if (usuarioAtual) mostrarModalTrocaSenha(usuarioAtual.login, false);
         };
 
-        // ============================================================
-        // GESTÃO DE ENGENHEIROS
-        // ============================================================
         window.abrirPainelAdmin = function() {
             if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
                 alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem acessar!');
@@ -1020,11 +1044,11 @@ function getSenhaGestor() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Nome:</label>
-                                <input type="text" id="novoNome" placeholder="Nome completo" autocomplete="off">
+                                <input type="text" id="novoNome" placeholder="Nome completo">
                             </div>
                             <div class="form-group">
                                 <label>CPF:</label>
-                                <input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11" autocomplete="off">
+                                <input type="text" id="novoCpf" placeholder="11 dígitos" maxlength="11">
                             </div>
                         </div>
                         <button class="btn btn-primary" onclick="adicionarEngenheiro()"><i class="fas fa-plus"></i> Adicionar</button>
@@ -1244,8 +1268,8 @@ function getSenhaGestor() {
                     </div>
                     <div class="modal-body">
                         <div class="form-group"><label>Login:</label><input type="text" value="${login}" disabled style="background:#f0f0f0;"></div>
-                        <div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}" autocomplete="off"></div>
-                        <div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11" autocomplete="off"></div>
+                        <div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}"></div>
+                        <div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div>
                         <div id="editEngError" class="error" style="color:red; margin-top:10px;"></div>
                     </div>
                     <div class="modal-footer">
@@ -1330,9 +1354,6 @@ function getSenhaGestor() {
             gerarRelatorioAtual();
         };
 
-        // ============================================================
-        // FILTROS
-        // ============================================================
         function criarFiltros() {
             const container = document.getElementById('filtersContainer');
             if (!container) return;
@@ -1357,6 +1378,11 @@ function getSenhaGestor() {
             ];
             let produtosFiltro = '<option value="todos">Todos</option>';
             produtosOptions.forEach(p => { produtosFiltro += `<option value="${p}">${p}</option>`; });
+            
+            const statusOptions = ['Concluída','Em andamento','Em análise'];
+            let statusFiltro = '<option value="todos">Todos</option>';
+            statusOptions.forEach(s => { statusFiltro += `<option value="${s}">${s}</option>`; });
+            
             let filtrosHtml = `
                 <div class="filters-bar">
                     <div class="filters-grid">
@@ -1370,7 +1396,7 @@ function getSenhaGestor() {
                         <div class="filter-group"><label>Produto</label><select id="filtroProduto">${produtosFiltro}</select></div>
                         <div class="filter-group"><label>Mês</label><select id="filtroMes"><option value="todos">Todos</option><option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option><option value="Março">Março</option><option value="Abril">Abril</option><option value="Maio">Maio</option><option value="Junho">Junho</option><option value="Julho">Julho</option><option value="Agosto">Agosto</option><option value="Setembro">Setembro</option><option value="Outubro">Outubro</option><option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option></select></div>
                         <div class="filter-group"><label>Ano</label><select id="filtroAno"><option value="todos">Todos</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select></div>
-                        <div class="filter-group"><label>Status</label><select id="filtroStatus"><option value="todos">Todos</option><option value="Concluída">Concluída</option><option value="Em andamento">Em andamento</option><option value="Pendente">Pendente</option><option value="Atrasada">Atrasada</option></select></div>
+                        <div class="filter-group"><label>Status</label><select id="filtroStatus">${statusFiltro}</select></div>
                         <div class="filter-group"><label>Área</label><select id="filtroAreaDemandante">${areasOptions}</select></div>
                         <div class="filter-group"><label>Ordenar</label><select id="filtroOrdenacao"><option value="recente">Mais Recente</option><option value="antigo">Mais Antigo</option><option value="produto_az">Produto A-Z</option><option value="engenheiro_az">Engenheiro A-Z</option></select></div>
                     </div>
@@ -1405,9 +1431,6 @@ function getSenhaGestor() {
             }
         }
 
-        // ============================================================
-        // IMPORTAÇÃO CSV
-        // ============================================================
         window.importarCSV = function() {
             if (!usuarioAtual || usuarioAtual.login !== 'dev1') {
                 alert('❌ Apenas o usuário desenvolvedor (dev1) pode importar planilhas!');
@@ -1464,35 +1487,39 @@ function getSenhaGestor() {
                             alert('Arquivo vazio ou formato inválido!');
                             return;
                         }
-                      // Atualizar o mapeamento de posições
-const POS = {
-    processo: 0,
-    produto: 1,
-    tipoAtividade: 2,
-    descricao: 3,
-    status: 4,
-    areaDemandante: 5,
-    dataSolicitacao: 6,
-    dataLimite: 7,
-    prazoRemanescente: 8,  
-    prazoTotal: 9,         
-    prioridade: 10,
-    criado: 11,
-    criadoPor: 12,
-    atribuido: 13
-};
+                        
+                        const POS = {
+                            processo: 0,
+                            produto: 1,
+                            tipoAtividade: 2,
+                            descricao: 3,
+                            status: 4,
+                            areaDemandante: 5,
+                            dataSolicitacao: 6,
+                            dataLimite: 7,
+                            dataEntrega: 8,
+                            prazoTotal: 9,
+                            prioridade: 10,
+                            criado: 11,
+                            criadoPor: 12,
+                            atribuido: 13
+                        };
+                        
                         const cabecalho = linhas[0].map(h => h.trim().replace(/^"|"$/g, ''));
                         console.log('📊 CABEÇALHO:', cabecalho);
                         const dadosLinhas = linhas.slice(1);
+                        
                         const mapearStatus = (valor) => {
                             if (!valor) return 'Pendente';
                             const v = valor.trim().toLowerCase();
                             if (v.includes('conclu') || v === 'concluída' || v.includes('itens concluídos')) return 'Concluída';
                             if (v.includes('andamento') || v === 'em andamento') return 'Em andamento';
-                            if (v.includes('pendente') || v.includes('itens pendentes')) return 'Pendente';
+                            if (v.includes('análise') || v.includes('em analise')) return 'Em análise';
+                            if (v.includes('pendente') || v.includes('itens pendentes')) return 'Em andamento';
                             if (v.includes('atrasada') || v.includes('atraso')) return 'Atrasada';
                             return 'Pendente';
                         };
+                        
                         const mapearPrioridade = (valor) => {
                             if (!valor) return 'Média';
                             const v = valor.trim().toLowerCase();
@@ -1502,7 +1529,9 @@ const POS = {
                             if (v.includes('urgente')) return 'Urgente';
                             return 'Média';
                         };
+                        
                         const getValor = (valores, pos) => { return pos < valores.length ? valores[pos] : ''; };
+                        
                         let importados = 0;
                         let erros = 0;
                         let errosDetalhes = [];
@@ -1510,118 +1539,118 @@ const POS = {
                         let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
                         let anoAtual = String(new Date().getFullYear());
 
-                      dadosLinhas.forEach((valores, index) => {
-    try {
-        const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
-        
-        const processo = getValor(valoresLimpos, POS.processo) || '';
-        const produtoRaw = getValor(valoresLimpos, POS.produto);
-        const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
-        const produto = padronizarProduto(produtoRaw, areaDemandante);
-        
-        const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
-        const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
-        const status = mapearStatus(getValor(valoresLimpos, POS.status));
-        const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
-        const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
-        const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
-        
-        // ============================================================
-        // PRAZO REMANESCENTE E PRAZO TOTAL - DA PLANILHA
-        // ============================================================
-        const prazoRemanescenteRaw = getValor(valoresLimpos, POS.prazoRemanescente);
-        const prazoTotalRaw = getValor(valoresLimpos, POS.prazoTotal);
-        
-        let prazoRemanescente = prazoRemanescenteRaw || '';
-        let prazoTotal = prazoTotalRaw || '';
-        
-        // Se não veio da planilha, tenta calcular
-        if (dataSolicitacao && dataLimite && (!prazoRemanescente || !prazoTotal)) {
-            const inicio = new Date(dataSolicitacao);
-            const fim = new Date(dataLimite);
-            const diffTime = fim - inicio;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0) {
-                if (!prazoRemanescente) prazoRemanescente = diffDays;
-                if (!prazoTotal) prazoTotal = diffDays;
-            }
-        }
-        
-        const criadoRaw = getValor(valoresLimpos, POS.criado);
-        let dataCriado = formatarDataISO(criadoRaw);
-        if (!dataCriado) {
-            dataCriado = new Date().toISOString().split('T')[0];
-        }
-        
-        let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
-        let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
-        
-        const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
-        let engenheirosNomes = [];
-        if (atribuidoRaw) {
-            let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
-            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
-        }
-        if (engenheirosNomes.length === 0 && criadoPor) {
-            engenheirosNomes = [criadoPor];
-        }
-        if (engenheirosNomes.length === 0) {
-            engenheirosNomes = ['Sistema'];
-        }
-        
-        const engenheiroCompleto = engenheirosNomes.join(', ');
-        const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
-        
-        engenheirosNomes.forEach(nome => {
-            const login = gerarUsername(nome);
-            if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
-                engenheirosParaAdicionar.push({ nome: nome, login: login });
-            }
-        });
-        
-        if (!produto || !descricao) {
-            erros++;
-            errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
-            return;
-        }
-        
-        const novaAtividade = {
-            id: Date.now() + importados + Math.random() * 1000,
-            engenheiro: engenheiroCompleto,
-            engenheirosLista: engenheirosNomes,
-            loginsEng: loginsEngenheiros,
-            loginEng: loginsEngenheiros[0] || 'sistema',
-            dataReg: dataCriado,
-            mes: mesAtual,
-            ano: anoAtual,
-            produto: produto,
-            projeto: tipoAtividade,
-            processo: processo,
-            tipoAtividade: tipoAtividade,
-            descricao: descricao,
-            status: status,
-            prioridade: prioridade,
-            dataSolicitacao: dataSolicitacao,
-            dataLimite: dataLimite,
-            prazoRemanescente: prazoRemanescente, // <-- DA PLANILHA
-            prazoTotal: prazoTotal,               // <-- DA PLANILHA
-            areaDemandante: areaDemandante,
-            observacoes: '',
-            criado: dataCriado,
-            criadoPor: criadoPor || null,
-            ultimaModificacao: dataCriado,
-            ultimoEditor: criadoPor || null
-        };
-        
-        atividades.push(novaAtividade);
-        importados++;
-        
-    } catch (err) {
-        erros++;
-        errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
-        console.error('Erro ao importar linha', index, err);
-    }
-});
+                        dadosLinhas.forEach((valores, index) => {
+                            try {
+                                const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
+                                
+                                const processo = getValor(valoresLimpos, POS.processo) || '';
+                                const produtoRaw = getValor(valoresLimpos, POS.produto);
+                                const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
+                                const produto = padronizarProduto(produtoRaw, areaDemandante);
+                                
+                                const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
+                                const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
+                                const status = mapearStatus(getValor(valoresLimpos, POS.status));
+                                const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
+                                const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
+                                const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
+                                
+                                const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
+                                let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
+                                
+                                let prazoTotal = '';
+                                
+                                if (dataEntrega && dataLimite) {
+                                    const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Atrasado') : '';
+                                } 
+                                else if (status === 'Concluída' && !dataEntrega && dataLimite) {
+                                    const hoje = new Date().toISOString().split('T')[0];
+                                    const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Atrasado') : '';
+                                } 
+                                else if (dataSolicitacao && dataLimite) {
+                                    const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+                                    prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 'Expirado') : '';
+                                } else {
+                                    prazoTotal = '';
+                                }
+                                
+                                const criadoRaw = getValor(valoresLimpos, POS.criado);
+                                let dataCriado = formatarDataISO(criadoRaw);
+                                if (!dataCriado) {
+                                    dataCriado = new Date().toISOString().split('T')[0];
+                                }
+                                
+                                let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
+                                let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
+                                
+                                const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
+                                let engenheirosNomes = [];
+                                if (atribuidoRaw) {
+                                    let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
+                                    engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
+                                }
+                                if (engenheirosNomes.length === 0 && criadoPor) {
+                                    engenheirosNomes = [criadoPor];
+                                }
+                                if (engenheirosNomes.length === 0) {
+                                    engenheirosNomes = ['Sistema'];
+                                }
+                                
+                                const engenheiroCompleto = engenheirosNomes.join(', ');
+                                const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
+                                
+                                engenheirosNomes.forEach(nome => {
+                                    const login = gerarUsername(nome);
+                                    if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
+                                        engenheirosParaAdicionar.push({ nome: nome, login: login });
+                                    }
+                                });
+                                
+                                if (!produto || !descricao) {
+                                    erros++;
+                                    errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
+                                    return;
+                                }
+                                
+                                const novaAtividade = {
+                                    id: Date.now() + importados + Math.random() * 1000,
+                                    engenheiro: engenheiroCompleto,
+                                    engenheirosLista: engenheirosNomes,
+                                    loginsEng: loginsEngenheiros,
+                                    loginEng: loginsEngenheiros[0] || 'sistema',
+                                    dataReg: dataCriado,
+                                    mes: mesAtual,
+                                    ano: anoAtual,
+                                    produto: produto,
+                                    projeto: tipoAtividade,
+                                    processo: processo,
+                                    tipoAtividade: tipoAtividade,
+                                    descricao: descricao,
+                                    status: status,
+                                    prioridade: prioridade,
+                                    dataSolicitacao: dataSolicitacao,
+                                    dataLimite: dataLimite,
+                                    dataEntrega: dataEntrega,
+                                    prazoTotal: prazoTotal,
+                                    areaDemandante: areaDemandante,
+                                    observacoes: '',
+                                    criado: dataCriado,
+                                    criadoPor: criadoPor || null,
+                                    ultimaModificacao: dataCriado,
+                                    ultimoEditor: criadoPor || null
+                                };
+                                
+                                atividades.push(novaAtividade);
+                                importados++;
+                                
+                            } catch (err) {
+                                erros++;
+                                errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
+                                console.error('Erro ao importar linha', index, err);
+                            }
+                        });
 
                         engenheirosParaAdicionar.forEach(({ nome, login }) => {
                             if (!usuarios[login] && nome) {
@@ -1669,9 +1698,6 @@ const POS = {
             document.body.removeChild(inputFile);
         };
 
-        // ============================================================
-        // PDF
-        // ============================================================
         window.gerarPDF = function() {
             const currentRows = document.querySelectorAll('#relatorioBody tr');
             const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
@@ -1683,19 +1709,40 @@ const POS = {
             if (existingContainer) { existingContainer.remove(); }
             const tabelaOriginal = document.getElementById('relatorioTable');
             const tabelaClone = tabelaOriginal.cloneNode(true);
-            const cabecalho = tabelaClone.querySelector('thead tr');
+            const cabecalho = tabelaClone.querySelector("thead tr");
+
+            let indiceDescricao = -1;
+
             if (cabecalho) {
-                const primeiroTh = cabecalho.querySelector('th');
-                if (primeiroTh && primeiroTh.querySelector('input')) { primeiroTh.remove(); }
-                if (cabecalho.lastChild && cabecalho.lastChild.classList && cabecalho.lastChild.classList.contains('no-print')) {
-                    cabecalho.removeChild(cabecalho.lastChild);
+                const primeiroTh = cabecalho.querySelector("th");
+                if (primeiroTh && primeiroTh.querySelector("input")) {
+                    primeiroTh.remove();
+                }
+                const ultima = cabecalho.lastElementChild;
+                if (ultima && ultima.classList.contains("no-print")) {
+                    ultima.remove();
+                }
+                cabecalho.querySelectorAll("th").forEach((th, i) => {
+                    if (th.textContent.trim().toUpperCase() === "DESCRIÇÃO") {
+                        indiceDescricao = i;
+                    }
+                });
+                if (indiceDescricao >= 0) {
+                    cabecalho.children[indiceDescricao].remove();
                 }
             }
-            tabelaClone.querySelectorAll('tbody tr').forEach(linha => {
-                const primeiroTd = linha.querySelector('td');
-                if (primeiroTd && primeiroTd.querySelector('input')) { primeiroTd.remove(); }
-                if (linha.lastChild && linha.lastChild.classList && linha.lastChild.classList.contains('no-print')) {
-                    linha.removeChild(linha.lastChild);
+
+            tabelaClone.querySelectorAll("tbody tr").forEach(linha => {
+                const primeiroTd = linha.querySelector("td");
+                if (primeiroTd && primeiroTd.querySelector("input")) {
+                    primeiroTd.remove();
+                }
+                const ultima = linha.lastElementChild;
+                if (ultima && ultima.classList.contains("no-print")) {
+                    ultima.remove();
+                }
+                if (indiceDescricao >= 0 && linha.children[indiceDescricao]) {
+                    linha.children[indiceDescricao].remove();
                 }
             });
             tabelaClone.style.fontSize = '9px';
@@ -1749,9 +1796,6 @@ const POS = {
             }, 200);
         };
 
-        // ============================================================
-        // INTERFACE
-        // ============================================================
         function carregarInterface() {
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             const importBtn = usuarioAtual.login === 'dev1' ? 
@@ -1772,7 +1816,6 @@ const POS = {
             } else {
                 document.getElementById('filtersContainer').innerHTML = '';
             }
-            document.getElementById('tipoAtividade').addEventListener('input', mostrarSugestoes);
             document.getElementById('activityForm').addEventListener('submit', function(e) { e.preventDefault(); salvarAtividade(); });
             gerarRelatorioAtual();
             const campoProcesso = document.getElementById('processo');
@@ -1780,23 +1823,8 @@ const POS = {
             campoProcesso.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
         }
 
-        function mostrarSugestoes() {
-            const input = document.getElementById('tipoAtividade');
-            const valor = input.value.toLowerCase();
-            const tipos = [...new Set(atividades.map(a => a.tipoAtividade).filter(t => t))];
-            const filtradas = tipos.filter(t => t.toLowerCase().includes(valor));
-            const div = document.getElementById('suggestionsList');
-            if (filtradas.length > 0 && valor) {
-                div.style.display = 'block';
-                div.innerHTML = filtradas.map(t => `<div onclick="selecionarSugestao('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
-            } else { div.style.display = 'none'; }
-        }
-
-        window.selecionarSugestao = function(valor) {
-            document.getElementById('tipoAtividade').value = valor;
-            document.getElementById('suggestionsList').style.display = 'none';
-        };
-
+        
+       
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.suggestions')) {
                 const div = document.getElementById('suggestionsList');
@@ -1815,7 +1843,7 @@ const POS = {
                     </div>
                     <div class="modal-body">
                         <div class="form-group"><label>Login atual:</label><input type="text" value="${usuarioAtual.login}" disabled style="background:#f0f0f0;"></div>
-                        <div class="form-group"><label>Novo login:</label><input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50" autocomplete="off"></div>
+                        <div class="form-group"><label>Novo login:</label><input type="text" id="novoLogin" placeholder="Digite o novo nome de usuário" maxlength="50"></div>
                         <div class="info-badge">
                             <p><i class="fas fa-info-circle"></i> <strong>Importante:</strong></p>
                             <p>• O login será usado para acessar o sistema</p>
@@ -1860,14 +1888,10 @@ const POS = {
             if (usuarioAtual.tipo === 'chefe') criarFiltros();
         };
 
-        // ============================================================
-        // SALVAR ATIVIDADE
-        // ============================================================
         function salvarAtividade() {
             const produtoRaw = document.getElementById('produto').value;
             const areaDemandante = document.getElementById('areaDemandante').value;
             const produto = padronizarProduto(produtoRaw, areaDemandante);
-            const projeto = document.getElementById('projeto').value;
             const tipo = document.getElementById('tipoAtividade').value;
             const desc = document.getElementById('descricao').value;
             const processo = document.getElementById('processo').value;
@@ -1875,17 +1899,19 @@ const POS = {
             const prioridade = document.getElementById('prioridade').value;
             const dataSolicitacao = document.getElementById('dataSolicitacao').value;
             const dataLimite = document.getElementById('dataLimite').value;
-            const prazoRemanescente = document.getElementById('prazoRemanescente').value;
+            const dataEntrega = document.getElementById('dataEntrega').value;
+            const mes = document.getElementById('mesRelatorio').value;
+            const ano = document.getElementById('anoRelatorio').value;
+            
+            calcularPrazoTotal();
             const prazoTotal = document.getElementById('prazoTotal').value;
+            
             if (processo && !validarProcesso(processo)) return;
-            if (!produto || !projeto || !tipo || !desc || !status) {
+            if (!produto || !tipo || !desc || !status || !mes || !ano || !dataSolicitacao || !dataLimite || !areaDemandante) {
                 alert('Preencha todos os campos obrigatórios!');
                 return;
             }
-            if (prazoRemanescente && prazoTotal && !isNaN(prazoTotal) && parseInt(prazoRemanescente) > parseInt(prazoTotal)) {
-                alert('⚠️ O Prazo Remanescente não pode ser maior que o Prazo Total!');
-                return;
-            }
+
             const dataAtual = new Date().toISOString();
             const atividade = {
                 id: Date.now(),
@@ -1894,26 +1920,26 @@ const POS = {
                 loginsEng: [usuarioAtual.login],
                 loginEng: usuarioAtual.login,
                 dataReg: dataAtual,
-                mes: document.getElementById('mesRelatorio').value,
-                ano: document.getElementById('anoRelatorio').value,
+                mes: mes,
+                ano: ano,
                 produto: produto,
-                projeto: projeto,
                 processo: processo || '',
                 tipoAtividade: tipo,
                 descricao: desc,
                 status: status,
                 prioridade: prioridade || 'Média',
-                dataSolicitacao: dataSolicitacao || '',
-                dataLimite: dataLimite || '',
-                prazoRemanescente: prazoRemanescente || '',
+                dataSolicitacao: dataSolicitacao,
+                dataLimite: dataLimite,
+                dataEntrega: dataEntrega || '',
                 prazoTotal: prazoTotal || '',
-                areaDemandante: areaDemandante || '',
+                areaDemandante: areaDemandante,
                 observacoes: document.getElementById('observacoes').value || '',
                 criado: dataAtual,
                 criadoPor: usuarioAtual.nome,
                 ultimaModificacao: dataAtual,
                 ultimoEditor: usuarioAtual.nome
             };
+            
             atividades.push(atividade);
             salvarDados();
             alert(`✅ Atividade salva!`);
@@ -1927,13 +1953,10 @@ const POS = {
             const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
             document.getElementById('mesRelatorio').value = meses[new Date().getMonth()];
             document.getElementById('anoRelatorio').value = '2026';
-            document.getElementById('prazoRemanescente').value = '';
             document.getElementById('prazoTotal').value = '';
+            document.getElementById('dataEntrega').value = '';
         }
 
-        // ============================================================
-        // SCROLL
-        // ============================================================
         let scrollPosicao = 0;
 
         function salvarPosicaoScroll() {
@@ -1948,14 +1971,10 @@ const POS = {
             }
         }
 
-        // ============================================================
-        // GERAR RELATÓRIO - CORRIGIDO
-        // ============================================================
         function gerarRelatorioAtual() {
             salvarPosicaoScroll();
             let filtradas = [...atividades];
             
-            // Filtro para engenheiro comum (vê atividades onde está na lista)
             if (usuarioAtual && usuarioAtual.tipo === 'engenheiro') {
                 filtradas = filtradas.filter(a => {
                     if (!a.engenheirosLista) return false;
@@ -1963,7 +1982,6 @@ const POS = {
                 });
             }
             
-            // Filtros para chefe
             if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
                 const engenheiroFiltro = document.getElementById('filtroEngenheiro')?.value || 'todos';
                 if (engenheiroFiltro !== 'todos') {
@@ -1977,7 +1995,6 @@ const POS = {
                 }
             }
             
-            // Filtros comuns (chefe e engenheiro)
             if (usuarioAtual && (usuarioAtual.tipo === 'chefe' || usuarioAtual.tipo === 'engenheiro')) {
                 const produtoFiltro = document.getElementById('filtroProduto')?.value || 'todos';
                 if (produtoFiltro !== 'todos') {
@@ -1996,7 +2013,7 @@ const POS = {
 
                 if (mesFiltro !== 'todos' || anoFiltro !== 'todos') {
                     filtradas = filtradas.filter(a => {
-                        const dataStr = a.ultimaModificacao || a.criado || a.dataReg;
+                        const dataStr = a.criado || a.dataReg || a.ultimaModificacao;
                         if (!dataStr) return false;
                         const data = new Date(dataStr);
                         if (isNaN(data)) return false;
@@ -2020,34 +2037,29 @@ const POS = {
                 filtradas = ordenarAtividades(filtradas, ordem);
             }
             
-            // ============================================================
-            // ESTATÍSTICAS
-            // ============================================================
             const stats = {
                 total: filtradas.length,
                 concluidas: filtradas.filter(a => a.status === 'Concluída').length,
                 andamento: filtradas.filter(a => a.status === 'Em andamento').length,
-                pendentes: filtradas.filter(a => a.status === 'Pendente').length,
-                atrasadas: filtradas.filter(a => a.status === 'Atrasada').length,
+                emAnalise: filtradas.filter(a => a.status === 'Em análise').length,
                 produtos: new Set(filtradas.map(a => a.produto)).size
             };
+            
             let statsHtml = `
                 <div class="stat-item"><h4>🧮 Total</h4><div class="value">${stats.total}</div></div>
                 <div class="stat-item"><h4>✅ Concluídas</h4><div class="value">${stats.concluidas}</div></div>
                 <div class="stat-item"><h4>⚙️ Andamento</h4><div class="value">${stats.andamento}</div></div>
-                <div class="stat-item"><h4>⏳ Pendentes</h4><div class="value">${stats.pendentes}</div></div>
-                <div class="stat-item"><h4>⚠️ Atrasadas</h4><div class="value">${stats.atrasadas}</div></div>
+                <div class="stat-item"><h4>🔍 Em análise</h4><div class="value">${stats.emAnalise}</div></div>
             `;
+            
             if (usuarioAtual && usuarioAtual.tipo === 'chefe') {
                 const engenheirosCount = new Set(filtradas.flatMap(a => a.engenheirosLista || [])).size;
                 statsHtml += `<div class="stat-item"><h4>👥 Engenheiros</h4><div class="value">${engenheirosCount}</div></div>`;
             }
+            
             statsHtml += `<div class="stat-item"><h4>📦 Produtos</h4><div class="value">${stats.produtos}</div></div>`;
             document.getElementById('statsContainer').innerHTML = statsHtml;
             
-            // ============================================================
-            // TABELA
-            // ============================================================
             const tbody = document.getElementById('relatorioBody');
             tbody.innerHTML = '';
             if (filtradas.length === 0) {
@@ -2062,8 +2074,8 @@ const POS = {
                 let statusColor = '#333';
                 if (act.status === 'Concluída') statusColor = '#48bb78';
                 else if (act.status === 'Em andamento') statusColor = '#4299e1';
-                else if (act.status === 'Pendente') statusColor = '#ed8936';
-                else if (act.status === 'Atrasada') statusColor = '#f56565';
+                else if (act.status === 'Em análise') statusColor = '#ed8936';
+                else statusColor = '#888';
                 
                 let ultimaModif = '';
                 if (act.criadoPor && act.criadoPor !== '' && act.criadoPor !== 'Sistema' && act.criadoPor !== 'null') {
@@ -2077,28 +2089,50 @@ const POS = {
                 const nomeEngenheiro = (act.engenheiro && act.engenheiro !== '' && act.engenheiro !== 'Sistema' && act.engenheiro !== 'null') 
                     ? act.engenheiro : '-';
                 
-                let prazoRemanescente = '-';
                 let prazoTotal = '-';
                 let prazoColor = '#888';
-                if (act.dataSolicitacao && act.dataLimite) {
-                    const inicio = new Date(act.dataSolicitacao);
-                    const fim = new Date(act.dataLimite);
-                    const diffTime = fim - inicio;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    if (diffDays >= 0) {
-                        prazoRemanescente = act.prazoRemanescente || diffDays;
-                        prazoTotal = act.prazoTotal || diffDays;
-                        prazoColor = parseInt(prazoRemanescente) > 7 ? '#48bb78' : '#ed8936';
+
+                if (act.dataEntrega && act.dataLimite) {
+                    const diffDays = calcularDiferencaDias(act.dataEntrega, act.dataLimite);
+                    if (diffDays !== null) {
+                        if (diffDays >= 0) {
+                            prazoTotal = diffDays;
+                            prazoColor = '#48bb78';
+                        } else {
+                            prazoTotal = 'Atrasado';
+                            prazoColor = '#f56565';
+                        }
+                    }
+                } 
+                else if (act.status === 'Concluída' && !act.dataEntrega && act.dataLimite) {
+                    const hoje = new Date().toISOString().split('T')[0];
+                    const diffDays = calcularDiferencaDias(hoje, act.dataLimite);
+                    if (diffDays !== null) {
+                        if (diffDays >= 0) {
+                            prazoTotal = diffDays;
+                            prazoColor = '#48bb78';
+                        } else {
+                            prazoTotal = 'Atrasado';
+                            prazoColor = '#f56565';
+                        }
+                    }
+                } 
+                else if (act.dataLimite) {
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const limite = new Date(act.dataLimite);
+                    limite.setHours(0, 0, 0, 0);
+                    let dias = Math.floor((limite - hoje) / (1000 * 60 * 60 * 24));
+                    dias = Math.max(0, dias);
+                    prazoTotal = dias;
+                    if (dias > 7) {
+                        prazoColor = '#48bb78';
+                    } else if (dias > 0) {
+                        prazoColor = '#ed8936';
                     } else {
-                        prazoRemanescente = 'Expirado';
-                        prazoTotal = 'Expirado';
                         prazoColor = '#f56565';
                     }
-                } else if (act.prazoRemanescente) {
-                    prazoRemanescente = act.prazoRemanescente;
-                    prazoTotal = act.prazoTotal || '-';
                 }
-                
                 const descTruncada = act.descricao.length > 50 ? act.descricao.substring(0, 50) + '...' : act.descricao;
                 
                 row.innerHTML = `
@@ -2111,8 +2145,8 @@ const POS = {
                     <td>${act.areaDemandante || '-'}</td>
                     <td>${formatarData(act.dataSolicitacao)}</td>
                     <td>${formatarData(act.dataLimite)}</td>
-                    <td style="color:${prazoColor}; font-weight:bold;">${prazoRemanescente}</td>
-                    <td>${prazoTotal}</td>
+                    <td>${act.dataEntrega ? formatarData(act.dataEntrega) : '-'}</td>
+                    <td style="color:${prazoColor}; font-weight:bold;">${prazoTotal}</td>
                     <td style="font-size:10px; max-width:180px;">${ultimaModif}</td>
                     <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${act.observacoes || '-'}">${act.observacoes || '-'}</td>
                     <td>${nomeEngenheiro}</td>
@@ -2127,9 +2161,6 @@ const POS = {
             restaurarPosicaoScroll();
         }
 
-        // ============================================================
-        // EXCLUIR E EDITAR ATIVIDADE
-        // ============================================================
         window.excluirAtividade = function(id) {
             if (usuarioAtual.login !== 'dev1' && usuarioAtual.tipo !== 'chefe') {
                 alert('❌ Apenas o desenvolvedor (dev1) e o gestor podem excluir atividades!');
@@ -2143,6 +2174,9 @@ const POS = {
                 alert('🗑️ Atividade excluída com sucesso!');
                 gerarRelatorioAtual();
                 if (usuarioAtual.tipo === 'chefe') criarFiltros();
+                document.getElementById('contSelecionados').textContent = '0';
+                document.getElementById('btnExcluirMultiplas').style.display = 'none';
+                document.getElementById('selecionarTodos').checked = false;
             }
         };
 
@@ -2153,19 +2187,33 @@ const POS = {
                 alert('Você só pode editar suas próprias atividades!');
                 return;
             }
-            // Função de edição - manter a original
+            
             const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
             const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
+            
             const produtosOptions = [
                 'Produto 1','Produto 2','Produto 3',
                 'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
                 'Produto 4 - Boa Viagem','Produto 4 - Russas',
                 'Produto 5','Produto 6','Produto 7','Produto 8'
             ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
-            const statusOptions = ['Concluída','Em andamento','Pendente','Atrasada'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+            
+            const statusOptions = ['Concluída','Em andamento','Em análise'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+            const prioridadeOptions = ['Baixa','Média','Alta','Urgente'].map(p => `<option value="${p}" ${atividade.prioridade === p ? 'selected' : ''}>${p}</option>`).join('');
             
             const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
             const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
+            
+            let infoEdicao = '';
+            if (atividade.ultimaModificacao) {
+                const isDev = usuarioAtual && usuarioAtual.login === 'dev1';
+                if (!isDev) {
+                    infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
+                        <label><i class="fas fa-edit"></i> Última edição:</label>
+                        <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
+                    </div>`;
+                }
+            }
             
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
@@ -2177,29 +2225,84 @@ const POS = {
                     </div>
                     <div class="modal-body">
                         <div class="form-row">
-                            <div class="form-group"><label>Mês:</label><select id="editMes">${mesesOptions}</select></div>
-                            <div class="form-group"><label>Ano:</label><select id="editAno">${anosOptions}</select></div>
+                            <div class="form-group">
+                                <label class="required">Mês do Relatório:</label>
+                                <select id="editMes" required>${mesesOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Ano do Relatório:</label>
+                                <select id="editAno" required>${anosOptions}</select>
+                            </div>
                         </div>
-                        <div class="form-group"><label>Produto:</label><select id="editProduto">${produtosOptions}</select></div>
-                        <div class="form-group"><label>Processo/SEI:</label><input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21" autocomplete="off"></div>
-                        <div class="form-group"><label>Projeto:</label><input type="text" id="editProjeto" value="${atividade.projeto}" autocomplete="off"></div>
-                        <div class="form-group"><label>Título:</label><input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade}" autocomplete="off"></div>
-                        <div class="form-group"><label>Descrição:</label><textarea id="editDescricao" rows="3" autocomplete="off">${atividade.descricao}</textarea></div>
+                        
                         <div class="form-row">
-                            <div class="form-group"><label>Status:</label><select id="editStatus">${statusOptions}</select></div>
-                            <div class="form-group"><label>Prioridade:</label><select id="editPrioridade">
-                                <option value="Baixa" ${atividade.prioridade === 'Baixa' ? 'selected' : ''}>Baixa</option>
-                                <option value="Média" ${atividade.prioridade === 'Média' ? 'selected' : ''}>Média</option>
-                                <option value="Alta" ${atividade.prioridade === 'Alta' ? 'selected' : ''}>Alta</option>
-                                <option value="Urgente" ${atividade.prioridade === 'Urgente' ? 'selected' : ''}>Urgente</option>
-                            </select></div>
+                            <div class="form-group">
+                                <label class="required">Produto:</label>
+                                <select id="editProduto" required>${produtosOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>Processo/SEI:</label>
+                                <input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21">
+                            </div>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Título:</label>
+                            <input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade || ''}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Atividade/Descrição:</label>
+                            <textarea id="editDescricao" rows="3" required>${atividade.descricao || ''}</textarea>
+                        </div>
+                        
                         <div class="form-row">
-                            <div class="form-group"><label>Data Solicitação:</label><input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" autocomplete="off"></div>
-                            <div class="form-group"><label>Data Limite:</label><input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" autocomplete="off"></div>
+                            <div class="form-group">
+                                <label class="required">Status:</label>
+                                <select id="editStatus" required>${statusOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>Prioridade:</label>
+                                <select id="editPrioridade">${prioridadeOptions}</select>
+                            </div>
                         </div>
-                        <div class="form-group"><label>Área Demandante:</label><select id="editAreaDemandante"><option value="">Selecione...</option>${areasOptions}</select></div>
-                        <div class="form-group"><label>Observações:</label><textarea id="editObservacoes" rows="2" autocomplete="off">${atividade.observacoes || ''}</textarea></div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="required">Data Solicitação:</label>
+                                <input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" required onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Data Limite:</label>
+                                <input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" required onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data de Efetiva Entrega:</label>
+                                <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
+                            </div>
+                            <div class="form-group">
+                                <label>Prazo Total (dias):</label>
+                                <input type="text" id="editPrazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;" value="${atividade.prazoTotal || ''}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="required">Área Demandante:</label>
+                            <select id="editAreaDemandante" required>
+                                <option value="">Selecione uma área...</option>
+                                ${areasOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Observações:</label>
+                            <textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea>
+                        </div>
+                        
+                        ${infoEdicao}
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
@@ -2208,27 +2311,117 @@ const POS = {
                 </div>
             `;
             document.body.appendChild(modalDiv);
+            
+            const campoProcessoEdit = document.getElementById('editProcesso');
+            if (campoProcessoEdit) {
+                campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+                campoProcessoEdit.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+            }
+            
+            document.getElementById('editDataEntrega').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editDataSolicitacao').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editDataLimite').addEventListener('change', calcularPrazoTotalEdicao);
+            document.getElementById('editStatus').addEventListener('change', calcularPrazoTotalEdicao);
+            
+            setTimeout(calcularPrazoTotalEdicao, 100);
         };
+
+        function calcularPrazoTotalEdicao() {
+            const dataSolicitacao = document.getElementById('editDataSolicitacao')?.value;
+            const dataLimite = document.getElementById('editDataLimite')?.value;
+            const dataEntrega = document.getElementById('editDataEntrega')?.value;
+            const status = document.getElementById('editStatus')?.value;
+            const prazoTotalInput = document.getElementById('editPrazoTotal');
+            
+            if (!prazoTotalInput) return;
+            
+            if (dataEntrega && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                if (diffDays !== null) {
+                    if (diffDays >= 0) {
+                        prazoTotalInput.value = diffDays;
+                        prazoTotalInput.style.color = '#48bb78';
+                    } else {
+                        prazoTotalInput.value = 'Atrasado';
+                        prazoTotalInput.style.color = '#f56565';
+                    }
+                }
+                return;
+            }
+            
+            if (status === 'Concluída' && !dataEntrega && dataLimite) {
+                const hoje = new Date().toISOString().split('T')[0];
+                const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                if (diffDays !== null) {
+                    if (diffDays >= 0) {
+                        prazoTotalInput.value = diffDays;
+                        prazoTotalInput.style.color = '#48bb78';
+                    } else {
+                        prazoTotalInput.value = 'Atrasado';
+                        prazoTotalInput.style.color = '#f56565';
+                    }
+                }
+                return;
+            }
+            
+            if (dataSolicitacao && dataLimite) {
+                const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+                if (diffDays !== null) {
+                    if (diffDays >= 0) {
+                        prazoTotalInput.value = diffDays;
+                        prazoTotalInput.style.color = '#667eea';
+                    } else {
+                        prazoTotalInput.value = 'Expirado';
+                        prazoTotalInput.style.color = '#f56565';
+                    }
+                }
+                return;
+            }
+            
+            if (dataEntrega && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                return;
+            }
+            
+            if (dataSolicitacao && !dataLimite) {
+                prazoTotalInput.value = 'Sem prazo definido';
+                prazoTotalInput.style.color = '#888';
+                return;
+            }
+            
+            prazoTotalInput.value = '';
+            prazoTotalInput.style.color = '#667eea';
+        }
 
         window.salvarEdicao = function(id) {
             const index = atividades.findIndex(a => a.id === id);
             if (index !== -1) {
+                calcularPrazoTotalEdicao();
+                
                 const novosValores = {
                     mes: document.getElementById('editMes').value,
                     ano: document.getElementById('editAno').value,
                     produto: document.getElementById('editProduto').value,
-                    processo: document.getElementById('editProcesso').value,
-                    projeto: document.getElementById('editProjeto').value,
+                    processo: document.getElementById('editProcesso').value || '',
                     tipoAtividade: document.getElementById('editTipoAtividade').value,
                     descricao: document.getElementById('editDescricao').value,
                     status: document.getElementById('editStatus').value,
                     prioridade: document.getElementById('editPrioridade').value,
-                    dataSolicitacao: document.getElementById('editDataSolicitacao').value,
-                    dataLimite: document.getElementById('editDataLimite').value,
-                    areaDemandante: document.getElementById('editAreaDemandante').value,
-                    observacoes: document.getElementById('editObservacoes').value
+                    dataSolicitacao: document.getElementById('editDataSolicitacao').value || '',
+                    dataLimite: document.getElementById('editDataLimite').value || '',
+                    dataEntrega: document.getElementById('editDataEntrega').value || '',
+                    prazoTotal: document.getElementById('editPrazoTotal').value || '',
+                    areaDemandante: document.getElementById('editAreaDemandante').value || '',
+                    observacoes: document.getElementById('editObservacoes').value || ''
                 };
+                
                 if (novosValores.processo && !validarProcesso(novosValores.processo)) return;
+                if (!novosValores.produto || !novosValores.tipoAtividade || !novosValores.descricao || !novosValores.status || !novosValores.mes || !novosValores.ano || !novosValores.dataSolicitacao || !novosValores.dataLimite || !novosValores.areaDemandante) {
+                    alert('Preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
                 const dataAtual = new Date().toISOString();
                 atividades[index] = {
                     ...atividades[index],
@@ -2236,10 +2429,12 @@ const POS = {
                     ultimaModificacao: dataAtual,
                     ultimoEditor: usuarioAtual.nome
                 };
+                
                 salvarDados();
                 alert(`✅ Atividade atualizada!`);
                 document.querySelector('.modal').remove();
                 gerarRelatorioAtual();
+                if (usuarioAtual.tipo === 'chefe') criarFiltros();
             }
         };
 
@@ -2261,7 +2456,7 @@ const POS = {
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
                     tipo: 'chefe',
-                    senha: decodificarSenha(SENHA_GESTOR_PADRAO),
+                    senha: getSenhaGestor(),
                     primeiroAcesso: true,
                     historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
                 };
