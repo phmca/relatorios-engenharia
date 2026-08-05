@@ -2190,151 +2190,161 @@
             }
         };
 
-        window.editarAtividade = function(id) {
-            const atividade = atividades.find(a => a.id === id);
-            if (!atividade) return;
-            if (usuarioAtual.tipo !== 'chefe' && !(atividade.loginsEng && atividade.loginsEng.includes(usuarioAtual.login))) {
-                alert('Você só pode editar suas próprias atividades!');
-                return;
-            }
-            
-            const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
-            const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
-            
-            const produtosOptions = [
-                'Produto 1','Produto 2','Produto 3',
-                'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
-                'Produto 4 - Boa Viagem','Produto 4 - Russas',
-                'Produto 5','Produto 6','Produto 7','Produto 8'
-            ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
-            
-            const statusOptions = ['Concluída','Em andamento','Em análise'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
-            const prioridadeOptions = ['Baixa','Média','Alta','Urgente'].map(p => `<option value="${p}" ${atividade.prioridade === p ? 'selected' : ''}>${p}</option>`).join('');
-            
-            const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
-            const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
-            
-            let infoEdicao = '';
-            if (atividade.ultimaModificacao) {
-                const isDev = usuarioAtual && usuarioAtual.login === 'dev1';
-                if (!isDev) {
-                    infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
-                        <label><i class="fas fa-edit"></i> Última edição:</label>
-                        <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
-                    </div>`;
-                }
-            }
-            
-            const modalDiv = document.createElement('div');
-            modalDiv.className = 'modal';
-            modalDiv.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                        <h2>✏️ Editar Atividade</h2>
+       window.editarAtividade = function(id) {
+    const atividade = atividades.find(a => a.id === id);
+    if (!atividade) return;
+    if (usuarioAtual.tipo !== 'chefe' && !(atividade.loginsEng && atividade.loginsEng.includes(usuarioAtual.login))) {
+        alert('Você só pode editar suas próprias atividades!');
+        return;
+    }
+    
+    const mesesOptions = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map(m => `<option value="${m}" ${atividade.mes === m ? 'selected' : ''}>${m}</option>`).join('');
+    const anosOptions = [2026,2027,2028,2029,2030].map(a => `<option value="${a}" ${atividade.ano == a ? 'selected' : ''}>${a}</option>`).join('');
+    
+    const produtosOptions = [
+        'Produto 1','Produto 2','Produto 3',
+        'Produto 4 - Sobral','Produto 4 - Fortaleza','Produto 4 - Icó',
+        'Produto 4 - Boa Viagem','Produto 4 - Russas',
+        'Produto 5','Produto 6','Produto 7','Produto 8'
+    ].map(p => `<option value="${p}" ${atividade.produto === p ? 'selected' : ''}>${p}</option>`).join('');
+    
+    const statusOptions = ['Concluída','Em andamento','Em análise'].map(s => `<option value="${s}" ${atividade.status === s ? 'selected' : ''}>${s}</option>`).join('');
+    const prioridadeOptions = ['Baixa','Média','Alta','Urgente'].map(p => `<option value="${p}" ${atividade.prioridade === p ? 'selected' : ''}>${p}</option>`).join('');
+    
+    const areasLista = ['SRE – Superintendência','NAA – Núcleo de Apoio Administrativo','COENGE – Coordenação de Engenharia','NAMCO – Núcleo de Apoio às Medições e aos Contratos de Obras e Serviços de Engenharia','NUCOM – Núcleo de Comunicação Social','CAF – Coordenação de Administração e Finanças','SECONF – Serviço de Contabilidade e Finanças','SELOG – Serviço de Recursos de Logística e Informática','SEPLAN – Serviço de Planejamento e Projetos','SMT – Serviço de Manutenção Terrestre','SOT – Serviço de Operações Terrestres','SCT – Serviço de Construção Terrestre','SEMAB – Serviço de Desapropriação, Reassentamento e Meio Ambiente','UFFOR – Unidade Ferroviária','SELIC – Serviço de Cadastro e Licitação','UL – Fortaleza','UL – Russas','UL – Sobral','UL – Icó','UL – Boa Viagem','ASSESSOR CE (Demanda Interna)'];
+    const areasOptions = areasLista.map(a => `<option value="${a}" ${atividade.areaDemandante === a ? 'selected' : ''}>${a}</option>`).join('');
+    
+    let infoEdicao = '';
+    if (atividade.ultimaModificacao) {
+        const isDev = usuarioAtual && usuarioAtual.login === 'dev1';
+        if (!isDev) {
+            infoEdicao = `<div class="form-group" style="margin-top: 15px; background: #f8f9fc; padding: 10px; border-radius: 8px;">
+                <label><i class="fas fa-edit"></i> Última edição:</label>
+                <div>✏️ ${formatarDataHora(atividade.ultimaModificacao)} por ${atividade.ultimoEditor || atividade.engenheiro}</div>
+            </div>`;
+        }
+    }
+    
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal';
+    modalDiv.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
+                <h2>✏️ Editar Atividade</h2>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Mês do Relatório:</label>
+                        <select id="editMes" required>${mesesOptions}</select>
                     </div>
-                    <div class="modal-body">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="required">Mês do Relatório:</label>
-                                <select id="editMes" required>${mesesOptions}</select>
-                            </div>
-                            <div class="form-group">
-                                <label class="required">Ano do Relatório:</label>
-                                <select id="editAno" required>${anosOptions}</select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="required">Produto:</label>
-                                <select id="editProduto" required>${produtosOptions}</select>
-                            </div>
-                            <div class="form-group">
-                                <label>Processo/SEI:</label>
-                                <input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="required">Título:</label>
-                            <input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="required">Atividade/Descrição:</label>
-                            <textarea id="editDescricao" rows="3" required>${atividade.descricao || ''}</textarea>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="required">Status:</label>
-                                <select id="editStatus" required>${statusOptions}</select>
-                            </div>
-                            <div class="form-group">
-                                <label>Prioridade:</label>
-                                <select id="editPrioridade">${prioridadeOptions}</select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="required">Data Solicitação:</label>
-                                <input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" required onchange="calcularPrazoTotalEdicao()">
-                            </div>
-                            <div class="form-group">
-                                <label class="required">Data Limite:</label>
-                                <input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" required onchange="calcularPrazoTotalEdicao()">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Data de Efetiva Entrega:</label>
-                                <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
-                            </div>
-                            <div class="form-group">
-                                <label>Prazo Total (dias):</label>
-                                <input type="text" id="editPrazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;" value="${atividade.prazoTotal || ''}">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="required">Área Demandante:</label>
-                            <select id="editAreaDemandante" required>
-                                <option value="">Selecione uma área...</option>
-                                ${areasOptions}
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Observações:</label>
-                            <textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea>
-                        </div>
-                        
-                        ${infoEdicao}
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
-                        <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
+                    <div class="form-group">
+                        <label class="required">Ano do Relatório:</label>
+                        <select id="editAno" required>${anosOptions}</select>
                     </div>
                 </div>
-            `;
-            document.body.appendChild(modalDiv);
-            
-            const campoProcessoEdit = document.getElementById('editProcesso');
-            if (campoProcessoEdit) {
-                campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
-                campoProcessoEdit.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
-            }
-            
-            document.getElementById('editDataEntrega').addEventListener('change', calcularPrazoTotalEdicao);
-            document.getElementById('editDataSolicitacao').addEventListener('change', calcularPrazoTotalEdicao);
-            document.getElementById('editDataLimite').addEventListener('change', calcularPrazoTotalEdicao);
-            document.getElementById('editStatus').addEventListener('change', calcularPrazoTotalEdicao);
-            
-            setTimeout(calcularPrazoTotalEdicao, 100);
-        };
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Produto:</label>
+                        <select id="editProduto" required>${produtosOptions}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Processo/SEI:</label>
+                        <input type="text" id="editProcesso" value="${atividade.processo || ''}" maxlength="21">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">Título:</label>
+                    <input type="text" id="editTipoAtividade" value="${atividade.tipoAtividade || ''}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">Atividade/Descrição:</label>
+                    <textarea id="editDescricao" rows="3" required>${atividade.descricao || ''}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Status:</label>
+                        <select id="editStatus" required>${statusOptions}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridade:</label>
+                        <select id="editPrioridade">${prioridadeOptions}</select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Data Solicitação:</label>
+                        <input type="date" id="editDataSolicitacao" value="${atividade.dataSolicitacao || ''}" required onchange="calcularPrazoTotalEdicao()">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Data Limite:</label>
+                        <input type="date" id="editDataLimite" value="${atividade.dataLimite || ''}" required onchange="calcularPrazoTotalEdicao()">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data de Efetiva Entrega:</label>
+                        <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
+                    </div>
+                    <div class="form-group">
+                        <label>Prazo Total (dias):</label>
+                        <input type="text" id="editPrazoTotal" readonly style="background:#f0f0f0; font-weight:bold; color:#667eea;" value="${atividade.prazoTotal || ''}">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">Área Demandante:</label>
+                    <select id="editAreaDemandante" required>
+                        <option value="">Selecione uma área...</option>
+                        ${areasOptions}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observações:</label>
+                    <textarea id="editObservacoes" rows="2">${atividade.observacoes || ''}</textarea>
+                </div>
+                
+                ${infoEdicao}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancelar</button>
+                <button class="btn btn-primary" onclick="salvarEdicao(${id})">Salvar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+    
+    const campoProcessoEdit = document.getElementById('editProcesso');
+    if (campoProcessoEdit) {
+        campoProcessoEdit.addEventListener('input', function() { aplicarMascaraProcesso(this); });
+        campoProcessoEdit.addEventListener('blur', function() { if (this.value) validarProcesso(this.value); });
+    }
+    
+    document.getElementById('editDataEntrega').addEventListener('change', calcularPrazoTotalEdicao);
+    document.getElementById('editDataSolicitacao').addEventListener('change', calcularPrazoTotalEdicao);
+    document.getElementById('editDataLimite').addEventListener('change', calcularPrazoTotalEdicao);
+    document.getElementById('editStatus').addEventListener('change', calcularPrazoTotalEdicao);
+    
+    // 🔥 NOVO: Quando o status mudar para "Concluída" no modal, preencher a data de entrega com o dia atual
+    document.getElementById('editStatus').addEventListener('change', function() {
+        if (this.value === 'Concluída') {
+            const dataEntrega = document.getElementById('editDataEntrega');
+            const hoje = new Date().toISOString().split('T')[0];
+            dataEntrega.value = hoje;
+            calcularPrazoTotalEdicao();
+        }
+    });
+    
+    setTimeout(calcularPrazoTotalEdicao, 100);
+};
 
         function calcularPrazoTotalEdicao() {
             const dataSolicitacao = document.getElementById('editDataSolicitacao')?.value;
