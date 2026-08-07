@@ -1614,7 +1614,7 @@
                         let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
                         let anoAtual = String(new Date().getFullYear());
 
-                dadosLinhas.forEach((valores, index) => {
+                      dadosLinhas.forEach((valores, index) => {
     try {
         const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
         
@@ -1626,14 +1626,12 @@
         const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
         const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
         
-        // 🔥 PEGA O STATUS DA PLANILHA
+        // 🔥 PEGA O STATUS E SE TEM DATA DE ENTREGA, FORÇA CONCLUÍDA
         let status = mapearStatus(getValor(valoresLimpos, POS.status));
-        
         const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
         const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
         const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
         
-        // 🔥 PEGA A DATA DE ENTREGA
         const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
         let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
         
@@ -1642,9 +1640,10 @@
             status = 'Concluída';
         }
         
-        let prazoTotal = '';
+        // 🔥 CALCULA O PRAZO TOTAL (SEMPRE NÚMERO, NUNCA TEXTO)
+        let prazoTotal = 0;
         
-        if (dataEntrega && dataLimite) {
+        if (status === 'Concluída' && dataEntrega && dataLimite) {
             const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
             prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
         } 
@@ -1655,6 +1654,10 @@
         } 
         else if (dataSolicitacao && dataLimite) {
             const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+        } 
+        else if (dataEntrega && dataLimite) {
+            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
             prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
         } else {
             prazoTotal = 0;
@@ -1669,15 +1672,36 @@
         let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
         let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
         
+        // 🔥 LEITURA CORRETA DO ATRIBUIDO (POSIÇÃO 13)
         const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
         let engenheirosNomes = [];
+
+        // LISTA DE PALAVRAS QUE NÃO SÃO NOMES DE ENGENHEIROS
+        const palavrasIgnorar = ['alta', 'baixa', 'média', 'media', 'urgente', 'baixo', 'alto', 'urgência', 'urgencia'];
+
         if (atribuidoRaw) {
             let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
-            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i).map(n => n.trim()).filter(n => n);
+            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i)
+                .map(n => n.trim())
+                .filter(n => {
+                    const nLower = n.toLowerCase();
+                    if (palavrasIgnorar.includes(nLower)) return false;
+                    if (nLower === '' || nLower === '-' || nLower === 'n/a') return false;
+                    if (/^\d+$/.test(n)) return false;
+                    if (n.length < 2) return false;
+                    return true;
+                });
         }
+
+        // Se não tem engenheiros, usa o criadoPor
         if (engenheirosNomes.length === 0 && criadoPor) {
-            engenheirosNomes = [criadoPor];
+            const criadoPorLower = criadoPor.toLowerCase();
+            if (!palavrasIgnorar.includes(criadoPorLower) && criadoPor.length >= 2) {
+                engenheirosNomes = [criadoPor];
+            }
         }
+
+        // Se ainda não tem engenheiros, usa 'Sistema'
         if (engenheirosNomes.length === 0) {
             engenheirosNomes = ['Sistema'];
         }
@@ -1712,7 +1736,7 @@
             processo: processo,
             tipoAtividade: tipoAtividade,
             descricao: descricao,
-            status: status,  // ← Agora definido corretamente
+            status: status,
             prioridade: prioridade,
             dataSolicitacao: dataSolicitacao,
             dataLimite: dataLimite,
@@ -1781,6 +1805,7 @@
             inputFile.click();
             document.body.removeChild(inputFile);
         };
+
 window.gerarPDF = function() {
     const currentRows = document.querySelectorAll('#relatorioBody tr');
     const hasData = currentRows.length > 0 && !currentRows[0].innerText.includes('Nenhuma atividade');
@@ -1791,6 +1816,27 @@ window.gerarPDF = function() {
     
     const existingContainer = document.getElementById('print-report-container');
     if (existingContainer) { existingContainer.remove(); }
+    
+    // 🔥 VERIFICAR QUAL FILTRO DE STATUS ESTÁ SELECIONADO
+    const filtroStatus = document.getElementById('filtroStatus');
+    const statusSelecionado = filtroStatus ? filtroStatus.value : 'todos';
+    const isFiltroConcluida = statusSelecionado === 'Concluída';
+    const isFiltroAndamento = statusSelecionado === 'Em andamento' || statusSelecionado === 'Em análise';
+    
+    // Título dinâmico
+    let tituloRelatorio = 'Relatório de Atividades';
+    let nomeColunaPrazo = 'Prazo Total';
+    let destaqueColuna = '';
+    
+    if (isFiltroConcluida) {
+        tituloRelatorio = 'Relatório de Atividades Concluídas';
+        nomeColunaPrazo = 'Dias Antecipados';
+        destaqueColuna = '📌 Coluna "Prazo Total" substituída por "Dias Antecipados"';
+    } else if (isFiltroAndamento) {
+        tituloRelatorio = 'Relatório de Atividades em Andamento';
+        nomeColunaPrazo = 'Prazo Restante';
+        destaqueColuna = '📌 Coluna "Prazo Total" substituída por "Prazo Restante" (dias até a data limite)';
+    }
     
     // Cria uma tabela limpa para impressão
     let htmlContent = `
@@ -1825,6 +1871,12 @@ window.gerarPDF = function() {
                     color: #666;
                     margin: 2px 0;
                 }
+                .header .destaque {
+                    font-size: 9px;
+                    color: #2563eb;
+                    font-weight: bold;
+                    margin-top: 3px;
+                }
                 table {
                     width: 100%;
                     border-collapse: collapse;
@@ -1850,6 +1902,9 @@ window.gerarPDF = function() {
                 .status-concluida { color: #48bb78; font-weight: bold; }
                 .status-andamento { color: #4299e1; font-weight: bold; }
                 .status-analise { color: #ed8936; font-weight: bold; }
+                .prazo-verde { color: #48bb78; font-weight: bold; }
+                .prazo-laranja { color: #ed8936; font-weight: bold; }
+                .prazo-vermelho { color: #dc2626; font-weight: bold; }
                 .footer {
                     text-align: center;
                     margin-top: 10px;
@@ -1877,11 +1932,14 @@ window.gerarPDF = function() {
     htmlContent += `
         <div class="header">
             <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo">
-            <h1>Relatório de Atividades</h1>
+            <h1>${tituloRelatorio}</h1>
             <p>Sistema de Gestão de Atividades</p>
+            ${destaqueColuna ? `<p class="destaque">${destaqueColuna}</p>` : ''}
             <p style="font-size:9px; color:#888;">
                 Gerado em: ${new Date().toLocaleString('pt-BR')} | 
                 Usuário: ${usuarioAtual.nome} (${usuarioAtual.login})
+                ${isFiltroConcluida ? ' | 📊 Filtro: Concluídas' : ''}
+                ${isFiltroAndamento ? ' | 📊 Filtro: Em andamento / Em análise' : ''}
             </p>
         </div>
     `;
@@ -1896,14 +1954,24 @@ window.gerarPDF = function() {
         ths.forEach((th, index) => {
             // Pula checkbox e ações
             if (index === 0 || th.classList.contains('no-print')) return;
-            if (th.textContent.trim().toUpperCase() === 'DESCRIÇÃO') return;
-            htmlContent += `<th>${th.textContent.trim()}</th>`;
+            
+            let textoColuna = th.textContent.trim();
+            
+            // 🔥 SUBSTITUI O NOME DA COLUNA "Prazo Total" CONFORME O FILTRO
+            if (textoColuna === 'Prazo Total') {
+                textoColuna = nomeColunaPrazo;
+            }
+            
+            if (textoColuna.toUpperCase() === 'DESCRIÇÃO') return;
+            htmlContent += `<th>${textoColuna}</th>`;
         });
     }
     htmlContent += `</tr></thead><tbody>`;
 
     // Dados
+    const hoje = new Date().toISOString().split('T')[0];
     const linhas = document.querySelectorAll('#relatorioBody tr');
+    
     linhas.forEach(linha => {
         if (linha.textContent.includes('Nenhuma atividade')) return;
         
@@ -1916,6 +1984,64 @@ window.gerarPDF = function() {
             if (td.classList.contains('no-print')) return;
             
             let conteudo = td.textContent.trim();
+            
+            // 🔥 AJUSTA O PRAZO TOTAL CONFORME O FILTRO
+            if (index === 10) { // Coluna Prazo Total
+                // Busca a atividade correspondente para calcular o prazo correto
+                const linhaAtual = linha;
+                // Pega a data limite da linha (índice 8 é Data Limite)
+                let dataLimite = '';
+                const tdsLinha = linha.querySelectorAll('td');
+                if (tdsLinha.length > 8) {
+                    dataLimite = tdsLinha[8].textContent.trim();
+                }
+                
+                // Pega o status da linha (índice 5 é Status)
+                let statusLinha = '';
+                if (tdsLinha.length > 5) {
+                    statusLinha = tdsLinha[5].textContent.trim();
+                }
+                
+                // 🔥 Se o filtro for "Concluída", mostra o valor já salvo
+                if (isFiltroConcluida) {
+                    // Mantém o valor que já está na tabela
+                }
+                // 🔥 Se o filtro for "Em andamento" ou "Em análise", calcula dias restantes
+                else if (isFiltroAndamento && (statusLinha === 'Em andamento' || statusLinha === 'Em análise')) {
+                    if (dataLimite && dataLimite !== '-') {
+                        const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                        if (diffDays !== null && diffDays >= 0) {
+                            conteudo = diffDays;
+                            const prazoClass = diffDays > 7 ? 'prazo-verde' : (diffDays > 0 ? 'prazo-laranja' : 'prazo-vermelho');
+                            htmlContent += `<td class="${prazoClass}">${conteudo}</td>`;
+                            return;
+                        } else if (diffDays !== null && diffDays < 0) {
+                            conteudo = 0;
+                            htmlContent += `<td class="prazo-vermelho">0</td>`;
+                            return;
+                        }
+                    }
+                    // Se não tem data limite, mostra 0
+                    conteudo = 0;
+                    htmlContent += `<td class="prazo-vermelho">0</td>`;
+                    return;
+                }
+                
+                // Ajusta cores do prazo para os casos normais
+                if (conteudo !== '-' && !isNaN(Number(conteudo))) {
+                    const num = Number(conteudo);
+                    if (num > 7) {
+                        htmlContent += `<td class="prazo-verde">${conteudo}</td>`;
+                        return;
+                    } else if (num > 0) {
+                        htmlContent += `<td class="prazo-laranja">${conteudo}</td>`;
+                        return;
+                    } else {
+                        htmlContent += `<td class="prazo-vermelho">${conteudo}</td>`;
+                        return;
+                    }
+                }
+            }
             
             // Ajusta cores de status
             if (index === 5) { // Status
@@ -1961,6 +2087,7 @@ window.gerarPDF = function() {
         }, 500);
     };
 };
+
         function carregarInterface() {
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             const importBtn = usuarioAtual.login === 'dev1' ? 
