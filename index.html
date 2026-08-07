@@ -1857,22 +1857,22 @@ window.gerarPDF = function() {
                     border-bottom: 3px solid #667eea;
                 }
                 .header img {
-                    height: 50px;
+                    height:180px;
                     width: auto;
                     margin-bottom: 5px;
                 }
                 .header h1 {
-                    font-size: 18px;
+                    font-size: 22px;
                     color: #333;
                     margin: 0;
                 }
                 .header p {
-                    font-size: 10px;
+                    font-size: 17px;
                     color: #666;
                     margin: 2px 0;
                 }
                 .header .destaque {
-                    font-size: 9px;
+                    font-size: 15px;
                     color: #2563eb;
                     font-weight: bold;
                     margin-top: 3px;
@@ -1880,7 +1880,7 @@ window.gerarPDF = function() {
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 7.5px;
+                    font-size: 10.5px;
                     margin-top: 5px;
                 }
                 th, td {
@@ -1910,7 +1910,7 @@ window.gerarPDF = function() {
                     margin-top: 10px;
                     padding-top: 8px;
                     border-top: 1px solid #ddd;
-                    font-size: 8px;
+                    font-size: 11px;
                     color: #999;
                 }
                 @page {
@@ -1988,16 +1988,13 @@ window.gerarPDF = function() {
             // 🔥 AJUSTA O PRAZO TOTAL CONFORME O FILTRO
             if (index === 10) { // Coluna Prazo Total
                 // Busca a atividade correspondente para calcular o prazo correto
-                const linhaAtual = linha;
-                // Pega a data limite da linha (índice 8 é Data Limite)
-                let dataLimite = '';
                 const tdsLinha = linha.querySelectorAll('td');
+                let dataLimite = '';
+                let statusLinha = '';
+                
                 if (tdsLinha.length > 8) {
                     dataLimite = tdsLinha[8].textContent.trim();
                 }
-                
-                // Pega o status da linha (índice 5 é Status)
-                let statusLinha = '';
                 if (tdsLinha.length > 5) {
                     statusLinha = tdsLinha[5].textContent.trim();
                 }
@@ -2021,7 +2018,6 @@ window.gerarPDF = function() {
                             return;
                         }
                     }
-                    // Se não tem data limite, mostra 0
                     conteudo = 0;
                     htmlContent += `<td class="prazo-vermelho">0</td>`;
                     return;
@@ -2087,7 +2083,6 @@ window.gerarPDF = function() {
         }, 500);
     };
 };
-
         function carregarInterface() {
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             const importBtn = usuarioAtual.login === 'dev1' ? 
