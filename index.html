@@ -200,6 +200,37 @@
 .dashboard-card .btn i {
     font-size: 14px;
 }
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 20px;
+    transition: background 0.2s;
+}
+
+th.sortable:hover {
+    background: #e8ecf1;
+}
+
+th.sortable::after {
+    content: ' ↕';
+    font-size: 10px;
+    color: #999;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+th.sortable.asc::after {
+    content: ' ▲';
+    color: #667eea;
+}
+
+th.sortable.desc::after {
+    content: ' ▼';
+    color: #667eea;
+}
 
         @media (max-width: 768px) {
             .main-layout { grid-template-columns: 1fr; }
@@ -437,6 +468,125 @@
         let usuarios = {};
         let usuarioAtual = null;
         let sincronizando = false;
+let ordemAtual = {
+    coluna: null,      // 'dataSolicitacao', 'dataLimite', 'dataEntrega', 'prazoTotal'
+    direcao: 'asc'     // 'asc' ou 'desc'
+};
+
+function ordenarAtividadesTabela(coluna, direcao) {
+    const tbody = document.getElementById('relatorioBody');
+    const linhas = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Filtra linhas vazias (mensagem "Nenhuma atividade")
+    const linhasComDados = linhas.filter(linha => !linha.textContent.includes('Nenhuma atividade'));
+    if (linhasComDados.length === 0) return;
+    
+    // Mapeia cada linha para o valor a ser ordenado
+    const linhasComValor = linhasComDados.map(linha => {
+        const tds = linha.querySelectorAll('td');
+        let valor = '';
+        
+        switch(coluna) {
+            case 'dataSolicitacao':
+                valor = tds[7] ? tds[7].textContent.trim() : ''; 
+                break;
+            case 'dataLimite':
+                valor = tds[8] ? tds[8].textContent.trim() : '';
+                break;
+            case 'dataEntrega':
+                valor = tds[9] ? tds[9].textContent.trim() : ''; 
+                break;
+            case 'prazoTotal':
+                valor = tds[10] ? tds[10].textContent.trim() : ''; 
+                break;
+            default:
+                valor = '';
+        }
+        
+        let valorComparavel = valor;
+        if (coluna === 'dataSolicitacao' || coluna === 'dataLimite' || coluna === 'dataEntrega') {
+            if (valor && valor !== '-') {
+                const partes = valor.split('/');
+                if (partes.length === 3) {
+                    valorComparavel = new Date(partes[2], partes[1] - 1, partes[0]).getTime();
+                } else {
+                    valorComparavel = 0;
+                }
+            } else {
+                valorComparavel = 0;
+            }
+        } else if (coluna === 'prazoTotal') {
+            const num = parseInt(valor);
+            valorComparavel = isNaN(num) ? 0 : num;
+        }
+        
+        return { linha, valor: valorComparavel, valorOriginal: valor };
+    });
+    
+    linhasComValor.sort((a, b) => {
+        if (direcao === 'asc') {
+            return a.valor > b.valor ? 1 : (a.valor < b.valor ? -1 : 0);
+        } else {
+            return a.valor < b.valor ? 1 : (a.valor > b.valor ? -1 : 0);
+        }
+    });
+    
+
+    linhasComValor.forEach(item => {
+        tbody.appendChild(item.linha);
+    });
+    
+    ordemAtual.coluna = coluna;
+    ordemAtual.direcao = direcao;
+    
+    atualizarIndicadoresOrdenacao(coluna, direcao);
+}
+
+function atualizarIndicadoresOrdenacao(colunaAtiva, direcao) {
+    const colunasMap = {
+        'dataSolicitacao': 7,
+        'dataLimite': 8,
+        'dataEntrega': 9,
+        'prazoTotal': 10
+    };
+    
+    const cabecalho = document.querySelector('#relatorioTable thead tr');
+    if (!cabecalho) return;
+    
+    const ths = cabecalho.querySelectorAll('th');
+    ths.forEach((th, index) => {
+        th.classList.remove('sortable', 'asc', 'desc');
+        // Verifica se é uma coluna ordenável
+        const texto = th.textContent.trim();
+        if (['Data Solicitação', 'Data Limite', 'Data de Efetiva Conclusão', 'Prazo Total'].includes(texto)) {
+            th.classList.add('sortable');
+            if (index === colunasMap[colunaAtiva]) {
+                th.classList.add(direcao === 'asc' ? 'asc' : 'desc');
+            }
+        }
+    });
+}
+
+function handleHeaderClick(event) {
+    const th = event.currentTarget;
+    const texto = th.textContent.trim();
+    
+    let coluna = null;
+    if (texto === 'Data Solicitação') coluna = 'dataSolicitacao';
+    else if (texto === 'Data Limite') coluna = 'dataLimite';
+    else if (texto === 'Data de Efetiva Conclusão') coluna = 'dataEntrega';
+    else if (texto === 'Prazo Total') coluna = 'prazoTotal';
+    
+    if (!coluna) return;
+    
+    // Alterna direção
+    let direcao = 'asc';
+    if (ordemAtual.coluna === coluna && ordemAtual.direcao === 'asc') {
+        direcao = 'desc';
+    }
+    
+    ordenarAtividadesTabela(coluna, direcao);
+}
 
         function desofuscarSenha(senhaOfuscada) {
             let resultado = '';
@@ -1821,21 +1971,22 @@ window.gerarPDF = function() {
     const filtroStatus = document.getElementById('filtroStatus');
     const statusSelecionado = filtroStatus ? filtroStatus.value : 'todos';
     const isFiltroConcluida = statusSelecionado === 'Concluída';
-    const isFiltroAndamento = statusSelecionado === 'Em andamento' || statusSelecionado === 'Em análise';
+    const isFiltroAndamento = statusSelecionado === 'Em andamento';
+    const isFiltroAnalise = statusSelecionado === 'Em análise';
     
     // Título dinâmico
     let tituloRelatorio = 'Relatório de Atividades';
     let nomeColunaPrazo = 'Prazo Total';
-    let destaqueColuna = '';
     
     if (isFiltroConcluida) {
         tituloRelatorio = 'Relatório de Atividades Concluídas';
         nomeColunaPrazo = 'Dias Antecipados';
-        destaqueColuna = '📌 Coluna "Prazo Total" substituída por "Dias Antecipados"';
     } else if (isFiltroAndamento) {
         tituloRelatorio = 'Relatório de Atividades em Andamento';
         nomeColunaPrazo = 'Prazo Restante';
-        destaqueColuna = '📌 Coluna "Prazo Total" substituída por "Prazo Restante" (dias até a data limite)';
+    } else if (isFiltroAnalise) {
+        tituloRelatorio = 'Relatório de Atividades em Análise';
+        nomeColunaPrazo = 'Prazo Restante';
     }
     
     // Cria uma tabela limpa para impressão
@@ -1857,7 +2008,7 @@ window.gerarPDF = function() {
                     border-bottom: 3px solid #667eea;
                 }
                 .header img {
-                    height:180px;
+                    height: 180px;
                     width: auto;
                     margin-bottom: 5px;
                 }
@@ -1870,12 +2021,6 @@ window.gerarPDF = function() {
                     font-size: 17px;
                     color: #666;
                     margin: 2px 0;
-                }
-                .header .destaque {
-                    font-size: 15px;
-                    color: #2563eb;
-                    font-weight: bold;
-                    margin-top: 3px;
                 }
                 table {
                     width: 100%;
@@ -1934,12 +2079,12 @@ window.gerarPDF = function() {
             <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo">
             <h1>${tituloRelatorio}</h1>
             <p>Sistema de Gestão de Atividades</p>
-            ${destaqueColuna ? `<p class="destaque">${destaqueColuna}</p>` : ''}
             <p style="font-size:9px; color:#888;">
                 Gerado em: ${new Date().toLocaleString('pt-BR')} | 
                 Usuário: ${usuarioAtual.nome} (${usuarioAtual.login})
                 ${isFiltroConcluida ? ' | 📊 Filtro: Concluídas' : ''}
-                ${isFiltroAndamento ? ' | 📊 Filtro: Em andamento / Em análise' : ''}
+                ${isFiltroAndamento ? ' | 📊 Filtro: Em andamento' : ''}
+                ${isFiltroAnalise ? ' | 📊 Filtro: Em análise' : ''}
             </p>
         </div>
     `;
@@ -2004,7 +2149,7 @@ window.gerarPDF = function() {
                     // Mantém o valor que já está na tabela
                 }
                 // 🔥 Se o filtro for "Em andamento" ou "Em análise", calcula dias restantes
-                else if (isFiltroAndamento && (statusLinha === 'Em andamento' || statusLinha === 'Em análise')) {
+                else if ((isFiltroAndamento || isFiltroAnalise) && (statusLinha === 'Em andamento' || statusLinha === 'Em análise')) {
                     if (dataLimite && dataLimite !== '-') {
                         const diffDays = calcularDiferencaDias(hoje, dataLimite);
                         if (diffDays !== null && diffDays >= 0) {
@@ -2083,7 +2228,23 @@ window.gerarPDF = function() {
         }, 500);
     };
 };
-        function carregarInterface() {
+
+
+  function carregarInterface() {
+    
+    // Adicionar eventos de clique para ordenação
+    const cabecalho = document.querySelector('#relatorioTable thead tr');
+    if (cabecalho) {
+        const ths = cabecalho.querySelectorAll('th');
+        ths.forEach(th => {
+            const texto = th.textContent.trim();
+            if (['Data Solicitação', 'Data Limite', 'Data de Efetiva Conclusão', 'Prazo Total'].includes(texto)) {
+                th.classList.add('sortable');
+                th.addEventListener('click', handleHeaderClick);
+            }
+        });
+    }
+
             const gestaoBtn = usuarioAtual.tipo === 'chefe' ? `<button class="btn btn-warning" style="padding:5px 15px;" onclick="window.abrirPainelAdmin()"><i class="fas fa-users-cog"></i> Gestão</button>` : '';
             const importBtn = usuarioAtual.login === 'dev1' ? 
                 `<button onclick="importarCSV()" class="btn btn-import" style="padding:5px 15px;"><i class="fas fa-file-upload"></i> Importar Planilha</button>` : '';
@@ -2117,6 +2278,8 @@ window.gerarPDF = function() {
                     dataEntrega.value = hoje;
                     calcularPrazoTotal();
                 }
+
+                
             });
         }
 
