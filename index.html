@@ -428,7 +428,7 @@ th.sortable.desc::after {
                             <th>Área Demandante</th>
                             <th>Data Solicitação</th>
                             <th>Data Limite</th>
-                            <th>Data de Efetiva Conclusão</th>
+                            <th>Data de Conclusão</th>
                             <th>Prazo Total</th>
                             <th>Criado por</th>
                             <th>Prioridade</th>
@@ -558,7 +558,7 @@ function atualizarIndicadoresOrdenacao(colunaAtiva, direcao) {
         th.classList.remove('sortable', 'asc', 'desc');
         // Verifica se é uma coluna ordenável
         const texto = th.textContent.trim();
-        if (['Data Solicitação', 'Data Limite', 'Data de Efetiva Conclusão', 'Prazo Total'].includes(texto)) {
+        if (['Data Solicitação', 'Data Limite', 'Data de Conclusão', 'Prazo Total'].includes(texto)) {
             th.classList.add('sortable');
             if (index === colunasMap[colunaAtiva]) {
                 th.classList.add(direcao === 'asc' ? 'asc' : 'desc');
@@ -574,7 +574,7 @@ function handleHeaderClick(event) {
     let coluna = null;
     if (texto === 'Data Solicitação') coluna = 'dataSolicitacao';
     else if (texto === 'Data Limite') coluna = 'dataLimite';
-    else if (texto === 'Data de Efetiva Conclusão') coluna = 'dataEntrega';
+    else if (texto === 'Data de Conclusão') coluna = 'dataEntrega';
     else if (texto === 'Prazo Total') coluna = 'prazoTotal';
     
     if (!coluna) return;
@@ -1964,9 +1964,6 @@ window.gerarPDF = function() {
         return;
     }
     
-    const existingContainer = document.getElementById('print-report-container');
-    if (existingContainer) { existingContainer.remove(); }
-    
     // 🔥 VERIFICAR QUAL FILTRO DE STATUS ESTÁ SELECIONADO
     const filtroStatus = document.getElementById('filtroStatus');
     const statusSelecionado = filtroStatus ? filtroStatus.value : 'todos';
@@ -2002,30 +1999,35 @@ window.gerarPDF = function() {
                     background: white;
                 }
                 .header {
-                    text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
                     margin-bottom: 15px;
                     padding-bottom: 10px;
-                    border-bottom: 3px solid #667eea;
                 }
-                .header img {
-                    height: 180px;
-                    width: auto;
-                    margin-bottom: 5px;
+                .header .titulo-central {
+                    text-align: center;
+                    flex: 1;
+                    padding: 0 15px;
                 }
-                .header h1 {
+                .header .titulo-central h1 {
                     font-size: 22px;
                     color: #333;
                     margin: 0;
                 }
-                .header p {
-                    font-size: 17px;
+                .header .titulo-central p {
+                    font-size: 16px;
                     color: #666;
                     margin: 2px 0;
                 }
+                .header-logo-left { flex-shrink: 0; }
+                .header-logo-left img { height: 180px; width: auto; display: block; background: transparent; }
+                .header-logo-right { flex-shrink: 0; }
+                .header-logo-right img { height: 60px; width: auto; display: block; background: transparent; }
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 10.5px;
+                    font-size: 9.8px;
                     margin-top: 5px;
                 }
                 th, td {
@@ -2055,7 +2057,7 @@ window.gerarPDF = function() {
                     margin-top: 10px;
                     padding-top: 8px;
                     border-top: 1px solid #ddd;
-                    font-size: 11px;
+                    font-size: 11.5px;
                     color: #999;
                 }
                 @page {
@@ -2073,19 +2075,26 @@ window.gerarPDF = function() {
         <body>
     `;
 
-    // Cabeçalho
+    // Cabeçalho com duas logos
     htmlContent += `
         <div class="header">
-            <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo">
-            <h1>${tituloRelatorio}</h1>
-            <p>Sistema de Gestão de Atividades</p>
-            <p style="font-size:9px; color:#888;">
-                Gerado em: ${new Date().toLocaleString('pt-BR')} | 
-                Usuário: ${usuarioAtual.nome} (${usuarioAtual.login})
-                ${isFiltroConcluida ? ' | 📊 Filtro: Concluídas' : ''}
-                ${isFiltroAndamento ? ' | 📊 Filtro: Em andamento' : ''}
-                ${isFiltroAnalise ? ' | 📊 Filtro: Em análise' : ''}
-            </p>
+            <div class="header-logo-left">
+                <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/logo-assessor.png" alt="Logo ASSESSOR">
+            </div>
+            <div class="titulo-central">
+                <h1>${tituloRelatorio}</h1>
+                <p>Sistema de Gestão de Atividades</p>
+                <p style="font-size:13px; color:#888;">
+                    Gerado em: ${new Date().toLocaleString('pt-BR')} | 
+                    Usuário: ${usuarioAtual.nome} (${usuarioAtual.login})
+                    ${isFiltroConcluida ? ' | 📊 Filtro: Concluídas' : ''}
+                    ${isFiltroAndamento ? ' | 📊 Filtro: Em andamento' : ''}
+                    ${isFiltroAnalise ? ' | 📊 Filtro: Em análise' : ''}
+                </p>
+            </div>
+            <div class="header-logo-right">
+                <img src="https://raw.githubusercontent.com/phmca/dashboard-medicoes/main/monocromatica-dnit-padrao.png" alt="Logo DNIT">
+            </div>
         </div>
     `;
 
@@ -2097,12 +2106,10 @@ window.gerarPDF = function() {
     if (cabecalhoOriginal) {
         const ths = cabecalhoOriginal.querySelectorAll('th');
         ths.forEach((th, index) => {
-            // Pula checkbox e ações
             if (index === 0 || th.classList.contains('no-print')) return;
             
             let textoColuna = th.textContent.trim();
             
-            // 🔥 SUBSTITUI O NOME DA COLUNA "Prazo Total" CONFORME O FILTRO
             if (textoColuna === 'Prazo Total') {
                 textoColuna = nomeColunaPrazo;
             }
@@ -2123,16 +2130,13 @@ window.gerarPDF = function() {
         htmlContent += `<tr>`;
         const tds = linha.querySelectorAll('td');
         tds.forEach((td, index) => {
-            // Pula checkbox, descrição e ações
             if (index === 0) return;
-            if (index === 4) return; // Descrição
+            if (index === 4) return;
             if (td.classList.contains('no-print')) return;
             
             let conteudo = td.textContent.trim();
             
-            // 🔥 AJUSTA O PRAZO TOTAL CONFORME O FILTRO
-            if (index === 10) { // Coluna Prazo Total
-                // Busca a atividade correspondente para calcular o prazo correto
+            if (index === 10) {
                 const tdsLinha = linha.querySelectorAll('td');
                 let dataLimite = '';
                 let statusLinha = '';
@@ -2144,11 +2148,9 @@ window.gerarPDF = function() {
                     statusLinha = tdsLinha[5].textContent.trim();
                 }
                 
-                // 🔥 Se o filtro for "Concluída", mostra o valor já salvo
                 if (isFiltroConcluida) {
-                    // Mantém o valor que já está na tabela
+                    // Mantém o valor
                 }
-                // 🔥 Se o filtro for "Em andamento" ou "Em análise", calcula dias restantes
                 else if ((isFiltroAndamento || isFiltroAnalise) && (statusLinha === 'Em andamento' || statusLinha === 'Em análise')) {
                     if (dataLimite && dataLimite !== '-') {
                         const diffDays = calcularDiferencaDias(hoje, dataLimite);
@@ -2168,7 +2170,6 @@ window.gerarPDF = function() {
                     return;
                 }
                 
-                // Ajusta cores do prazo para os casos normais
                 if (conteudo !== '-' && !isNaN(Number(conteudo))) {
                     const num = Number(conteudo);
                     if (num > 7) {
@@ -2184,8 +2185,7 @@ window.gerarPDF = function() {
                 }
             }
             
-            // Ajusta cores de status
-            if (index === 5) { // Status
+            if (index === 5) {
                 const statusClass = {
                     'Concluída': 'status-concluida',
                     'Em andamento': 'status-andamento',
@@ -2201,7 +2201,6 @@ window.gerarPDF = function() {
 
     htmlContent += `</tbody></table>`;
 
-    // Rodapé
     htmlContent += `
         <div class="footer">
             Sistema de Relatórios de Engenharia
@@ -2210,7 +2209,7 @@ window.gerarPDF = function() {
 
     htmlContent += `</body></html>`;
 
-    // Abre em nova janela para impressão
+    // 🔥 ABRE EM NOVA JANELA (POP-UP)
     const janela = window.open('', '_blank');
     if (!janela) {
         alert('Por favor, permita pop-ups para esta página.');
@@ -2220,7 +2219,6 @@ window.gerarPDF = function() {
     janela.document.write(htmlContent);
     janela.document.close();
     
-    // Aguarda carregamento e imprime
     janela.onload = function() {
         setTimeout(function() {
             janela.focus();
@@ -2228,7 +2226,6 @@ window.gerarPDF = function() {
         }, 500);
     };
 };
-
 
   function carregarInterface() {
     
@@ -2238,7 +2235,7 @@ window.gerarPDF = function() {
         const ths = cabecalho.querySelectorAll('th');
         ths.forEach(th => {
             const texto = th.textContent.trim();
-            if (['Data Solicitação', 'Data Limite', 'Data de Efetiva Conclusão', 'Prazo Total'].includes(texto)) {
+            if (['Data Solicitação', 'Data Limite', 'Data de Conclusão', 'Prazo Total'].includes(texto)) {
                 th.classList.add('sortable');
                 th.addEventListener('click', handleHeaderClick);
             }
@@ -2756,7 +2753,7 @@ else if (act.dataSolicitacao && !act.dataLimite) {
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Data de Efetiva Entrega:</label>
+                                <label>Data de Conclusão:</label>
                                 <input type="date" id="editDataEntrega" value="${atividade.dataEntrega || ''}" onchange="calcularPrazoTotalEdicao()">
                             </div>
                             <div class="form-group">
