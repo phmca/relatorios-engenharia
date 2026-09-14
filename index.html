@@ -6,7 +6,7 @@
     <title>Sistema de Relatórios - Engenharia</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -1656,305 +1656,340 @@ function handleHeaderClick(event) {
             }
         }
 
-        window.importarCSV = function() {
-            if (!usuarioAtual || usuarioAtual.login !== 'dev1') {
-                alert('❌ Apenas o usuário desenvolvedor (dev1) pode importar planilhas!');
-                return;
-            }
-            const inputFile = document.createElement('input');
-            inputFile.type = 'file';
-            inputFile.accept = '.csv';
-            inputFile.style.display = 'none';
-            inputFile.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(event) {
+    window.importarCSV = function() {
+    if (!usuarioAtual || usuarioAtual.login !== 'dev1') {
+        alert('❌ Apenas o usuário desenvolvedor (dev1) pode importar planilhas!');
+        return;
+    }
+    
+    const inputFile = document.createElement('input');
+    inputFile.type = 'file';
+    inputFile.accept = '.xlsx,.xls,.csv';
+    inputFile.style.display = 'none';
+    
+    inputFile.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellStyles: true });
+                const primeiraAba = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[primeiraAba];
+                
+                // 🔥 DETECTA LINHAS OCULTAS
+                const linhasOcultas = new Set();
+                if (worksheet['!rows']) {
+                    worksheet['!rows'].forEach((rowInfo, index) => {
+                        if (rowInfo && rowInfo.hidden) {
+                            linhasOcultas.add(index);
+                        }
+                    });
+                }
+                console.log('🚫 Linhas ocultas detectadas:', [...linhasOcultas]);
+                
+                // 🔥 DETECTA COLUNAS OCULTAS (opcional - também pode filtrar)
+                const colunasOcultas = new Set();
+                if (worksheet['!cols']) {
+                    worksheet['!cols'].forEach((colInfo, index) => {
+                        if (colInfo && colInfo.hidden) {
+                            colunasOcultas.add(index);
+                        }
+                    });
+                }
+                console.log('🚫 Colunas ocultas detectadas:', [...colunasOcultas]);
+                
+                // Converte para array de arrays (mantém todos os índices originais)
+                const todasLinhas = XLSX.utils.sheet_to_json(worksheet, { 
+                    header: 1, 
+                    defval: '',
+                    raw: false,
+                    blankrows: true
+                });
+                
+                // 🔥 FILTRA LINHAS OCULTAS (mantém índice original para log)
+                const linhas = [];
+                const indicesOriginais = [];
+                todasLinhas.forEach((linha, idx) => {
+                    if (!linhasOcultas.has(idx)) {
+                        linhas.push(linha);
+                        indicesOriginais.push(idx);
+                    }
+                });
+                
+                console.log(`✅ ${linhas.length} linhas visíveis de ${todasLinhas.length} totais`);
+                
+                if (linhas.length < 2) {
+                    alert('Arquivo vazio ou formato inválido!');
+                    return;
+                }
+                
+                // 🔥 SE QUISER FILTRAR TAMBÉM COLUNAS OCULTAS
+                // Descomente o bloco abaixo se quiser remover colunas ocultas
+                /*
+                const linhasSemColunasOcultas = linhas.map(linha => 
+                    linha.filter((_, colIdx) => !colunasOcultas.has(colIdx))
+                );
+                */
+                
+                // Define as posições das colunas (as MESMAS de antes)
+                const POS = {
+                    processo: 0,
+                    produto: 1,
+                    tipoAtividade: 2,
+                    descricao: 3,
+                    status: 4,
+                    areaDemandante: 5,
+                    dataSolicitacao: 6,
+                    dataLimite: 7,
+                    dataEntrega: 8,
+                    prazoTotal: 9,
+                    prioridade: 10,
+                    criado: 11,
+                    criadoPor: 12,
+                    atribuido: 14
+                };
+                
+                const cabecalho = linhas[0].map(h => String(h).trim().replace(/^"|"$/g, ''));
+                console.log('📊 CABEÇALHO:', cabecalho);
+                const dadosLinhas = linhas.slice(1);
+                const dadosIndices = indicesOriginais.slice(1);
+                
+                const mapearStatus = (valor) => {
+                    if (!valor) return 'Pendente';
+                    const v = String(valor).trim().toLowerCase();
+                    if (v.includes('conclu') || v === 'concluída' || v.includes('itens concluídos')) return 'Concluída';
+                    if (v.includes('andamento') || v === 'em andamento') return 'Em andamento';
+                    if (v.includes('análise') || v.includes('em analise')) return 'Em análise';
+                    if (v.includes('pendente') || v.includes('itens pendentes')) return 'Em andamento';
+                    if (v.includes('atrasada') || v.includes('atraso')) return 'Atrasada';
+                    return 'Pendente';
+                };
+                
+                const mapearPrioridade = (valor) => {
+                    if (!valor) return 'Média';
+                    const v = String(valor).trim().toLowerCase();
+                    if (v.includes('baixa') || v === 'baixo') return 'Baixa';
+                    if (v.includes('média') || v === 'medio' || v === 'médio') return 'Média';
+                    if (v.includes('alta') || v === 'alto') return 'Alta';
+                    if (v.includes('urgente')) return 'Urgente';
+                    return 'Média';
+                };
+                
+                const getValor = (valores, pos) => { 
+                    return pos < valores.length ? String(valores[pos] || '').trim() : ''; 
+                };
+                
+                let importados = 0;
+                let erros = 0;
+                let errosDetalhes = [];
+                let engenheirosParaAdicionar = [];
+                let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
+                let anoAtual = String(new Date().getFullYear());
+                
+                dadosLinhas.forEach((valores, index) => {
                     try {
-                        const conteudo = event.target.result;
-                        const linhas = [];
-                        let linhaAtual = [];
-                        let campoAtual = '';
-                        let dentroAspas = false;
-                        let texto = conteudo;
-                        if (texto.charCodeAt(0) === 0xFEFF) { texto = texto.substring(1); }
-                        for (let i = 0; i < texto.length; i++) {
-                            const char = texto[i];
-                            if (char === '"') {
-                                if (dentroAspas && texto[i + 1] === '"') {
-                                    campoAtual += '"';
-                                    i++;
-                                } else {
-                                    dentroAspas = !dentroAspas;
-                                }
-                            } else if ((char === ',' || char === ';') && !dentroAspas) {
-                                linhaAtual.push(campoAtual.trim());
-                                campoAtual = '';
-                            } else if ((char === '\n' || char === '\r') && !dentroAspas) {
-                                if (char === '\r' && texto[i + 1] === '\n') { i++; }
-                                linhaAtual.push(campoAtual.trim());
-                                if (linhaAtual.some(campo => campo !== '')) {
-                                    linhas.push(linhaAtual);
-                                }
-                                linhaAtual = [];
-                                campoAtual = '';
-                            } else {
-                                campoAtual += char;
-                            }
-                        }
-                        if (campoAtual !== '' || linhaAtual.length > 0) {
-                            linhaAtual.push(campoAtual.trim());
-                            if (linhaAtual.some(campo => campo !== '')) {
-                                linhas.push(linhaAtual);
-                            }
-                        }
-                        if (linhas.length < 2) {
-                            alert('Arquivo vazio ou formato inválido!');
+                        const valoresLimpos = valores.map(v => String(v || '').trim().replace(/^"|"$/g, ''));
+                        const linhaOriginal = dadosIndices[index] + 1; // +1 porque planilha começa em 1
+                        
+                        // 🔥 FILTRO MÍNIMO - só remove se TODOS os campos estiverem vazios
+                        const temAlgumConteudo = valoresLimpos.some(v => v !== '');
+                        if (!temAlgumConteudo) {
+                            console.log(`⏭️ Linha ${linhaOriginal} ignorada: vazia`);
                             return;
                         }
                         
-                        const POS = {
-    processo: 0,
-    produto: 1,
-    tipoAtividade: 2,
-    descricao: 3,
-    status: 4,
-    areaDemandante: 5,
-    dataSolicitacao: 6,
-    dataLimite: 7,
-    dataEntrega: 8,
-    prazoTotal: 9,
-    prioridade: 10,     
-    criado: 11,
-    criadoPor: 12,
-    atribuido: 14   
-};
+                        const processo = getValor(valoresLimpos, POS.processo) || '';
+                        const produtoRaw = getValor(valoresLimpos, POS.produto);
+                        const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
+                        const produto = padronizarProduto(produtoRaw, areaDemandante);
                         
-                        const cabecalho = linhas[0].map(h => h.trim().replace(/^"|"$/g, ''));
-                        console.log('📊 CABEÇALHO:', cabecalho);
-                        const dadosLinhas = linhas.slice(1);
+                        const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
+                        const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
                         
-                        const mapearStatus = (valor) => {
-                            if (!valor) return 'Pendente';
-                            const v = valor.trim().toLowerCase();
-                            if (v.includes('conclu') || v === 'concluída' || v.includes('itens concluídos')) return 'Concluída';
-                            if (v.includes('andamento') || v === 'em andamento') return 'Em andamento';
-                            if (v.includes('análise') || v.includes('em analise')) return 'Em análise';
-                            if (v.includes('pendente') || v.includes('itens pendentes')) return 'Em andamento';
-                            if (v.includes('atrasada') || v.includes('atraso')) return 'Atrasada';
-                            return 'Pendente';
-                        };
+                        let status = mapearStatus(getValor(valoresLimpos, POS.status));
+                        const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
+                        const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
+                        const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
                         
-                        const mapearPrioridade = (valor) => {
-                            if (!valor) return 'Média';
-                            const v = valor.trim().toLowerCase();
-                            if (v.includes('baixa') || v === 'baixo') return 'Baixa';
-                            if (v.includes('média') || v === 'medio' || v === 'médio') return 'Média';
-                            if (v.includes('alta') || v === 'alto') return 'Alta';
-                            if (v.includes('urgente')) return 'Urgente';
-                            return 'Média';
-                        };
+                        const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
+                        let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
                         
-                        const getValor = (valores, pos) => { return pos < valores.length ? valores[pos] : ''; };
+                        if (dataEntrega) {
+                            status = 'Concluída';
+                        }
                         
-                        let importados = 0;
-                        let erros = 0;
-                        let errosDetalhes = [];
-                        let engenheirosParaAdicionar = [];
-                        let mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
-                        let anoAtual = String(new Date().getFullYear());
-
-                      dadosLinhas.forEach((valores, index) => {
-    try {
-        const valoresLimpos = valores.map(v => v.trim().replace(/^"|"$/g, ''));
-        
-        const processo = getValor(valoresLimpos, POS.processo) || '';
-        const produtoRaw = getValor(valoresLimpos, POS.produto);
-        const areaDemandante = getValor(valoresLimpos, POS.areaDemandante) || '';
-        const produto = padronizarProduto(produtoRaw, areaDemandante);
-        
-        const tipoAtividade = getValor(valoresLimpos, POS.tipoAtividade) || 'Atividade';
-        const descricao = getValor(valoresLimpos, POS.descricao) || 'Descrição não informada';
-        
-        // 🔥 PEGA O STATUS E SE TEM DATA DE ENTREGA, FORÇA CONCLUÍDA
-        let status = mapearStatus(getValor(valoresLimpos, POS.status));
-        const dataSolicitacao = formatarDataISO(getValor(valoresLimpos, POS.dataSolicitacao));
-        const dataLimite = formatarDataISO(getValor(valoresLimpos, POS.dataLimite));
-        const prioridade = mapearPrioridade(getValor(valoresLimpos, POS.prioridade));
-        
-        const dataEntregaRaw = getValor(valoresLimpos, POS.dataEntrega);
-        let dataEntrega = formatarDataISO(dataEntregaRaw) || '';
-        
-        // 🔥 SE TEM DATA DE ENTREGA, FORÇA STATUS COMO "Concluída"
-        if (dataEntrega) {
-            status = 'Concluída';
-        }
-        
-        // 🔥 CALCULA O PRAZO TOTAL (SEMPRE NÚMERO, NUNCA TEXTO)
-        let prazoTotal = 0;
-        
-        if (status === 'Concluída' && dataEntrega && dataLimite) {
-            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
-        } 
-        else if (status === 'Concluída' && !dataEntrega && dataLimite) {
-            const hoje = new Date().toISOString().split('T')[0];
-            const diffDays = calcularDiferencaDias(hoje, dataLimite);
-            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
-        } 
-        else if (dataSolicitacao && dataLimite) {
-            const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
-            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
-        } 
-        else if (dataEntrega && dataLimite) {
-            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
-            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
-        } else {
-            prazoTotal = 0;
-        }
-        
-        const criadoRaw = getValor(valoresLimpos, POS.criado);
-        let dataCriado = formatarDataISO(criadoRaw);
-        if (!dataCriado) {
-            dataCriado = new Date().toISOString().split('T')[0];
-        }
-        
-        let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
-        let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
-        
-        // 🔥 LEITURA CORRETA DO ATRIBUIDO (POSIÇÃO 13)
-        const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
-        let engenheirosNomes = [];
-
-        // LISTA DE PALAVRAS QUE NÃO SÃO NOMES DE ENGENHEIROS
-        const palavrasIgnorar = ['alta', 'baixa', 'média', 'media', 'urgente', 'baixo', 'alto', 'urgência', 'urgencia'];
-
-        if (atribuidoRaw) {
-            let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
-            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i)
-                .map(n => n.trim())
-                .filter(n => {
-                    const nLower = n.toLowerCase();
-                    if (palavrasIgnorar.includes(nLower)) return false;
-                    if (nLower === '' || nLower === '-' || nLower === 'n/a') return false;
-                    if (/^\d+$/.test(n)) return false;
-                    if (n.length < 2) return false;
-                    return true;
-                });
-        }
-
-        // Se não tem engenheiros, usa o criadoPor
-        if (engenheirosNomes.length === 0 && criadoPor) {
-            const criadoPorLower = criadoPor.toLowerCase();
-            if (!palavrasIgnorar.includes(criadoPorLower) && criadoPor.length >= 2) {
-                engenheirosNomes = [criadoPor];
-            }
-        }
-
-        // Se ainda não tem engenheiros, usa 'Sistema'
-        if (engenheirosNomes.length === 0) {
-            engenheirosNomes = ['Sistema'];
-        }
-        
-        const engenheiroCompleto = engenheirosNomes.join(', ');
-        const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
-        
-        engenheirosNomes.forEach(nome => {
-            const login = gerarUsername(nome);
-            if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
-                engenheirosParaAdicionar.push({ nome: nome, login: login });
-            }
-        });
-        
-        if (!produto || !descricao) {
-            erros++;
-            errosDetalhes.push(`Linha ${index + 2}: Produto ou Descrição vazios`);
-            return;
-        }
-        
-        const novaAtividade = {
-            id: Date.now() + importados + Math.random() * 1000,
-            engenheiro: engenheiroCompleto,
-            engenheirosLista: engenheirosNomes,
-            loginsEng: loginsEngenheiros,
-            loginEng: loginsEngenheiros[0] || 'sistema',
-            dataReg: dataCriado,
-            mes: mesAtual,
-            ano: anoAtual,
-            produto: produto,
-            projeto: tipoAtividade,
-            processo: processo,
-            tipoAtividade: tipoAtividade,
-            descricao: descricao,
-            status: status,
-            prioridade: prioridade,
-            dataSolicitacao: dataSolicitacao,
-            dataLimite: dataLimite,
-            dataEntrega: dataEntrega,
-            prazoTotal: prazoTotal,
-            areaDemandante: areaDemandante,
-            observacoes: '',
-            criado: dataCriado,
-            criadoPor: criadoPor || null,
-            ultimaModificacao: dataCriado,
-            ultimoEditor: criadoPor || null
-        };
-        
-        atividades.push(novaAtividade);
-        importados++;
-        
-    } catch (err) {
-        erros++;
-        errosDetalhes.push(`Linha ${index + 2}: ${err.message}`);
-        console.error('Erro ao importar linha', index, err);
-    }
-});
-
-                        engenheirosParaAdicionar.forEach(({ nome, login }) => {
-                            if (!usuarios[login] && nome) {
-                                usuarios[login] = {
-                                    nome: nome,
-                                    tipo: 'engenheiro',
-                                    senha: 'cac123456',
-                                    primeiroAcesso: true,
-                                    cpf: '00000000000',
-                                    historicoLogins: [{ login: login, data: new Date().toISOString() }]
-                                };
+                        // 🔥 CALCULA O PRAZO TOTAL
+                        let prazoTotal = 0;
+                        
+                        if (status === 'Concluída' && dataEntrega && dataLimite) {
+                            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+                        } 
+                        else if (status === 'Concluída' && !dataEntrega && dataLimite) {
+                            const hoje = new Date().toISOString().split('T')[0];
+                            const diffDays = calcularDiferencaDias(hoje, dataLimite);
+                            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+                        } 
+                        else if (dataSolicitacao && dataLimite) {
+                            const diffDays = calcularDiferencaDias(dataSolicitacao, dataLimite);
+                            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+                        } 
+                        else if (dataEntrega && dataLimite) {
+                            const diffDays = calcularDiferencaDias(dataEntrega, dataLimite);
+                            prazoTotal = diffDays !== null ? (diffDays >= 0 ? diffDays : 0) : 0;
+                        } else {
+                            prazoTotal = 0;
+                        }
+                        
+                        const criadoRaw = getValor(valoresLimpos, POS.criado);
+                        let dataCriado = formatarDataISO(criadoRaw);
+                        if (!dataCriado) {
+                            dataCriado = new Date().toISOString().split('T')[0];
+                        }
+                        
+                        let criadoPorRaw = getValor(valoresLimpos, POS.criadoPor);
+                        let criadoPor = criadoPorRaw ? criadoPorRaw.replace(/^Eng\.?\s*/i, '').trim() : null;
+                        
+                        const atribuidoRaw = getValor(valoresLimpos, POS.atribuido);
+                        let engenheirosNomes = [];
+                        
+                        const palavrasIgnorar = ['alta', 'baixa', 'média', 'media', 'urgente', 'baixo', 'alto', 'urgência', 'urgencia'];
+                        
+                        if (atribuidoRaw) {
+                            let nomesLimpos = atribuidoRaw.replace(/^Eng\.?\s*/i, '').trim();
+                            engenheirosNomes = nomesLimpos.split(/[,;]\s*|\s+e\s+/i)
+                                .map(n => n.trim())
+                                .filter(n => {
+                                    const nLower = n.toLowerCase();
+                                    if (palavrasIgnorar.includes(nLower)) return false;
+                                    if (nLower === '' || nLower === '-' || nLower === 'n/a') return false;
+                                    if (/^\d+$/.test(n)) return false;
+                                    if (n.length < 2) return false;
+                                    return true;
+                                });
+                        }
+                        
+                        if (engenheirosNomes.length === 0 && criadoPor) {
+                            const criadoPorLower = criadoPor.toLowerCase();
+                            if (!palavrasIgnorar.includes(criadoPorLower) && criadoPor.length >= 2) {
+                                engenheirosNomes = [criadoPor];
+                            }
+                        }
+                        
+                        if (engenheirosNomes.length === 0) {
+                            engenheirosNomes = ['Sistema'];
+                        }
+                        
+                        const engenheiroCompleto = engenheirosNomes.join(', ');
+                        const loginsEngenheiros = engenheirosNomes.map(nome => gerarUsername(nome));
+                        
+                        engenheirosNomes.forEach(nome => {
+                            const login = gerarUsername(nome);
+                            if (!engenheirosParaAdicionar.some(e => e.nome === nome)) {
+                                engenheirosParaAdicionar.push({ nome: nome, login: login });
                             }
                         });
-
-                        if (importados > 0) {
-                            salvarDados();
-                            let msg = `✅ ${importados} atividades importadas com sucesso!`;
-                            if (erros > 0) {
-                                msg += `\n⚠️ ${erros} linhas ignoradas por erro.`;
-                                if (errosDetalhes.length > 0) {
-                                    msg += `\n\nDetalhes dos erros:\n${errosDetalhes.slice(0, 5).join('\n')}`;
-                                    if (errosDetalhes.length > 5) {
-                                        msg += `\n... e mais ${errosDetalhes.length - 5} erros.`;
-                                    }
-                                }
-                            }
-                            if (engenheirosParaAdicionar.length > 0) {
-                                msg += `\n👥 ${engenheirosParaAdicionar.length} engenheiro(s) criado(s) no sistema.`;
-                            }
-                            alert(msg);
-                            gerarRelatorioAtual();
-                            if (usuarioAtual.tipo === 'chefe') criarFiltros();
-                        } else {
-                            alert('❌ Nenhuma atividade foi importada. Verifique o formato do arquivo.');
+                        
+                        if (!produto || !descricao) {
+                            erros++;
+                            errosDetalhes.push(`Linha ${linhaOriginal}: Produto ou Descrição vazios`);
+                            return;
                         }
-                    } catch (error) {
-                        alert('❌ Erro ao ler o arquivo: ' + error.message);
-                        console.error('Erro completo:', error);
+                        
+                        const novaAtividade = {
+                            id: Date.now() + importados + Math.random() * 1000,
+                            engenheiro: engenheiroCompleto,
+                            engenheirosLista: engenheirosNomes,
+                            loginsEng: loginsEngenheiros,
+                            loginEng: loginsEngenheiros[0] || 'sistema',
+                            dataReg: dataCriado,
+                            mes: mesAtual,
+                            ano: anoAtual,
+                            produto: produto,
+                            projeto: tipoAtividade,
+                            processo: processo,
+                            tipoAtividade: tipoAtividade,
+                            descricao: descricao,
+                            status: status,
+                            prioridade: prioridade,
+                            dataSolicitacao: dataSolicitacao,
+                            dataLimite: dataLimite,
+                            dataEntrega: dataEntrega,
+                            prazoTotal: prazoTotal,
+                            areaDemandante: areaDemandante,
+                            observacoes: '',
+                            criado: dataCriado,
+                            criadoPor: criadoPor || null,
+                            ultimaModificacao: dataCriado,
+                            ultimoEditor: criadoPor || null
+                        };
+                        
+                        atividades.push(novaAtividade);
+                        importados++;
+                        
+                    } catch (err) {
+                        erros++;
+                        const linhaOriginal = dadosIndices[index] + 1;
+                        errosDetalhes.push(`Linha ${linhaOriginal}: ${err.message}`);
+                        console.error('Erro ao importar linha', index, err);
                     }
-                };
-                reader.readAsText(file, 'UTF-8');
-            });
-            document.body.appendChild(inputFile);
-            inputFile.click();
-            document.body.removeChild(inputFile);
+                });
+                
+                engenheirosParaAdicionar.forEach(({ nome, login }) => {
+                    if (!usuarios[login] && nome) {
+                        usuarios[login] = {
+                            nome: nome,
+                            tipo: 'engenheiro',
+                            senha: 'cac123456',
+                            primeiroAcesso: true,
+                            cpf: '00000000000',
+                            historicoLogins: [{ login: login, data: new Date().toISOString() }]
+                        };
+                    }
+                });
+                
+                if (importados > 0) {
+                    salvarDados();
+                    let msg = `✅ ${importados} atividades importadas com sucesso!`;
+                    if (linhasOcultas.size > 0) {
+                        msg += `\n🚫 ${linhasOcultas.size} linha(s) oculta(s) ignorada(s).`;
+                    }
+                    if (erros > 0) {
+                        msg += `\n⚠️ ${erros} linhas ignoradas por erro.`;
+                        if (errosDetalhes.length > 0) {
+                            msg += `\n\nDetalhes dos erros:\n${errosDetalhes.slice(0, 5).join('\n')}`;
+                            if (errosDetalhes.length > 5) {
+                                msg += `\n... e mais ${errosDetalhes.length - 5} erros.`;
+                            }
+                        }
+                    }
+                    if (engenheirosParaAdicionar.length > 0) {
+                        msg += `\n👥 ${engenheirosParaAdicionar.length} engenheiro(s) criado(s) no sistema.`;
+                    }
+                    alert(msg);
+                    gerarRelatorioAtual();
+                    if (usuarioAtual.tipo === 'chefe') criarFiltros();
+                } else {
+                    alert('❌ Nenhuma atividade foi importada. Verifique o formato do arquivo.');
+                }
+                
+            } catch (error) {
+                alert('❌ Erro ao ler o arquivo: ' + error.message);
+                console.error('Erro completo:', error);
+            }
         };
+        
+        // 🔥 IMPORTANTE: usar readAsArrayBuffer (não readAsText) para XLSX
+        reader.readAsArrayBuffer(file);
+    });
+    
+    document.body.appendChild(inputFile);
+    inputFile.click();
+    document.body.removeChild(inputFile);
+};
 
 window.gerarPDF = function() {
     const currentRows = document.querySelectorAll('#relatorioBody tr');
