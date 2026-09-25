@@ -464,6 +464,45 @@ th.sortable.desc::after {
         const SENHA_GESTOR_OFUSCADA = '\x1e\x14\x16\x1b\x15\x1a\x13\x18\x16\x0e\x2f\x14\x1a\x13\x16';
         const LOGIN_GESTOR = 'arnaldo_cunha';
         
+        // 🔐 NOVO USUÁRIO: renan_assessor / dnit_consorcio
+        const LOGIN_RENAN = 'renan_assessor';
+        const SENHA_RENAN_OFUSCADA = (() => {
+            // Ofuscação simples da senha dnit_consorcio
+            const senha = 'dnit_consorcio';
+            let ofuscada = '';
+            for (let i = 0; i < senha.length; i++) {
+                ofuscada += String.fromCharCode(senha.charCodeAt(i) ^ 0x5A);
+            }
+            return ofuscada;
+        })();
+        
+        // 🔐 FUNÇÕES DE CRIPTOGRAFIA DE SENHA (SHA-256)
+        async function hashSenha(senha) {
+            if (!senha) return '';
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(senha);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex;
+            } catch (e) {
+                console.error('Erro ao gerar hash da senha:', e);
+                // Fallback: retorna a senha codificada em base64 (nunca use em produção real)
+                return btoa(unescape(encodeURIComponent(senha)));
+            }
+        }
+
+        // Armazena temporariamente as senhas em memória durante a sessão
+        // (nunca persiste em texto plano)
+        let senhasEmMemoria = {};
+
+        async function verificarSenha(login, senhaDigitada) {
+            if (!usuarios[login]) return false;
+            const hashDigitado = await hashSenha(senhaDigitada);
+            return usuarios[login].senhaHash === hashDigitado;
+        }
+
         let atividades = [];
         let usuarios = {};
         let usuarioAtual = null;
@@ -951,24 +990,38 @@ function handleHeaderClick(event) {
             return false;
         }
 
-        function criarDadosIniciais() {
+        async function criarDadosIniciais() {
             atividades = [];
             usuarios = {};
+            
+            // Gestor Arnaldo
             usuarios[LOGIN_GESTOR] = {
                 nome: 'Arnaldo Cunha',
                 tipo: 'chefe',
-                senha: getSenhaGestor(),
+                senhaHash: await hashSenha(getSenhaGestor()),
                 primeiroAcesso: true,
                 historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
             };
+            
+            // Dev1
             usuarios['dev1'] = {
                 nome: 'Desenvolvedor',
                 tipo: 'chefe',
-                senha: 'dnit@321',
+                senhaHash: await hashSenha('dnit@321'),
                 primeiroAcesso: false,
                 historicoLogins: [{ login: 'dev1', data: new Date().toISOString() }]
             };
-            salvarDados();
+            
+            // Renan
+            usuarios[LOGIN_RENAN] = {
+                nome: 'Renan Assessor',
+                tipo: 'chefe',
+                senhaHash: await hashSenha('dnit_consorcio'),
+                primeiroAcesso: false,
+                historicoLogins: [{ login: LOGIN_RENAN, data: new Date().toISOString() }]
+            };
+            
+            await salvarDados();
         }
 
         function verificarPrimeiroAcesso(username) {
@@ -1128,20 +1181,29 @@ function handleHeaderClick(event) {
             if (senhaInput) senhaInput.addEventListener('keypress', handleEnterPress);
         }
 
-        window.efetuarLogin = function() {
+        window.efetuarLogin = async function() {
             const login = document.getElementById('userLogin').value.toLowerCase();
             const senha = document.getElementById('userSenha').value;
-            if (usuarios[login] && usuarios[login].senha === senha) {
+            
+            if (!usuarios[login]) {
+                document.getElementById('loginMsg').innerText = 'Usuário ou senha inválidos';
+                return;
+            }
+            
+            // Verifica a senha usando hash SHA-256
+            const senhaValida = await verificarSenha(login, senha);
+            
+            if (senhaValida) {
                 document.getElementById('loginScreen').remove();
-                if (login === 'dev1') {
-                    usuarioAtual = { login: login, ...usuarios[login] };
-                    carregarInterface();
-                    return;
-                }
+                
+                // Se for o primeiro acesso do usuário que acabou de logar, solicita troca de senha
                 if (verificarPrimeiroAcesso(login)) {
+                    // Guarda a senha em memória para permitir a troca
+                    senhasEmMemoria[login] = senha;
                     mostrarModalTrocaSenha(login, true);
                     return;
                 }
+                
                 usuarioAtual = { login: login, ...usuarios[login] };
                 carregarInterface();
             } else {
@@ -1210,32 +1272,29 @@ function handleHeaderClick(event) {
             const novaSenha = document.getElementById('novaSenha').value;
             const confirmaSenha = document.getElementById('confirmaSenha').value;
             const errorDiv = document.getElementById('pwdError');
+            
             if (!isPrimeiroAcesso) {
                 const senhaAtual = document.getElementById('senhaAtual').value;
-                if (usuarios[username].senha !== senhaAtual) {
+                const senhaAtualValida = await verificarSenha(username, senhaAtual);
+                if (!senhaAtualValida) {
                     errorDiv.innerText = 'Senha atual incorreta';
                     return;
                 }
             }
+            
             if (novaSenha.length < 6) { errorDiv.innerText = 'Mínimo 6 caracteres'; return; }
             if (novaSenha !== confirmaSenha) { errorDiv.innerText = 'Senhas não conferem'; return; }
-            usuarios[username].senha = novaSenha;
+            
+            // Atualiza o hash da senha
+            usuarios[username].senhaHash = await hashSenha(novaSenha);
             usuarios[username].primeiroAcesso = false;
-            const dadosParaSalvar = {
-                atividades: atividades,
-                usuarios: Object.fromEntries(Object.entries(usuarios).map(([login, user]) => [
-                    login, { ...user, cpf: user.cpf ? btoa(user.cpf) : '' }
-                ]))
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
-            try {
-                await database.ref('sistema').set(dadosParaSalvar);
-                alert('✅ Senha alterada e sincronizada com a nuvem!');
-            } catch (error) {
-                alert('⚠️ Senha alterada localmente, mas houve erro na sincronização. Tente novamente.');
-                console.error('Erro ao sincronizar:', error);
-            }
+            delete usuarios[username].senha; // Remove senha em texto plano se existir
+            
+            await salvarDados();
+            
+            alert('✅ Senha alterada e sincronizada com a nuvem!');
             document.querySelector('.modal').remove();
+            
             if (isPrimeiroAcesso) {
                 usuarioAtual = { login: username, ...usuarios[username] };
                 carregarInterface();
@@ -1326,7 +1385,7 @@ function handleHeaderClick(event) {
                         historicoHtml += '</div>';
                     }
                     const cpfExibido = user.cpf ? maskCPF(user.cpf) : '-';
-                    const isProtegido = (login === 'dev1' || login === LOGIN_GESTOR);
+                    const isProtegido = (login === 'dev1' || login === LOGIN_GESTOR || login === LOGIN_RENAN);
                     const row = tbody.insertRow();
                     row.innerHTML = `
                         <td>${!isProtegido ? `<input type="checkbox" class="selecionar-engenheiro" value="${login}" onchange="atualizarContadorEngenheiros()">` : '-'}</td>
@@ -1375,9 +1434,9 @@ function handleHeaderClick(event) {
                 alert('Nenhum engenheiro selecionado!');
                 return;
             }
-            const temProtegido = logins.some(login => login === 'dev1' || login === LOGIN_GESTOR);
+            const temProtegido = logins.some(login => login === 'dev1' || login === LOGIN_GESTOR || login === LOGIN_RENAN);
             if (temProtegido) {
-                alert('❌ Não é possível excluir o desenvolvedor (dev1) ou o gestor principal!');
+                alert('❌ Não é possível excluir o desenvolvedor (dev1), o gestor principal ou o assessor Renan!');
                 return;
             }
             let lista = logins.map(login => {
@@ -1424,8 +1483,8 @@ function handleHeaderClick(event) {
                 alert('❌ Você não pode remover a si mesmo!');
                 return;
             }
-            if (login === 'dev1' || login === LOGIN_GESTOR) {
-                alert('❌ Não é possível remover o desenvolvedor ou o gestor principal!');
+            if (login === 'dev1' || login === LOGIN_GESTOR || login === LOGIN_RENAN) {
+                alert('❌ Não é possível remover o desenvolvedor, o gestor principal ou o assessor Renan!');
                 return;
             }
             const engenheiro = usuarios[login];
@@ -1478,18 +1537,25 @@ function handleHeaderClick(event) {
                 alert('❌ Apenas o desenvolvedor pode editar o próprio dev1!');
                 return;
             }
+            if ((login === LOGIN_GESTOR || login === LOGIN_RENAN) && usuarioAtual.login !== 'dev1') {
+                alert('❌ Apenas o desenvolvedor pode editar os gestores!');
+                return;
+            }
             const modalDiv = document.createElement('div');
             modalDiv.className = 'modal';
             modalDiv.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
                         <button class="modal-close" onclick="this.closest('.modal').remove()">✕</button>
-                        <h2>✏️ Editar Engenheiro</h2>
+                        <h2>✏️ Editar Usuário</h2>
                     </div>
                     <div class="modal-body">
                         <div class="form-group"><label>Login:</label><input type="text" value="${login}" disabled style="background:#f0f0f0;"></div>
                         <div class="form-group"><label>Nome:</label><input type="text" id="editNomeEng" value="${user.nome}"></div>
                         <div class="form-group"><label>CPF:</label><input type="text" id="editCpfEng" value="${user.cpf || ''}" maxlength="11"></div>
+                        <div class="info-badge">
+                            <p><i class="fas fa-info-circle"></i> Ao alterar o nome, o login pode ser alterado automaticamente. A senha será redefinida para o padrão (cac + CPF).</p>
+                        </div>
                         <div id="editEngError" class="error" style="color:red; margin-top:10px;"></div>
                     </div>
                     <div class="modal-footer">
@@ -1501,7 +1567,7 @@ function handleHeaderClick(event) {
             document.body.appendChild(modalDiv);
         };
 
-        window.salvarEdicaoEngenheiro = function(login) {
+        window.salvarEdicaoEngenheiro = async function(login) {
             const novoNome = document.getElementById('editNomeEng').value.trim();
             const novoCpf = document.getElementById('editCpfEng').value.trim();
             const errorDiv = document.getElementById('editEngError');
@@ -1515,13 +1581,26 @@ function handleHeaderClick(event) {
                 errorDiv.innerText = `Usuário "${novoUsername}" já existe!`;
                 return;
             }
-            const novaSenha = gerarSenhaInicial(novoCpf);
+            const novaSenhaTexto = gerarSenhaInicial(novoCpf);
+            const novaSenhaHash = await hashSenha(novaSenhaTexto);
             const dataAtual = new Date().toISOString();
+            
             if (novoUsername !== login) {
+                // Cria novo usuário com o novo login, copiando dados do antigo
                 const historicoAtual = usuarios[login].historicoLogins || [];
                 historicoAtual.push({ login: novoUsername, data: dataAtual });
-                usuarios[novoUsername] = { ...usuarios[login], nome: novoNome, cpf: novoCpf, senha: novaSenha, primeiroAcesso: true, historicoLogins: historicoAtual };
+                
+                usuarios[novoUsername] = { 
+                    ...usuarios[login], 
+                    nome: novoNome, 
+                    cpf: novoCpf, 
+                    senhaHash: novaSenhaHash,
+                    primeiroAcesso: true, 
+                    historicoLogins: historicoAtual 
+                };
                 delete usuarios[login];
+                
+                // Atualiza atividades que referenciavam o login antigo
                 atividades = atividades.map(a => {
                     if (a.loginsEng && a.loginsEng.includes(login)) {
                         const novosLogins = a.loginsEng.map(l => l === login ? novoUsername : l);
@@ -1531,10 +1610,12 @@ function handleHeaderClick(event) {
                     return a;
                 });
             } else {
+                // Mesmo login, apenas atualiza dados
                 usuarios[login].nome = novoNome;
                 usuarios[login].cpf = novoCpf;
-                usuarios[login].senha = novaSenha;
+                usuarios[login].senhaHash = novaSenhaHash;
                 usuarios[login].primeiroAcesso = true;
+                
                 atividades = atividades.map(a => {
                     if (a.loginsEng && a.loginsEng.includes(login)) {
                         const novosNomes = a.engenheirosLista ? a.engenheirosLista.map(n => n === usuarios[login].nome ? novoNome : n) : [];
@@ -1543,30 +1624,34 @@ function handleHeaderClick(event) {
                     return a;
                 });
             }
-            salvarDados();
-            alert(`✅ Atualizado!\nNovo login: ${novoUsername}\nNova senha: ${novaSenha}`);
+            
+            await salvarDados();
+            alert(`✅ Atualizado!\nNovo login: ${novoUsername}\nNova senha: ${novaSenhaTexto}`);
             document.querySelector('.modal').remove();
             carregarListaEngenheiros();
             if (usuarioAtual.tipo === 'chefe') criarFiltros();
             gerarRelatorioAtual();
         };
 
-        window.adicionarEngenheiro = function() {
+        window.adicionarEngenheiro = async function() {
             const nome = document.getElementById('novoNome').value.trim();
             const cpf = document.getElementById('novoCpf').value.trim();
             if (!nome) { alert('Informe o nome!'); return; }
             if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) { alert('CPF inválido!'); return; }
             const username = gerarUsername(nome);
             if (usuarios[username]) { alert(`Usuário ${username} já existe!`); return; }
+            
+            const senhaTexto = gerarSenhaInicial(cpf);
             usuarios[username] = {
                 nome, tipo: 'engenheiro',
-                senha: gerarSenhaInicial(cpf),
+                senhaHash: await hashSenha(senhaTexto),
                 primeiroAcesso: true,
                 cpf,
                 historicoLogins: [{ login: username, data: new Date().toISOString() }]
             };
-            salvarDados();
-            alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${gerarSenhaInicial(cpf)}`);
+            
+            await salvarDados();
+            alert(`✅ Adicionado!\nUsuário: ${username}\nSenha: ${senhaTexto}`);
             document.getElementById('novoNome').value = '';
             document.getElementById('novoCpf').value = '';
             carregarListaEngenheiros();
@@ -1672,7 +1757,7 @@ function handleHeaderClick(event) {
         if (!file) return;
         
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = async function(event) {
             try {
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, { type: 'array', cellStyles: true });
@@ -1725,14 +1810,6 @@ function handleHeaderClick(event) {
                     alert('Arquivo vazio ou formato inválido!');
                     return;
                 }
-                
-                // 🔥 SE QUISER FILTRAR TAMBÉM COLUNAS OCULTAS
-                // Descomente o bloco abaixo se quiser remover colunas ocultas
-                /*
-                const linhasSemColunasOcultas = linhas.map(linha => 
-                    linha.filter((_, colIdx) => !colunasOcultas.has(colIdx))
-                );
-                */
                 
                 // Define as posições das colunas (as MESMAS de antes)
                 const POS = {
@@ -1938,21 +2015,22 @@ function handleHeaderClick(event) {
                     }
                 });
                 
-                engenheirosParaAdicionar.forEach(({ nome, login }) => {
+                // Adiciona engenheiros que ainda não existem (com senha hash padrão)
+                for (const { nome, login } of engenheirosParaAdicionar) {
                     if (!usuarios[login] && nome) {
                         usuarios[login] = {
                             nome: nome,
                             tipo: 'engenheiro',
-                            senha: 'cac123456',
+                            senhaHash: await hashSenha('cac123456'),
                             primeiroAcesso: true,
                             cpf: '00000000000',
                             historicoLogins: [{ login: login, data: new Date().toISOString() }]
                         };
                     }
-                });
+                }
                 
                 if (importados > 0) {
-                    salvarDados();
+                    await salvarDados();
                     let msg = `✅ ${importados} atividades importadas com sucesso!`;
                     if (linhasOcultas.size > 0) {
                         msg += `\n🚫 ${linhasOcultas.size} linha(s) oculta(s) ignorada(s).`;
@@ -2966,28 +3044,56 @@ else if (act.dataSolicitacao && !act.dataLimite) {
         (async function() {
             const dadosExistentes = await carregarDados();
             if (!dadosExistentes || Object.keys(usuarios).length === 0) {
-                criarDadosIniciais();
+                await criarDadosIniciais();
             }
+            
+            // Garante que os usuários padrão existam
             if (!usuarios[LOGIN_GESTOR]) {
                 usuarios[LOGIN_GESTOR] = {
                     nome: 'Arnaldo Cunha',
                     tipo: 'chefe',
-                    senha: getSenhaGestor(),
+                    senhaHash: await hashSenha(getSenhaGestor()),
                     primeiroAcesso: true,
                     historicoLogins: [{ login: LOGIN_GESTOR, data: new Date().toISOString() }]
                 };
-                salvarDados();
+                await salvarDados();
             }
             if (!usuarios['dev1']) {
                 usuarios['dev1'] = {
                     nome: 'Desenvolvedor',
                     tipo: 'chefe',
-                    senha: 'dnit@321',
+                    senhaHash: await hashSenha('dnit@321'),
                     primeiroAcesso: false,
                     historicoLogins: [{ login: 'dev1', data: new Date().toISOString() }]
                 };
-                salvarDados();
+                await salvarDados();
             }
+            if (!usuarios[LOGIN_RENAN]) {
+                usuarios[LOGIN_RENAN] = {
+                    nome: 'Renan Assessor',
+                    tipo: 'chefe',
+                    senhaHash: await hashSenha('dnit_consorcio'),
+                    primeiroAcesso: false,
+                    historicoLogins: [{ login: LOGIN_RENAN, data: new Date().toISOString() }]
+                };
+                await salvarDados();
+            }
+            
+            // 🔥 MIGRAÇÃO: Se houver senhas em texto plano (versão antiga), converte para hash
+            let precisaSalvar = false;
+            for (const [login, user] of Object.entries(usuarios)) {
+                if (user.senha && !user.senhaHash) {
+                    user.senhaHash = await hashSenha(user.senha);
+                    delete user.senha;
+                    precisaSalvar = true;
+                    console.log(`🔐 Senha do usuário "${login}" criptografada (SHA-256)`);
+                }
+            }
+            if (precisaSalvar) {
+                await salvarDados();
+                console.log('✅ Todas as senhas foram migradas para hash SHA-256');
+            }
+            
             mostrarLogin();
         })();
     </script>
